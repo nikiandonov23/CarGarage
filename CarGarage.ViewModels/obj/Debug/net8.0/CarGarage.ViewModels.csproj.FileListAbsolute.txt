@@ -1,0 +1,15 @@
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\bin\Debug\net8.0\CarGarage.ViewModels.deps.json
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\bin\Debug\net8.0\CarGarage.ViewModels.runtimeconfig.json
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\bin\Debug\net8.0\CarGarage.ViewModels.dll
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\bin\Debug\net8.0\CarGarage.ViewModels.pdb
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\obj\Debug\net8.0\CarGarage.ViewModels.csproj.AssemblyReference.cache
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\obj\Debug\net8.0\CarGarage.ViewModels.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\obj\Debug\net8.0\CarGarage.ViewModels.AssemblyInfoInputs.cache
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\obj\Debug\net8.0\CarGarage.ViewModels.AssemblyInfo.cs
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\obj\Debug\net8.0\CarGarage.ViewModels.csproj.CoreCompileInputs.cache
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\obj\Debug\net8.0\CarGarage.ViewModels.sourcelink.json
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\obj\Debug\net8.0\CarGarage.ViewModels.dll
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\obj\Debug\net8.0\refint\CarGarage.ViewModels.dll
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\obj\Debug\net8.0\CarGarage.ViewModels.pdb
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\obj\Debug\net8.0\CarGarage.ViewModels.genruntimeconfig.cache
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.ViewModels\obj\Debug\net8.0\ref\CarGarage.ViewModels.dll

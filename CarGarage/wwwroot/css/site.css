@@ -1,0 +1,146 @@
+﻿html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Плавен преход за всички Bootstrap икони */
+.bi {
+    transition: all 0.3s ease; /* плавно – 0.3s е идеално */
+    display: inline-block; /* важно! предотвратява разместване */
+    line-height: 1; /* фиксира височината */
+}
+
+    /* Основен hover: по-голяма + леко повдигане + цвят */
+    .bi:hover {
+        transform: scale(1.15) translateY(-4px); /* умерено увеличение + леко нагоре */
+        color: #0d6efd !important; /* primary синьо – можеш да смениш */
+    }
+
+    /* Специфични ефекти за отделни икони (за да не е еднакво всичко) */
+
+    /* Лупичка (търсене) – по-силно увеличение + зелено */
+    .bi-search:hover,
+    .bi.bi-search:hover { /* двойно селектиране за сигурност */
+        transform: scale(1.4) translateY(-6px);
+        color: #198754 !important; /* success зелено */
+    }
+
+    /* Гараж – повдигане + леко завъртане */
+    .bi-garage:hover,
+    .bi.bi-garage:hover {
+        transform: scale(1.25) translateY(-8px) rotate(8deg);
+        color: #198754 !important;
+    }
+
+    /* Хора/клиенти – леко "пулс" */
+    .bi-people:hover,
+    .bi.bi-people:hover {
+        animation: subtle-pulse 1.2s ease-in-out;
+        color: #6f42c1 !important; /* purple за клиенти */
+    }
+
+    /* Чат/коментари – бързо увеличение + оранжево */
+    .bi-chat-dots:hover,
+    .bi.bi-chat-dots:hover {
+        transform: scale(1.35);
+        color: #fd7e14 !important; /* warning orange */
+    }
+
+    /* Инструменти/ремонти – пулсиращ ефект */
+    .bi-tools:hover,
+    .bi.bi-tools:hover {
+        animation: pulse 1s infinite;
+        color: #dc3545 !important; /* danger red за "инструменти" */
+    }
+
+    /* Авто/количка – леко "скачане" */
+    .bi-car-front-fill:hover,
+    .bi.bi-car-front-fill:hover {
+        transform: scale(1.2) translateY(-5px);
+        color: #0dcaf0 !important; /* info циан */
+    }
+
+/* Анимации */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.25);
+    }
+}
+
+@keyframes subtle-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.12);
+    }
+}
+
+
+
+
+
+
+
+
+/* За картите – основен hover ефект */
+.card {
+    transition: all 0.35s ease; /* плавен преход за всичко */
+    overflow: hidden; /* предотвратява излизане на съдържание при scale */
+}
+
+    /* При hover – уголемяване + повдигане + по-силна сянка */
+    .card:hover {
+        transform: scale(1.06) translateY(-8px); /* 6% увеличение + леко нагоре */
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18) !important; /* по-изразена сянка */
+        border-color: var(--bs-primary) !important; /* граница става primary цвят (или смени) */
+    }
+
+    /* Опционално: още по-красив ефект – леко по-голямо увеличение за някои карти */
+    .card.border-primary:hover {
+        transform: scale(1.08) translateY(-10px);
+        box-shadow: 0 20px 40px rgba(13, 110, 253, 0.25) !important; /* синьо сияние */
+    }
+
+    .card.border-success:hover {
+        transform: scale(1.07) translateY(-9px);
+        box-shadow: 0 18px 38px rgba(25, 135, 84, 0.22) !important; /* зелено */
+    }
+
+    /* Ако искаш и иконата вътре да се движи малко повече (комбинирай с предишния код) */
+    .card:hover .bi {
+        transform: scale(1.2) translateY(-4px); /* иконата се увеличава допълнително */
+    }

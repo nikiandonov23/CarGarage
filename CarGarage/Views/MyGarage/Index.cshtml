@@ -1,0 +1,178 @@
+﻿@{
+    ViewData["Title"] = "CarGarage – Твоят гараж онлайн";
+}
+
+<div class="container my-5">
+    <!-- Hero / Welcome секция -->
+    <div class="row justify-content-center text-center mb-5">
+        <div class="col-lg-8">
+            <h1 class="display-4 fw-bold text-primary mb-3">Добре дошъл в CarGarage</h1>
+            <p class="lead text-muted">
+                Управлявай автомобилите си, следи ремонти, фактури и сервизи на едно място.
+            </p>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <p class="mt-4">
+                    <a asp-area="" asp-controller="Cars" asp-action="MyCars" class="btn btn-primary btn-lg px-5">
+                        Моите автомобили
+                    </a>
+                </p>
+            }
+            else
+            {
+                <p class="mt-4">
+                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary btn-lg me-3">
+                        Регистрация
+                    </a>
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg">
+                        Вход
+                    </a>
+                </p>
+            }
+        </div>
+    </div>
+
+    <!-- Основни функционалности – cards -->
+    <div class="row g-4">
+
+        <!-- Карта: Моите автомобили -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-car-front-fill display-1 text-success mb-3"></i>
+                    <h5 class="card-title fw-bold">Моите автомобили</h5>
+                    <p class="card-text text-muted">
+                        Добавяй и управлявай своите автомобили.
+                    </p>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="MyCars" asp-action="Index" class="btn btn-outline-success stretched-link">
+                            Към моите автомобили
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-success stretched-link">
+                            Влез, за да добавиш
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Карта: Търсене на автомобил -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-search display-1 text-primary mb-3"></i>
+                    <h5 class="card-title fw-bold">Търси автомобил</h5>
+                    <p class="card-text text-muted">
+                        Намери кола по марка, модел, година, регистрационен номер или VIN.
+                    </p>
+                    <a asp-controller="Cars" asp-action="Search" class="btn btn-outline-primary stretched-link">
+                        Започни търсене
+                    </a>
+                </div>
+            </div>
+        </div>
+
+     
+
+     
+
+        <!-- Карта: Фактури / Сметки -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-receipt display-1 text-warning mb-3"></i>
+                    <h5 class="card-title fw-bold">Фактури & разходи</h5>
+                    <p class="card-text text-muted">
+                        Следи всички ремонти, части и плащания на едно място.
+                    </p>
+                    <a asp-controller="Invoices" asp-action="Index" class="btn btn-outline-warning stretched-link">
+                        Моите фактури
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Карта: Клиенти / Компании -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-secondary">
+                <div class="card-body text-center">
+                    <i class="bi bi-people display-1 text-secondary mb-3"></i>
+                    <h5 class="card-title fw-bold">Клиенти / Фирми</h5>
+                    <p class="card-text text-muted">
+                        Управлявай клиенти, компании и история на ремонти (за сервизи).
+                    </p>
+                    <a asp-controller="Clients" asp-action="Index" class="btn btn-outline-secondary stretched-link">
+                        Преглед на клиенти
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Карта: Marketplace -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-danger">
+                <div class="card-body text-center">
+                    <i class="bi bi-shop-window display-1 text-danger mb-3"></i>
+                    <h5 class="card-title fw-bold">Marketplace</h5>
+                    <p class="card-text text-muted">
+                        Не плащай нови цени! Търси части втора ръка<br>
+                        от реални сервизи и гаражи
+                    </p>
+                    <a asp-controller="Marketplace" asp-action="Index" class="btn btn-outline-danger stretched-link">
+                        Прегледай обяви
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Карта: Коментари / Форум / Части -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-dark">
+                <div class="card-body text-center">
+                    <i class="bi bi-chat-dots display-1 text-dark mb-3"></i>
+                    <h5 class="card-title fw-bold">Коментари & части</h5>
+                    <p class="card-text text-muted">
+                        Чети/пиши ревюта, търси резервни части и споделяй опит.
+                    </p>
+                    <a asp-controller="Comments" asp-action="Index" class="btn btn-outline-dark stretched-link">
+                        Към коментарите
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Допълнителна информация или призив за действие -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-10 text-center">
+            <hr class="my-5" />
+            <h3 class="mb-4">Защо да избереш CarGarage?</h3>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="p-4 bg-light rounded">
+                        <i class="bi bi-car-front-fill fs-1 text-primary mb-3 d-block"></i>
+                        <h5>Лесно управление на автопарка</h5>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-4 bg-light rounded">
+                        <i class="bi bi-tools fs-1 text-success mb-3 d-block"></i>
+                        <h5>Проследяване на ремонти</h5>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-4 bg-light rounded">
+                        <i class="bi bi-currency-euro fs-1 text-warning mb-3 d-block"></i>
+                        <h5>Контрол на разходите</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

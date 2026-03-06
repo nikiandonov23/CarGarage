@@ -1,0 +1,61 @@
+﻿@model CarGarage.ViewModels.MyCars.IndexMyCarsViewModel
+
+@{
+    ViewData["Title"] = "Моите автомобили – CarGarage";
+}
+
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary">Моите автомобили</h2>
+        <a asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle me-2"></i> Добави нов автомобил
+        </a>
+    </div>
+
+    @if (!Model.Cars.Any())
+    {
+        <div class="alert alert-info">
+            Все още нямаш добавени автомобили. <a asp-action="Create">Добави първия автомобил</a>.
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var car in Model.Cars)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-primary">
+                        <img src="@car.ImageUrl" class="card-img-top" style="height:200px; object-fit:cover;"
+                             alt="@($"{car.Make} {car.Model}")" />
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">@car.Make @car.Model (@car.ModelYear)</h5>
+                            <p class="card-text text-muted mb-2">
+                                Trim: @car.Trim ?? "-" <br />
+                                Двигател: @car.FuelTypePrimary ?? "-" | @car.EngineHP hp <br />
+                                Задвижване: @car.DriveType ?? "-"
+                            </p>
+
+                            <p class="card-text text-muted mb-2">
+                                Рег. номер: @car.RegistrationNumber ?? "-" <br />
+                                Пробег: @(car.Mileage?.ToString() ?? "-") км
+                            </p>
+
+                            <div class="mt-auto d-flex justify-content-between">
+                                <a asp-action="Edit" asp-route-id="@car.Id" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-pencil-fill"></i> Редактирай
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@car.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Сигурни ли сте, че искате да изтриете този автомобил?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-trash-fill"></i> Изтрий
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

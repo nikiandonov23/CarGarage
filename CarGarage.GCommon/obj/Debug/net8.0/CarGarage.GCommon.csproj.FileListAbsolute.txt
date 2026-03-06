@@ -1,0 +1,15 @@
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\bin\Debug\net8.0\CarGarage.GCommon.deps.json
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\bin\Debug\net8.0\CarGarage.GCommon.runtimeconfig.json
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\bin\Debug\net8.0\CarGarage.GCommon.dll
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\bin\Debug\net8.0\CarGarage.GCommon.pdb
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarage.GCommon.csproj.AssemblyReference.cache
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarage.GCommon.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarage.GCommon.AssemblyInfoInputs.cache
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarage.GCommon.AssemblyInfo.cs
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarage.GCommon.csproj.CoreCompileInputs.cache
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarage.GCommon.sourcelink.json
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarage.GCommon.dll
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\refint\CarGarage.GCommon.dll
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarage.GCommon.pdb
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarage.GCommon.genruntimeconfig.cache
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\ref\CarGarage.GCommon.dll
