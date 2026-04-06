@@ -17,6 +17,9 @@ namespace CarGarage.DataModels
 
         public Car Car { get; set; } = null!;
 
-      
+        public DateTime AddedDate { get; set; } = DateTime.UtcNow;
+        
+
+
     }
 }
