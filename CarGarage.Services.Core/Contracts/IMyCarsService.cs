@@ -12,6 +12,10 @@ namespace CarGarage.Services.Core.Contracts
         Task CreateCarAsync(string userId, CreateCarViewModel model);
 
         // Връща информация за автомобил по VIN (NHTSA API)
-        Task<CreateCarViewModel?> GetCarInfoByVinAsync(string vin);
+        Task<CreateCarViewModel?> GetCarInfo(string vin);
+
+
+        //Метод за сейв на нов автомобил в базата данни
+        Task SaveCarAsync(CreateCarViewModel model);
     }
 }

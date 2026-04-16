@@ -10,6 +10,8 @@ namespace CarGarage.Services.Core
     {
         private readonly ApplicationDbContext _context = context;
 
+    
+
         // Метод за връщане на всички коли на потребителя
         public async Task<IndexMyCarsViewModel> GetAllUserCarsAsync(string userId)
         {
@@ -21,10 +23,10 @@ namespace CarGarage.Services.Core
                     Make = uc.Car.Make,
                     Model = uc.Car.Model,
                     ModelYear = uc.Car.ModelYear,
-                   
-                
-                  
-                   
+
+
+
+
                     RegistrationNumber = uc.Car.RegistrationNumber,
                     Mileage = uc.Car.Mileage,
                     ImageUrl = uc.Car.ImageUrl
@@ -37,70 +39,31 @@ namespace CarGarage.Services.Core
             };
         }
 
+
         // Метод за създаване на нов автомобил
-        public async Task CreateCarAsync(string userId, CreateCarViewModel model)
+        public Task CreateCarAsync(string userId, CreateCarViewModel model)
         {
-            var car = new Car
-            {
-                Vin = model.Vin,
-                Make = model.Make,
-                Model = model.Model,
-                ModelYear = model.ModelYear,
-                
-                
-              
-                
-                RegistrationNumber = model.RegistrationNumber,
-                Mileage = model.Mileage,
-                ImageUrl = model.ImageUrl,
-                AddedDate = DateTime.UtcNow
-            };
-
-            _context.Cars.Add(car);
-
-            _context.UserCars.Add(new UserCars
-            {
-                UserId = userId,
-                Car = car
-            });
-            
-
-            await _context.SaveChangesAsync();
+            throw new NotImplementedException();
         }
 
-        // Метод за извличане на информация по VIN от NHTSA API
-        public async Task<CreateCarViewModel?> GetCarInfoByVinAsync(string vin)
+
+        //Метод за автоматично попълване на данни за автомобил с аякс заявка към външно API по Маке>Model list for this make>ModelYear>
+        public Task<CreateCarViewModel?> GetCarInfo(string vin)
         {
-            if (string.IsNullOrEmpty(vin))
-                return null;
-
-            using var http = new HttpClient();
-            var url = $"https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/{vin}?format=json";
-            var response = await http.GetStringAsync(url);
-            var json = System.Text.Json.JsonDocument.Parse(response);
-            var results = json.RootElement.GetProperty("Results");
-
-            var model = new CreateCarViewModel();
-
-            foreach (var r in results.EnumerateArray())
-            {
-                var name = r.GetProperty("Variable").GetString();
-                var value = r.GetProperty("Value").GetString();
-
-                switch (name)
-                {
-                    case "Make": model.Make = value ?? ""; break;
-                    case "Model": model.Model = value ?? ""; break;
-                    case "Model Year": model.ModelYear = int.TryParse(value, out var y) ? y : 0; break;
-                    
-                    
-                  
-                    
-                }
-            }
-
-            model.IsPopulatedFromApi = true;
-            return model;
+            throw new NotImplementedException();
         }
+
+        public Task SaveCarAsync(CreateCarViewModel model)
+        {
+            throw new NotImplementedException();
+        }
+
+
+
+        
+
+
+
+
     }
 }

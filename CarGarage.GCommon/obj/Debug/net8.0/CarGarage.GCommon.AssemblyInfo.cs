@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarGarage.GCommon")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d6562932550cfcb1456a46a1b409551882082647")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5fc3ce0d443f65d966f27f1a61fce05131e15c67")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarGarage.GCommon")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarGarage.GCommon")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -9,9 +9,8 @@ namespace CarGarage.DataModels
         [Key]
         public int Id { get; set; }
 
-        // Основни от API (идентификация)
         [Display(Name = "VIN номер")]
-        [Required, MaxLength(17)]
+        [MaxLength(17)]
         public string Vin { get; set; } = string.Empty;
 
         [Display(Name = "Марка")]
@@ -26,19 +25,15 @@ namespace CarGarage.DataModels
         [Range(1900, 2100)]
         public int ModelYear { get; set; }
 
-      
-     
-        // Custom полета
         [Display(Name = "Регистрационен номер")]
-        [MaxLength(20)]
-        public string? RegistrationNumber { get; set; }
+        [Required(ErrorMessage = "Регистрационният номер е задължителен")]
+        [StringLength(20, MinimumLength = 1, ErrorMessage = "Регистрационният номер не може да бъде празен")]
+        public string RegistrationNumber { get; set; } = string.Empty;
 
         [Display(Name = "Пробег (км)")]
         public int? Mileage { get; set; }
 
-   
-
-        [Display(Name = "Снимка URL")]
+        [Display(Name = "URL на снимка")]
         [MaxLength(500)]
         public string? ImageUrl { get; set; }
 
