@@ -5,20 +5,21 @@ namespace CarGarage.ViewModels.MyCars
     public class CreateCarViewModel
     {
         [Display(Name = "VIN номер")]
-        [StringLength(17, MinimumLength = 17,
-      ErrorMessage = "VIN номерът трябва да бъде точно 17 символа")]
+        [MaxLength(17, ErrorMessage = "VIN номерът не може да е по-дълъг от 17 символа")]
         public string Vin { get; set; } = string.Empty;
 
         [Display(Name = "Марка")]
-        [Required, MaxLength(50)]
+        [Required(ErrorMessage = "Марката е задължителна")]
+        [MaxLength(50)]
         public string Make { get; set; } = string.Empty;
 
         [Display(Name = "Модел")]
-        [Required, MaxLength(50)]
+        [Required(ErrorMessage = "Моделът е задължителен")]
+        [MaxLength(50)]
         public string Model { get; set; } = string.Empty;
 
         [Display(Name = "Година")]
-        [Range(1900, 2100)]
+        [Range(1900, 2100, ErrorMessage = "Годината трябва да бъде между 1900 и 2100")]
         public int ModelYear { get; set; }
 
         [Display(Name = "Регистрационен номер")]

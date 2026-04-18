@@ -6,7 +6,6 @@
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-lg-9">
-
             <h1 class="display-5 fw-bold text-primary text-center mb-4">
                 Добави нов автомобил
             </h1>
@@ -19,20 +18,17 @@
                 <div asp-validation-summary="All" class="text-danger mb-4"></div>
 
                 <div class="row g-4">
-
                     <!-- 1. Регистрационен номер -->
                     <div class="col-12">
-                        <label asp-for="RegistrationNumber" class="form-label fw-bold">
-                            Регистрационен номер <span class="text-danger">*</span>
-                        </label>
-                        <input asp-for="RegistrationNumber" class="form-control form-control-lg" />
+                        <label class="form-label fw-bold">Регистрационен номер <span class="text-danger">*</span></label>
+                        <input name="RegistrationNumber" class="form-control form-control-lg" />
                         <span asp-validation-for="RegistrationNumber" class="text-danger"></span>
                     </div>
 
                     <!-- 2. Марка -->
                     <div class="col-md-4">
-                        <label asp-for="Make" class="form-label fw-bold">Марка <span class="text-danger">*</span></label>
-                        <select asp-for="Make" class="form-select form-select-lg" id="Make">
+                        <label class="form-label fw-bold">Марка <span class="text-danger">*</span></label>
+                        <select name="Make" class="form-select form-select-lg" id="Make">
                             <option value="">-- Избери марка --</option>
                         </select>
                         <span asp-validation-for="Make" class="text-danger"></span>
@@ -40,8 +36,8 @@
 
                     <!-- 3. Модел -->
                     <div class="col-md-4">
-                        <label asp-for="Model" class="form-label fw-bold">Модел <span class="text-danger">*</span></label>
-                        <select asp-for="Model" class="form-select form-select-lg" id="Model">
+                        <label class="form-label fw-bold">Модел <span class="text-danger">*</span></label>
+                        <select name="Model" class="form-select form-select-lg" id="Model">
                             <option value="">-- Избери модел --</option>
                         </select>
                         <span asp-validation-for="Model" class="text-danger"></span>
@@ -49,40 +45,33 @@
 
                     <!-- 4. Година -->
                     <div class="col-md-4">
-                        <label asp-for="ModelYear" class="form-label fw-bold">Година <span class="text-danger">*</span></label>
-                        <input asp-for="ModelYear" type="number" class="form-control form-control-lg" id="ModelYear"
+                        <label class="form-label fw-bold">Година <span class="text-danger">*</span></label>
+                        <input name="ModelYear" type="number" class="form-control form-control-lg" id="ModelYear"
                                min="1900" max="2100" placeholder="2023" />
                         <span asp-validation-for="ModelYear" class="text-danger"></span>
                     </div>
 
-                    <!-- 5. Пробег -->
+                    <!-- Останалите полета (можеш да оставиш asp-for или да сложиш name) -->
                     <div class="col-md-6">
-                        <label asp-for="Mileage" class="form-label fw-bold">Пробег (км)</label>
-                        <input asp-for="Mileage" type="number" class="form-control form-control-lg" />
+                        <label class="form-label fw-bold">Пробег (км)</label>
+                        <input name="Mileage" type="number" class="form-control form-control-lg" />
                     </div>
 
-                    <!-- 6. URL на снимка -->
                     <div class="col-md-6">
-                        <label asp-for="ImageUrl" class="form-label fw-bold">URL на снимка</label>
-                        <input asp-for="ImageUrl" class="form-control form-control-lg" placeholder="https://example.com/car.jpg" />
+                        <label class="form-label fw-bold">URL на снимка</label>
+                        <input name="ImageUrl" class="form-control form-control-lg" />
                     </div>
 
-                    <!-- 7. VIN номер (номер на рамата) - предпоследен -->
                     <div class="col-12">
-                        <label asp-for="Vin" class="form-label fw-bold">VIN номер (номер на рамата)</label>
-                        <input asp-for="Vin" class="form-control form-control-lg" id="vinInput"
-                               placeholder="WDD2050402R048000" maxlength="17" />
+                        <label class="form-label fw-bold">VIN номер</label>
+                        <input name="Vin" class="form-control form-control-lg" id="vinInput" maxlength="17" />
                         <span asp-validation-for="Vin" class="text-danger"></span>
-                        <small class="text-muted">Не е задължителен. Може да оставиш празно или да въведеш за автоматично попълване.</small>
                     </div>
 
-                    <!-- 8. Бележки - последен -->
                     <div class="col-12">
-                        <label asp-for="Notes" class="form-label fw-bold">Допълнителни бележки</label>
-                        <textarea asp-for="Notes" class="form-control" rows="4"
-                                  placeholder="Особености, история, забележки..."></textarea>
+                        <label class="form-label fw-bold">Бележки</label>
+                        <textarea name="Notes" class="form-control" rows="4"></textarea>
                     </div>
-
                 </div>
 
                 <div class="d-grid gap-2 mt-5">
@@ -113,7 +102,6 @@
                 const selectedMake = $(this).val();
                 const modelSelect = $('#Model');
                 modelSelect.empty().append('<option value="">-- Избери модел --</option>');
-
                 if (!selectedMake) return;
 
                 $.getJSON(`https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${selectedMake}?format=json`, function (data) {
@@ -123,25 +111,34 @@
                 });
             });
 
-            // === ПОПЪЛВАНЕ ОТ VIN ===
+            // VIN попълване
             $('#vinInput').on('blur', function () {
                 let vin = $(this).val().trim().toUpperCase();
                 if (vin.length !== 17) return;
-
                 $(this).val(vin);
 
                 $.getJSON(`/MyCars/GetCarByVin?vin=${vin}`, function (data) {
                     if (!data) return;
 
                     $('#vinInput').val(data.Vin || vin);
-                    $('#Make').val(data.Make || '').trigger('change');
-                    $('#Model').val(data.Model || '');
                     $('#ModelYear').val(data.ModelYear || '');
 
-                    console.log("✅ Попълнено от VIN:", data);
-                }).fail(function () {
-                    console.error("Грешка при VIN decode");
+                    if (data.Make) {
+                        $('#Make').val(data.Make).trigger('change');
+                        setTimeout(() => {
+                            if (data.Model) $('#Model').val(data.Model);
+                        }, 1200);
+                    }
                 });
+            });
+
+            // Дебъг при submit
+            $('#createCarForm').on('submit', function () {
+                console.log("=== FORM SUBMIT DEBUG ===");
+                console.log("Make:", $('#Make').val() || "ПУСТО");
+                console.log("Model:", $('#Model').val() || "ПУСТО");
+                console.log("RegistrationNumber:", $('#RegistrationNumber').val().trim() || "ПУСТО");
+                console.log("ModelYear:", $('#ModelYear').val() || "ПУСТО");
             });
         });
     </script>
