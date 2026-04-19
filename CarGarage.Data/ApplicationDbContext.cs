@@ -15,17 +15,22 @@ namespace CarGarage.Data
         public DbSet<Car> Cars { get; set; } = null!;
         public DbSet<UserCars> UserCars { get; set; } = null!;
 
+        // Нови DbSet-ове с точни имена на таблиците
+        public DbSet<Make> Makes { get; set; } = null!;
+        public DbSet<Model> Models { get; set; } = null!;
+        public DbSet<MakeModel> MakeModels { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Many-to-many конфигурация за User ↔ Car чрез UserCars
+            // Стара конфигурация (не я пипаме)
             modelBuilder.Entity<UserCars>()
                 .HasKey(uc => new { uc.UserId, uc.CarId });
 
             modelBuilder.Entity<UserCars>()
                 .HasOne(uc => uc.User)
-                .WithMany()  // IdentityUser няма да има navigation към UserCars (не е нужно)
+                .WithMany()
                 .HasForeignKey(uc => uc.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -35,9 +40,14 @@ namespace CarGarage.Data
                 .HasForeignKey(uc => uc.CarId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Уникален VIN в Cars (за да няма дублирани автомобили в базата)
             modelBuilder.Entity<Car>()
                 .HasIndex(c => c.Vin)
+                .IsUnique();
+
+          
+
+            modelBuilder.Entity<MakeModel>()
+                .HasIndex(mm => new { mm.MakeId, mm.ModelId })
                 .IsUnique();
         }
     }
