@@ -12,7 +12,7 @@ namespace CarGarage.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // сървисите дето ше си добавям
             builder.Services.AddScoped<IMyCarsService, MyCarsService>();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")

@@ -15,7 +15,7 @@ namespace CarGarage.Data
         public DbSet<Car> Cars { get; set; } = null!;
         public DbSet<UserCars> UserCars { get; set; } = null!;
 
-        // Нови DbSet-ове с точни имена на таблиците
+        // Нови DbSet-ове с таблиците за скафолддд ...
         public DbSet<Make> Makes { get; set; } = null!;
         public DbSet<Model> Models { get; set; } = null!;
         public DbSet<MakeModel> MakeModels { get; set; } = null!;
@@ -24,7 +24,7 @@ namespace CarGarage.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Стара конфигурация (не я пипаме)
+            
             modelBuilder.Entity<UserCars>()
                 .HasKey(uc => new { uc.UserId, uc.CarId });
 
