@@ -18,7 +18,7 @@ namespace CarGarage.Data
         // Нови DbSet-ове с таблиците за скафолддд ...
         public DbSet<Make> Makes { get; set; } = null!;
         public DbSet<Model> Models { get; set; } = null!;
-        public DbSet<MakeModel> MakeModels { get; set; } = null!;
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -44,11 +44,12 @@ namespace CarGarage.Data
                 .HasIndex(c => c.Vin)
                 .IsUnique();
 
-          
 
-            modelBuilder.Entity<MakeModel>()
-                .HasIndex(mm => new { mm.MakeId, mm.ModelId })
-                .IsUnique();
+            modelBuilder.Entity<Model>()
+                .HasOne(m => m.Make)
+                .WithMany(mk => mk.Models)
+                .HasForeignKey(m => m.MakeId);
+
         }
     }
 }
