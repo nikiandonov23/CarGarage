@@ -8,6 +8,7 @@
         public string Model { get; set; } = string.Empty;
         public int ModelYear { get; set; }
 
+
        
         
       
@@ -20,6 +21,7 @@
 
 
         public string? Notes { get; set; }
+        public DateTime AddedDate { get; set; }
 
     }
 }

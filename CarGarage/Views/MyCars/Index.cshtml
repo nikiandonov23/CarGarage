@@ -50,9 +50,15 @@
                                 <i class="bi bi-hash text-primary me-2"></i><strong>Рег. номер:</strong>
                                 <span class="text-uppercase text-secondary">@(car.RegistrationNumber ?? "Няма")</span>
                             </p>
-                            <p class="card-text mb-2">
+
+                            <p class="card-text mb-1">
                                 <i class="bi bi-speedometer2 text-primary me-2"></i><strong>Пробег:</strong>
                                 <span class="text-secondary">@(car.Mileage?.ToString("N0") ?? "0") км</span>
+                            </p>
+
+                            <p class="card-text mb-2">
+                                <i class="bi bi-calendar-event text-primary me-2"></i><strong>Добавена на:</strong>
+                                <span class="text-secondary">@car.AddedDate.ToString("dd.MM.yyyy") г.</span>
                             </p>
 
                             @if (!string.IsNullOrWhiteSpace(car.Notes))
@@ -65,12 +71,10 @@
                         </div>
 
                         <div class="card-footer bg-transparent border-0 pb-3 d-flex gap-2">
-                            @* Бутон "Изтрий", който води към страницата за потвърждение (GET) *@
                             <a asp-action="Delete" asp-route-id="@car.Id" class="btn btn-outline-danger flex-grow-1">
                                 <i class="bi bi-trash me-1"></i> Изтрий
                             </a>
 
-                            @* Бутон за Редакция *@
                             <a asp-action="Edit" asp-route-id="@car.Id" class="btn btn-outline-secondary flex-grow-1">
                                 <i class="bi bi-pencil me-1"></i> Редакция
                             </a>
@@ -83,5 +87,5 @@
 </div>
 
 @section Scripts {
-    @* Увери се, че Bootstrap Icons са включени в _Layout.cshtml *@
+    @* Bootstrap Icons са задължителни за визуализацията *@
 }

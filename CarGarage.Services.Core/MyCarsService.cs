@@ -22,7 +22,8 @@ namespace CarGarage.Services.Core
                     RegistrationNumber = uc.Car.RegistrationNumber,
                     Mileage = uc.Car.Mileage,
                     ImageUrl = uc.Car.ImageUrl,
-                    Notes = uc.Car.Notes 
+                    Notes = uc.Car.Notes,
+                    AddedDate = uc.Car.AddedDate
                 })
                 .ToListAsync();
 
