@@ -60,59 +60,53 @@ namespace CarGarage.Services.Core
         }
 
         // 4. Записва новата кола и я свързва с потребителя
-        public async Task AddCarToUserAsync(CreateCarViewModel model, string userId)
+        // Промени Task на Task<bool>
+        public async Task<bool> AddCarToUserAsync(CreateCarViewModel model, string userId)
         {
-            // 1. Проверяваме дали кола с този VIN вече съществува в базата
-            var existingCar = await context.Cars
-                .FirstOrDefaultAsync(c => c.Vin == model.Vin && model.Vin != "");
+            // 1. Проверка дали ТОЗИ потребител вече има такава кола (Рег. номер или VIN)
+            var alreadyHasThisCar = await context.UserCars
+                .AnyAsync(uc => uc.UserId == userId &&
+                                (uc.Car.RegistrationNumber == model.RegistrationNumber ||
+                                (uc.Car.Vin == model.Vin && model.Vin != "")));
 
-            int carId;
-
-            if (existingCar != null)
+            if (alreadyHasThisCar)
             {
-                // Ако колата съществува, използваме нейното ID
-                carId = existingCar.Id;
-            }
-            else
-            {
-                // Ако колата е нова, я записваме
-                var makeObj = await context.Makes.FirstOrDefaultAsync(m => m.Id == model.MakeId);
-                var modelObj = await context.Models.FirstOrDefaultAsync(m => m.Id == model.ModelId);
-
-                var car = new Car
-                {
-                    RegistrationNumber = model.RegistrationNumber ?? "",
-                    Vin = model.Vin ?? "",
-                    ModelYear = model.ModelYear,
-                    Mileage = model.Mileage,
-                    ImageUrl = model.ImageUrl,
-                    Notes = model.Notes,
-                    Make = makeObj?.Name ?? "Unknown",
-                    Model = modelObj?.Name ?? "Unknown",
-                    AddedDate = DateTime.UtcNow
-                };
-
-                await context.Cars.AddAsync(car);
-                await context.SaveChangesAsync();
-                carId = car.Id;
+                return false; // Вече я има, връщаме "неуспех"
             }
 
-            // 2. Проверяваме дали потребителят вече не е добавил ТАЗИ СЪЩАТА кола
-            var alreadyLinked = await context.UserCars
-                .AnyAsync(uc => uc.UserId == userId && uc.CarId == carId);
+            // 2. Вземане на имена на марка и модел
+            var makeObj = await context.Makes.FirstOrDefaultAsync(m => m.Id == model.MakeId);
+            var modelObj = await context.Models.FirstOrDefaultAsync(m => m.Id == model.ModelId);
 
-            if (!alreadyLinked)
+            // 3. Създаване на нов запис в Cars (за да е изолиран за този потребител)
+            var car = new Car
             {
-                var userCar = new UserCars
-                {
-                    UserId = userId,
-                    CarId = carId,
-                    AddedDate = DateTime.UtcNow
-                };
+                RegistrationNumber = model.RegistrationNumber ?? "",
+                Vin = model.Vin ?? "",
+                ModelYear = model.ModelYear,
+                Mileage = model.Mileage,
+                ImageUrl = model.ImageUrl,
+                Notes = model.Notes,
+                Make = makeObj?.Name ?? "Unknown",
+                Model = modelObj?.Name ?? "Unknown",
+                AddedDate = DateTime.UtcNow
+            };
 
-                await context.UserCars.AddAsync(userCar);
-                await context.SaveChangesAsync();
-            }
+            await context.Cars.AddAsync(car);
+            await context.SaveChangesAsync();
+
+            // 4. Свързване
+            var userCar = new UserCars
+            {
+                UserId = userId,
+                CarId = car.Id,
+                AddedDate = DateTime.UtcNow
+            };
+
+            await context.UserCars.AddAsync(userCar);
+            await context.SaveChangesAsync();
+
+            return true; // Всичко е точно
         }
     }
 }

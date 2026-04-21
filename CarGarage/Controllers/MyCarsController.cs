@@ -38,54 +38,26 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
     {
         var userId = GetUserId();
 
-        // Първо пишем в конзолата, че сме влезли в метода
-        Console.WriteLine("--- POST Create Car Method Started ---");
-        Console.WriteLine($"User ID: {userId}");
-        Console.WriteLine($"MakeId: {model.MakeId}, ModelId: {model.ModelId}");
-        Console.WriteLine($"RegNumber: {model.RegistrationNumber}");
-
         if (!ModelState.IsValid)
         {
-            // Ако има грешки, те ще излязат в CMD промпта тук:
-            Console.WriteLine("!!! ModelState is INVALID !!!");
-
-            foreach (var entry in ModelState)
-            {
-                if (entry.Value.Errors.Count > 0)
-                {
-                    foreach (var error in entry.Value.Errors)
-                    {
-                        // Това ще се изпише в черния прозорец на CMD
-                        Console.WriteLine($"Property: {entry.Key} -> Error: {error.ErrorMessage}");
-                    }
-                }
-            }
-
-            // Презареждаме марките, за да не гръмне дропдауна при връщане на изгледа
             var freshModel = await carsService.GetCreateCarViewModelAsync();
             model.MakeList = freshModel.MakeList;
-
             return View(model);
         }
 
-        try
-        {
-            Console.WriteLine("Validation passed. Calling service to save car...");
+        // ТУК вече няма да свети в червено:
+        bool success = await carsService.AddCarToUserAsync(model, userId);
 
-            await carsService.AddCarToUserAsync(model, userId);
-
-            Console.WriteLine("Car successfully saved to database!");
-            return RedirectToAction(nameof(Index));
-        }
-        catch (Exception ex)
+        if (!success)
         {
-            // Ако има проблем с базата данни, ще го видиш тук
-            Console.WriteLine("!!! DATABASE ERROR !!!");
-            Console.WriteLine(ex.Message);
+            // Показваме грешката в горната част на формата или до полето
+            ModelState.AddModelError("RegistrationNumber", "Вече сте добавили кола с този регистрационен номер или VIN.");
 
             var freshModel = await carsService.GetCreateCarViewModelAsync();
             model.MakeList = freshModel.MakeList;
             return View(model);
         }
+
+        return RedirectToAction(nameof(Index));
     }
 }

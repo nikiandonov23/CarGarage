@@ -10,5 +10,5 @@ public interface IMyCarsService
 
     Task<IEnumerable<CreateCarModelDropDownViewModel>> GetModelsByMakeAsync(int makeId);
 
-    Task AddCarToUserAsync(CreateCarViewModel model, string userId);
+    Task<bool> AddCarToUserAsync(CreateCarViewModel model, string userId);
 }
