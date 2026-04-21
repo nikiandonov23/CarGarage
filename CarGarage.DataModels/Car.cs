@@ -50,5 +50,8 @@ namespace CarGarage.DataModels
 
         //релаципята ми към частите.1 кола много части
         public virtual ICollection<Part> CarParts { get; set; } = new List<Part>();
+
+        //връзка към фактурите. 1 кола много фактуррри
+        public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
     }
 }
