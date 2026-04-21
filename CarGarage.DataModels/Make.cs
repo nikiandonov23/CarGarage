@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-
-namespace CarGarage.DataModels;
+﻿namespace CarGarage.DataModels;
 
 public partial class Make
 {

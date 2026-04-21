@@ -108,7 +108,7 @@ namespace CarGarage.Services.Core
             return true;
         }
 
-        
+
         public async Task<CarViewModel?> GetCarByIdAsync(int carId, string userId)
         {
             return await context.UserCars
@@ -135,7 +135,7 @@ namespace CarGarage.Services.Core
             // маха връзката
             context.UserCars.Remove(userCar);
 
-        
+
             var car = await context.Cars.FindAsync(carId);
             if (car != null)
             {
@@ -147,7 +147,7 @@ namespace CarGarage.Services.Core
         }
 
 
-        
+
         public async Task<CreateCarViewModel?> GetCarForEditAsync(int carId, string userId)
         {
             var car = await context.UserCars
@@ -159,21 +159,21 @@ namespace CarGarage.Services.Core
 
             var viewModel = new CreateCarViewModel
             {
-                
+
                 Vin = car.Vin,
                 RegistrationNumber = car.RegistrationNumber,
                 ModelYear = car.ModelYear,
                 Mileage = car.Mileage,
                 ImageUrl = car.ImageUrl,
                 Notes = car.Notes,
-                
+
                 MakeList = await context.Makes
                     .Select(m => new CreateCarMakeDropDownViewModel { Id = m.Id, Name = m.Name })
                     .OrderBy(m => m.Name)
                     .ToListAsync()
             };
 
-            
+
             var make = await context.Makes.FirstOrDefaultAsync(m => m.Name == car.Make);
             if (make != null)
             {
@@ -189,7 +189,7 @@ namespace CarGarage.Services.Core
 
         public async Task<bool> UpdateCarAsync(CreateCarViewModel model, string userId)
         {
-           
+
             var car = await context.UserCars
                 .Where(uc => uc.UserId == userId && uc.CarId == model.Id)
                 .Select(uc => uc.Car)
@@ -197,11 +197,11 @@ namespace CarGarage.Services.Core
 
             if (car == null) return false;
 
-            
+
             var makeObj = await context.Makes.FindAsync(model.MakeId);
             var modelObj = await context.Models.FindAsync(model.ModelId);
 
-            
+
             car.RegistrationNumber = model.RegistrationNumber;
             car.Vin = model.Vin ?? "";
             car.ModelYear = model.ModelYear;
@@ -211,7 +211,7 @@ namespace CarGarage.Services.Core
             car.Make = makeObj?.Name ?? "Unknown";
             car.Model = modelObj?.Name ?? "Unknown";
 
-          
+
             await context.SaveChangesAsync();
 
             return true;

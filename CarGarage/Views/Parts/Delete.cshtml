@@ -1,0 +1,53 @@
+﻿@model CarGarage.ViewModels.Parts.PartDeleteViewModel
+
+@{
+    ViewData["Title"] = "Изтриване на част";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-danger text-white text-center p-4">
+                    <i class="bi bi-exclamation-octagon fs-1 mb-2"></i>
+                    <h3 class="fw-bold mb-0">Потвърдете изтриването</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning text-center mb-4">
+                        Сигурни ли сте, че искате да премахнете този запис от историята? Тази операция е необратима.
+                    </div>
+
+                    <div class="list-group list-group-flush mb-4">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-bold text-uppercase">Категория</span>
+                            <span class="fw-bold">@Model.CategoryName</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-bold text-uppercase">Описание</span>
+                            <span>@Model.Description</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-bold text-uppercase">Обща сума</span>
+                            <span class="text-danger fw-bold fs-5">@Model.TotalPrice.ToString("N2") лв.</span>
+                        </div>
+                    </div>
+
+                    <form asp-action="Delete" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="CarId" />
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg shadow-sm">
+                                <i class="bi bi-trash3 me-1"></i> Да, изтрий записа
+                            </button>
+                            <a asp-action="Index" asp-route-carId="@Model.CarId" class="btn btn-outline-secondary">
+                                Отказ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

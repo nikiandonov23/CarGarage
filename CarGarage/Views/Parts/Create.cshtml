@@ -1,0 +1,65 @@
+﻿@model CarGarage.ViewModels.Parts.PartFormModel
+
+@{
+    ViewData["Title"] = "Добави част/ремонт";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white p-3">
+                    <h4 class="mb-0 fw-bold"><i class="bi bi-gear-fill me-2"></i>Добави нова част/ремонт</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" asp-for="CarId" />
+
+                        <div class="mb-3">
+                            <label asp-for="CategoryId" class="form-label fw-bold small text-muted text-uppercase">Категория</label>
+                            <select asp-for="CategoryId" class="form-select border-2"
+                                    asp-items="@(new SelectList(Model.Categories, "Id", "Name"))">
+                                <option value="" selected disabled>-- Избери категория --</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold small text-muted text-uppercase">Описание</label>
+                            <input asp-for="Description" class="form-control border-2" placeholder="напр. Маслен филтър, Смяна на масло..." />
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Quantity" class="form-label fw-bold small text-muted text-uppercase">Количество</label>
+                                <input asp-for="Quantity" class="form-control border-2" type="number" min="1" />
+                                <span asp-validation-for="Quantity" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="UnitPrice" class="form-label fw-bold small text-muted text-uppercase">Ед. цена (лв.)</label>
+                                <input asp-for="UnitPrice" class="form-control border-2" type="number" step="0.01" />
+                                <span asp-validation-for="UnitPrice" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                                <i class="bi bi-check-circle me-1"></i>Запази записа
+                            </button>
+                            <a asp-action="Index" asp-route-carId="@Model.CarId" class="btn btn-light border">
+                                Отказ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

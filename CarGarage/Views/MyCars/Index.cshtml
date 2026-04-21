@@ -5,11 +5,23 @@
 }
 
 <div class="container my-5">
+    @* Секция със заглавие и бутони за навигация *@
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="display-5 fw-bold text-primary">Моят гараж</h1>
-        <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">
-            <i class="bi bi-plus-circle me-2"></i>Добави автомобил
-        </a>
+        <div>
+            @* Промяна на основното заглавие *@
+            <h1 class="display-5 fw-bold text-primary mb-0">Моите автомобили</h1>
+        </div>
+
+        <div class="d-flex gap-2">
+            @* КОРИГИРАН БУТОН: Сочи към MyGarage/Index *@
+            <a asp-controller="MyGarage" asp-action="Index" class="btn btn-outline-secondary btn-lg shadow-sm">
+                <i class="bi bi-house-door me-2"></i>Моят Гараж
+            </a>
+
+            <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">
+                <i class="bi bi-plus-circle me-2"></i>Добави автомобил
+            </a>
+        </div>
     </div>
 
     @if (Model == null || !Model.Cars.Any())
@@ -70,14 +82,22 @@
                             }
                         </div>
 
-                        <div class="card-footer bg-transparent border-0 pb-3 d-flex gap-2">
-                            <a asp-action="Delete" asp-route-id="@car.Id" class="btn btn-outline-danger flex-grow-1">
-                                <i class="bi bi-trash me-1"></i> Изтрий
-                            </a>
+                        <div class="card-footer bg-transparent border-0 pb-3">
+                            <div class="mb-2">
+                                <a asp-controller="Parts" asp-action="Index" asp-route-carId="@car.Id" class="btn btn-primary w-100 shadow-sm">
+                                    <i class="bi bi-wrench-adjustable me-2"></i>Ремонти и Обслужване
+                                </a>
+                            </div>
 
-                            <a asp-action="Edit" asp-route-id="@car.Id" class="btn btn-outline-secondary flex-grow-1">
-                                <i class="bi bi-pencil me-1"></i> Редакция
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a asp-action="Edit" asp-route-id="@car.Id" class="btn btn-outline-secondary flex-grow-1">
+                                    <i class="bi bi-pencil me-1"></i> Редакция
+                                </a>
+
+                                <a asp-action="Delete" asp-route-id="@car.Id" class="btn btn-outline-danger flex-grow-1">
+                                    <i class="bi bi-trash me-1"></i> Изтрий
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -87,5 +107,5 @@
 </div>
 
 @section Scripts {
-    @* Bootstrap Icons са задължителни за визуализацията *@
+    @* Стандартни скриптове *@
 }
