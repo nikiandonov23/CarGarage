@@ -5,12 +5,14 @@ namespace CarGarage.ViewModels.Cars
 {
     public class CreateCarViewModel
     {
+
+        public int Id { get; set; }
+
         [Display(Name = "VIN номер")]
         [MaxLength(17, ErrorMessage = "VIN номерът не може да е по-дълъг от 17 символа")]
         public string Vin { get; set; } = string.Empty;
 
-        // Тези стрингове ще се попълват в сървиса чрез имената от БД, 
-        // затова не трябва да са Required тук.
+        
         [Display(Name = "Марка (Текст)")]
         [MaxLength(50)]
         public string? Make { get; set; }
@@ -39,7 +41,7 @@ namespace CarGarage.ViewModels.Cars
         [MaxLength(500)]
         public string? Notes { get; set; }
 
-        // Тези полета приемат избраната стойност от дропдауните в HTML-а
+        
         [Required(ErrorMessage = "Моля, изберете марка")]
         public int MakeId { get; set; }
 

@@ -60,4 +60,86 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
 
         return RedirectToAction(nameof(Index));
     }
+
+
+
+
+
+    
+    [HttpGet]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var userId = GetUserId();
+        var car = await carsService.GetCarByIdAsync(id, userId);
+
+        if (car == null)
+        {
+            return NotFound();
+        }
+
+        return View(car);
+    }
+
+   
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var userId = GetUserId();
+        var success = await carsService.DeleteCarForUserAsync(id, userId);
+
+        if (!success)
+        {
+            return BadRequest();
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var userId = GetUserId();
+        var model = await carsService.GetCarForEditAsync(id, userId);
+
+        if (model == null) return NotFound();
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, CreateCarViewModel model)
+    {
+        var userId = GetUserId();
+
+        
+        model.Id = id;
+
+        
+        if (!ModelState.IsValid)
+        {
+            
+            var fresh = await carsService.GetCreateCarViewModelAsync();
+            model.MakeList = fresh.MakeList;
+            
+            model.ModelList = await carsService.GetModelsByMakeAsync(model.MakeId);
+            return View(model);
+        }
+
+        
+        bool success = await carsService.UpdateCarAsync(model, userId);
+
+        if (!success)
+        {
+            
+            return NotFound();
+        }
+
+        
+        return RedirectToAction(nameof(Index));
+    }
+
+    //=================================================================================================
 }

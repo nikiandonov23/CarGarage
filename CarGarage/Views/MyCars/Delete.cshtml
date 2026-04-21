@@ -1,0 +1,41 @@
+﻿@model CarGarage.ViewModels.Cars.CarViewModel
+
+@{
+    ViewData["Title"] = "Изтриване на автомобил";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Потвърждение за изтриване</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Сигурни ли сте, че искате да премахнете този автомобил от вашия гараж?</p>
+
+                    <div class="alert alert-light border">
+                        <ul class="list-unstyled mb-0">
+                            <li><strong>Марка и модел:</strong> @Model.Make @Model.Model</li>
+                            <li><strong>Година:</strong> @Model.ModelYear</li>
+                            <li><strong>Рег. номер:</strong> @(Model.RegistrationNumber ?? "Няма")</li>
+                        </ul>
+                    </div>
+
+                    <p class="text-muted small">Внимание: Това действие ще изтрие и цялата история на ремонтите и разходите, свързани с този автомобил.</p>
+                </div>
+                <div class="card-footer d-flex justify-content-between bg-white">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Отказ
+                    </a>
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i> Потвърждавам изтриването
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

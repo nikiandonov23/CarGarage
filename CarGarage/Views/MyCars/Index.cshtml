@@ -1,21 +1,23 @@
 ﻿@model CarGarage.ViewModels.Cars.IndexMyCarsViewModel
 
 @{
-    ViewData["Title"] = "Моите автомобили – CarGarage";
+    ViewData["Title"] = "Моите автомобили";
 }
 
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-primary">Моите автомобили</h2>
-        <a asp-action="Create" class="btn btn-success">
-            <i class="bi bi-plus-circle me-2"></i> Добави нов автомобил
+        <h1 class="display-5 fw-bold text-primary">Моят гараж</h1>
+        <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">
+            <i class="bi bi-plus-circle me-2"></i>Добави автомобил
         </a>
     </div>
 
-    @if (!Model.Cars.Any())
+    @if (Model == null || !Model.Cars.Any())
     {
-        <div class="alert alert-info">
-            Все още нямаш добавени автомобили. <a asp-action="Create">Добави първия автомобил</a>.
+        <div class="text-center py-5 shadow-sm bg-light rounded border">
+            <i class="bi bi-car-front display-1 text-muted"></i>
+            <h3 class="mt-3">Все още нямате добавени автомобили.</h3>
+            <p class="text-muted">Започнете, като добавите първата си кола.</p>
         </div>
     }
     else
@@ -24,34 +26,54 @@
             @foreach (var car in Model.Cars)
             {
                 <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm border-primary">
-                        <img src="@car.ImageUrl" class="card-img-top" style="height:200px; object-fit:cover;"
-                             alt="@($"{car.Make} {car.Model}")" />
-
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title fw-bold">@car.Make @car.Model (@car.ModelYear)</h5>
-                            <p class="card-text text-muted mb-2">
-                                Trim: @car.Trim ?? "-" <br />
-                                Двигател: @car.FuelTypePrimary ?? "-" | @car.EngineHP hp <br />
-                                Задвижване: @car.DriveType ?? "-"
-                            </p>
-
-                            <p class="card-text text-muted mb-2">
-                                Рег. номер: @car.RegistrationNumber ?? "-" <br />
-                                Пробег: @(car.Mileage?.ToString() ?? "-") км
-                            </p>
-
-                            <div class="mt-auto d-flex justify-content-between">
-                                <a asp-action="Edit" asp-route-id="@car.Id" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-pencil-fill"></i> Редактирай
-                                </a>
-                                <form asp-action="Delete" asp-route-id="@car.Id" method="post" class="d-inline"
-                                      onsubmit="return confirm('Сигурни ли сте, че искате да изтриете този автомобил?');">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                                        <i class="bi bi-trash-fill"></i> Изтрий
-                                    </button>
-                                </form>
+                    <div class="card h-100 shadow-sm border-0">
+                        @if (!string.IsNullOrEmpty(car.ImageUrl))
+                        {
+                            <img src="@car.ImageUrl" class="card-img-top" alt="Car Image" style="height: 200px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-light text-center py-5 border-bottom" style="height: 200px;">
+                                <i class="bi bi-car-front-fill display-2 text-secondary"></i>
                             </div>
+                        }
+
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">@car.Make @car.Model</h5>
+                                <span class="badge bg-primary rounded-pill">@car.ModelYear</span>
+                            </div>
+
+                            <hr class="text-muted opacity-25">
+
+                            <p class="card-text mb-1">
+                                <i class="bi bi-hash text-primary me-2"></i><strong>Рег. номер:</strong>
+                                <span class="text-uppercase text-secondary">@(car.RegistrationNumber ?? "Няма")</span>
+                            </p>
+                            <p class="card-text mb-2">
+                                <i class="bi bi-speedometer2 text-primary me-2"></i><strong>Пробег:</strong>
+                                <span class="text-secondary">@(car.Mileage?.ToString("N0") ?? "0") км</span>
+                            </p>
+
+                            @if (!string.IsNullOrWhiteSpace(car.Notes))
+                            {
+                                <div class="mt-3 p-3 bg-light rounded-3 border-start border-primary border-4">
+                                    <small class="fw-bold text-muted d-block text-uppercase small mb-1">Бележки:</small>
+                                    <p class="card-text small text-dark mb-0">@car.Notes</p>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="card-footer bg-transparent border-0 pb-3 d-flex gap-2">
+                            @* Бутон "Изтрий", който води към страницата за потвърждение (GET) *@
+                            <a asp-action="Delete" asp-route-id="@car.Id" class="btn btn-outline-danger flex-grow-1">
+                                <i class="bi bi-trash me-1"></i> Изтрий
+                            </a>
+
+                            @* Бутон за Редакция *@
+                            <a asp-action="Edit" asp-route-id="@car.Id" class="btn btn-outline-secondary flex-grow-1">
+                                <i class="bi bi-pencil me-1"></i> Редакция
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -59,3 +81,7 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    @* Увери се, че Bootstrap Icons са включени в _Layout.cshtml *@
+}
