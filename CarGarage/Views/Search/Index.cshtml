@@ -10,7 +10,7 @@
         <span class="badge bg-secondary px-3 py-2">Намерени резултати: @Model.Results.Count()</span>
     </div>
 
-    @* СЕКЦИЯ С ФИЛТРИ *@
+    
     <div class="card shadow-sm border-0 mb-5 bg-white rounded-4">
         <div class="card-body p-4">
             <form method="get" asp-controller="Search" asp-action="Index" class="row g-3">
@@ -48,7 +48,7 @@
         </div>
     </div>
 
-    @* РЕЗУЛТАТИ *@
+    
     @if (!Model.Results.Any())
     {
         <div class="text-center py-5 bg-light rounded-4 border border-dashed">
@@ -109,16 +109,16 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Динамично зареждане на моделите при избор на марка
+            
             $('#makeSelect').on('change', function () {
                 var makeId = $(this).val();
                 var $modelSelect = $('#modelSelect');
 
-                // Изчистваме старите опции
+                
                 $modelSelect.empty().append('<option value="">-- Всички модели --</option>');
 
                 if (makeId) {
-                    // Викаме AJAX към MyCarsController (както е в твоя проект)
+                    
                     $.getJSON('/MyCars/GetModelsByMake?makeId=' + makeId, function (data) {
                         $.each(data, function (index, item) {
                             $modelSelect.append($('<option>', {

@@ -3,19 +3,19 @@
 }
 
 <div class="container my-5">
-    @* Секция със заглавие и бутони за навигация - ИДЕНТИЧНА С МОИТЕ АВТОМОБИЛИ *@
+    
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="display-5 fw-bold text-primary mb-0">Добре дошъл в CarGarage</h1>
         </div>
 
         <div class="d-flex gap-2">
-            @* Бутон Начало *@
+           
             <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-lg shadow-sm">
                 <i class="bi bi-house-door me-2"></i>Начало
             </a>
 
-            @* Бутон към Моите автомобили (само ако е логнат) *@
+            
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <a asp-controller="MyCars" asp-action="Index" class="btn btn-primary btn-lg shadow-sm">
@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    @* Hero текст под заглавието *@
+    
     <div class="row mb-5">
         <div class="col-12">
             <p class="lead text-muted">
@@ -165,10 +165,10 @@
 </div>
 
 <style>
-    /* Плавна анимация за картите */
+    
     .transition-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-radius: 15px; /* Заоблени ъгли като в другата страница */
+        border-radius: 15px; 
     }
 
         .transition-card:hover {
