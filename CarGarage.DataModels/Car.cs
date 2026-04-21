@@ -45,5 +45,10 @@ namespace CarGarage.DataModels
 
         // Many-to-many navigation
         public ICollection<UserCars> UserCars { get; set; } = new List<UserCars>();
+
+
+
+        //релаципята ми към частите.1 кола много части
+        public virtual ICollection<Part> CarParts { get; set; } = new List<Part>();
     }
 }
