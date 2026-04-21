@@ -22,5 +22,7 @@ namespace CarGarage.Services.Core.Contracts
         Task<IEnumerable<PartCategoryViewModel>> GetCategoriesAsync();
 
         Task DeleteAsync(int id);
+
+        
     }
 }

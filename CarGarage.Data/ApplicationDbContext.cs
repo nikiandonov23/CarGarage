@@ -12,6 +12,7 @@ namespace CarGarage.Data
         {
         }
 
+        public DbSet<Invoice> Invoices { get; set; }
         public DbSet<Car> Cars { get; set; } = null!;
         public DbSet<UserCars> UserCars { get; set; } = null!;
         public DbSet<Make> Makes { get; set; } = null!;

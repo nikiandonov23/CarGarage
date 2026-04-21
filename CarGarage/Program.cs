@@ -13,10 +13,12 @@ namespace CarGarage.Web
             var builder = WebApplication.CreateBuilder(args);
 
             // сървисите дето ше си добавям
-           
+            builder.Services.AddScoped<IMyCarsService, MyCarsService>();
             builder.Services.AddScoped<ISearchService, SearchService>();
             builder.Services.AddScoped<IPartsService, PartsService>();
-            builder.Services.AddScoped<IMyCarsService, MyCarsService>();
+            builder.Services.AddScoped<IInvoicesService, InvoicesService>();
+
+
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");

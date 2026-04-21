@@ -1,0 +1,115 @@
+﻿@using CarGarage.ViewModels.Invoices
+@model InvoiceFormModel
+
+@{
+    ViewData["Title"] = "Генериране на фактура";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-header bg-primary text-white py-3">
+            <h3 class="mb-0"><i class="bi bi-receipt me-2"></i>Нова фактура</h3>
+            <p class="mb-0 opacity-75">Автомобил: @Model.CarInfo</p>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="CarId" />
+                <input type="hidden" asp-for="CarInfo" />
+
+                @* 1. ИЗБОР НА ЧАСТИ *@
+                <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">1. Избор на вложени части</h5>
+                <div class="table-responsive mb-4">
+                    <table class="table table-hover border">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="50">#</th>
+                                <th>Описание</th>
+                                <th class="text-end">Цена за част</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.AvailableParts != null && Model.AvailableParts.Any())
+                            {
+                                for (int i = 0; i < Model.AvailableParts.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="form-check">
+                                                <input type="checkbox" asp-for="@Model.AvailableParts[i].IsSelected" class="form-check-input" />
+                                                <input type="hidden" asp-for="@Model.AvailableParts[i].PartId" />
+                                                @* Скрити полета, за да не се загубят данните при изпращане на формата *@
+                                                <input type="hidden" asp-for="@Model.AvailableParts[i].Description" />
+                                                <input type="hidden" asp-for="@Model.AvailableParts[i].TotalPrice" />
+                                            </div>
+                                        </td>
+                                        <td>@Model.AvailableParts[i].Description</td>
+                                        <td class="text-end fw-bold">@Model.AvailableParts[i].TotalPrice.ToString("N2") лв.</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-muted">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Няма налични части за фактуриране към този автомобил.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* 2. ТРУД И ДАНЪЦИ *@
+                <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">2. Сервизен труд и ДДС</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="LaborHours" class="form-label fw-bold">Работни часове</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                            <input asp-for="LaborHours" class="form-control" type="number" step="0.1" />
+                        </div>
+                        <span asp-validation-for="LaborHours" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="LaborPricePerHour" class="form-label fw-bold">Цена на час (лв.)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">лв.</span>
+                            <input asp-for="LaborPricePerHour" class="form-control" type="number" step="0.01" />
+                        </div>
+                        <span asp-validation-for="LaborPricePerHour" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="TaxPercentage" class="form-label fw-bold">ДДС (%)</label>
+                        <div class="input-group">
+                            <input asp-for="TaxPercentage" class="form-control" type="number" />
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <span asp-validation-for="TaxPercentage" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                @* 3. БЕЛЕЖКИ *@
+                <div class="mt-4">
+                    <label asp-for="Notes" class="form-label fw-bold">Допълнителни бележки</label>
+                    <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Добавете информация за гаранция или извършена дейност..."></textarea>
+                    <span asp-validation-for="Notes" class="text-danger small"></span>
+                </div>
+
+                <div class="mt-5 d-flex gap-3">
+                    <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm">
+                        <i class="bi bi-check-circle me-2"></i>Запиши фактурата
+                    </button>
+                    <a asp-controller="MyCars" asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+                        Отказ
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

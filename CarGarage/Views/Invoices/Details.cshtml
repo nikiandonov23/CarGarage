@@ -1,0 +1,79 @@
+﻿@model CarGarage.ViewModels.Invoices.InvoiceFullViewModel
+
+<div class="container my-5 shadow p-5 bg-white" id="invoice-print">
+    <div class="row mb-4">
+        <div class="col-6">
+            <h1 class="text-primary fw-bold">ФАКТУРА</h1>
+            <p class="text-muted">Номер: <strong>@Model.InvoiceNumber</strong></p>
+            <p class="text-muted">Дата: @Model.IssuedDate.ToString("dd.MM.yyyy")</p>
+        </div>
+        <div class="col-6 text-end">
+            <h3>Сервиз "CarGarage"</h3>
+            <p>гр. Русе, ул. Автомобилна 10<br>Телефон: +359 888 123 456</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row my-4">
+        <div class="col-12">
+            <h5><strong>Данни за автомобила:</strong></h5>
+            <p class="mb-1">Марка/Модел: @Model.CarInfo</p>
+            <p class="mb-1">VIN: @Model.Vin</p>
+            <p>Рег. номер: @Model.RegNumber</p>
+        </div>
+    </div>
+
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Описание на услугата / частта</th>
+                <th class="text-end" width="150">Цена</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var part in Model.Parts)
+            {
+                <tr>
+                    <td>@part.Name</td>
+                    <td class="text-end">@part.Price.ToString("F2") лв.</td>
+                </tr>
+            }
+            <tr>
+                <td>Труд (Сервизна дейност)</td>
+                <td class="text-end">@Model.LaborTotal.ToString("F2") лв.</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th class="text-end">Данъчна основа:</th>
+                <td class="text-end">@((Model.GrandTotal - Model.TaxAmount).ToString("F2")) лв.</td>
+            </tr>
+            <tr>
+                <th class="text-end">ДДС (@Model.TaxAmount.ToString("F2") лв.):</th>
+                <td class="text-end">@Model.TaxAmount.ToString("F2") лв.</td>
+            </tr>
+            <tr class="table-primary">
+                <th class="text-end h4">ОБЩО ЗА ПЛАЩАНЕ:</th>
+                <td class="text-end h4 fw-bold">@Model.GrandTotal.ToString("F2") лв.</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    @if (!string.IsNullOrEmpty(Model.Notes))
+    {
+        <div class="mt-4 p-3 border-start border-4 border-primary bg-light">
+            <strong>Забележки:</strong>
+            <p class="mb-0">@Model.Notes</p>
+        </div>
+    }
+</div>
+
+<div class="container text-center mb-5 d-print-none">
+    <button onclick="window.print()" class="btn btn-success btn-lg me-2">
+        <i class="bi bi-printer"></i> Принтирай
+    </button>
+    <a asp-controller="MyCars" asp-action="Index" class="btn btn-outline-secondary btn-lg">
+        Назад към колите
+    </a>
+</div>

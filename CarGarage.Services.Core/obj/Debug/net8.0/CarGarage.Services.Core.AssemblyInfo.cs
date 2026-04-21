@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarGarage.Services.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a6f43a55fad17617ae621dbe7e671f5a1a4dbf34")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+059decce95f475c09a78648db72eab9c6ae7a99a")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarGarage.Services.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarGarage.Services.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
