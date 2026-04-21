@@ -8,14 +8,14 @@ namespace CarGarage.Web.Controllers
     {
 
 
-        // 0. Списък с всички фактури (Архив)
+        
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            // Взимаме ID-то на логнатия потребител чрез метода от BaseController
+            
             var userId = GetUserId();
 
-            // Викаме новия метод от сървиса
+            
             var model = await invoicesService.GetAllUserInvoicesAsync(userId);
 
             return View(model);
@@ -28,7 +28,7 @@ namespace CarGarage.Web.Controllers
 
 
 
-        // 1. Форма за създаване на фактура
+        
         [HttpGet]
         public async Task<IActionResult> Create(int carId)
         {
@@ -43,7 +43,7 @@ namespace CarGarage.Web.Controllers
             }
         }
 
-        // 2. Обработка на формата
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(InvoiceFormModel model)
@@ -55,12 +55,13 @@ namespace CarGarage.Web.Controllers
 
             var invoiceId = await invoicesService.CreateInvoiceAsync(model);
 
-            // Пренасочваме към изгледа за принтиране/преглед
+            
             return RedirectToAction(nameof(Details), new { id = invoiceId });
         }
 
-        // 3. Преглед на готовата фактура (Details)
+        
         [HttpGet]
+        
         public async Task<IActionResult> Details(int id)
         {
             try
@@ -70,7 +71,8 @@ namespace CarGarage.Web.Controllers
             }
             catch (Exception)
             {
-                return NotFound();
+                
+                return RedirectToAction(nameof(Index));
             }
         }
     }

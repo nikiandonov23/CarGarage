@@ -16,7 +16,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarGarage.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+059decce95f475c09a78648db72eab9c6ae7a99a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+55ea308d6ee1330e89bdc6b476b5419ffd4f3576")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarGarage.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarGarage.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

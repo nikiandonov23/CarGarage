@@ -81,14 +81,14 @@
                         </div>
 
                         <div class="card-footer bg-transparent border-0 pb-3">
-                            @* БУТОН ЗА РЕМОНТИ *@
+                           
                             <div class="mb-2">
                                 <a asp-controller="Parts" asp-action="Index" asp-route-carId="@car.Id" class="btn btn-primary w-100 shadow-sm">
                                     <i class="bi bi-wrench-adjustable me-2"></i>Ремонти и Обслужване
                                 </a>
                             </div>
 
-                            @* НОВ БУТОН: ГЕНЕРИРАНЕ НА ФАКТУРА *@
+                            
                             <div class="mb-2">
                                 <a asp-controller="Invoices" asp-action="Create" asp-route-carId="@car.Id" class="btn btn-warning w-100 shadow-sm fw-bold">
                                     <i class="bi bi-receipt me-2"></i>Генерирай Фактура
@@ -124,5 +124,5 @@
 </style>
 
 @section Scripts {
-    @* Стандартни скриптове *@
+    
 }

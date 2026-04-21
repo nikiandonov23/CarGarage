@@ -87,6 +87,7 @@ namespace CarGarage.Services.Core
 
             return new InvoiceFullViewModel
             {
+                Id = invoiceId,
                 InvoiceNumber = inv.InvoiceNumber,
                 IssuedDate = inv.IssuedDate,
                 CarInfo = $"{inv.Car.Make} {inv.Car.Model}",
@@ -110,14 +111,15 @@ namespace CarGarage.Services.Core
         public async Task<IEnumerable<InvoiceFullViewModel>> GetAllUserInvoicesAsync(string userId)
         {
             return await context.Invoices
-                .Where(i => i.Car.UserCars.Any(uc => uc.UserId == userId)) // Търсим фактури на колите, свързани с този потребител
+                .Where(i => i.Car.UserCars.Any(uc => uc.UserId == userId)) 
                 .Select(i => new InvoiceFullViewModel
                 {
+                    Id = i.Id,
                     InvoiceNumber = i.InvoiceNumber,
                     IssuedDate = i.IssuedDate,
                     CarInfo = i.Car.Make + " " + i.Car.Model + " (" + i.Car.RegistrationNumber + ")",
                     GrandTotal = i.Parts.Sum(p => p.UnitPrice * p.Quantity) + (decimal)i.LaborHours * i.LaborPricePerHour
-                    // Тук добави и логиката за ДДС, ако искаш да е съвсем точно
+                   
                 })
                 .OrderByDescending(i => i.IssuedDate)
                 .ToListAsync();
