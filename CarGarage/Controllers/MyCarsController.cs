@@ -1,141 +1,91 @@
-﻿using CarGarage.Services.Core.Contracts;
-using CarGarage.ViewModels.MyCars;
+﻿using CarGarage.ViewModels.Cars;
 using CarGarage.Web.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [Authorize]
-public class MyCarsController : BaseController
+public class MyCarsController(IMyCarsService carsService) : BaseController
 {
-    private readonly IMyCarsService _carsService;
-
-    public MyCarsController(IMyCarsService carsService)
-    {
-        _carsService = carsService;
-    }
-
-
-
-
-
-    // Index - списък с всички автомобили на потребителя
+    // 1. Списък с коли
     public async Task<IActionResult> Index()
     {
         var userId = GetUserId();
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
-
-        var model = await _carsService.GetAllUserCarsAsync(userId);
+        var model = await carsService.GetAllUserCarsAsync(userId);
         return View(model);
     }
 
-
-
-
-
-
-
-    // GET: Create - показва празната форма
+    // 2. GET: Показва формата с напълнени марки
     [HttpGet]
-    public IActionResult Create()   // премахнах async + Task.FromResult
+    public async Task<IActionResult> Create()
     {
-        return View(new CreateCarViewModel());
+        // Вече викаме сървиса, а не просто нов празен обект
+        var model = await carsService.GetCreateCarViewModelAsync();
+        return View(model);
     }
 
+    // 3. AJAX: Връща моделите
+    [HttpGet]
+    public async Task<IActionResult> GetModelsByMake(int makeId)
+    {
+        var models = await carsService.GetModelsByMakeAsync(makeId);
+        return Json(models);
+    }
 
-
-
-
-
-
-    // POST: Create - запазва автомобила
+    // 4. POST: Записва данните
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateCarViewModel model)
     {
-        Console.WriteLine("══════════════════════════════════════");
-        Console.WriteLine("CREATE POST - ЗАПОЧВА");
+        var userId = GetUserId();
 
-        Console.WriteLine($"Make = '{model.Make}'");
-        Console.WriteLine($"Model = '{model.Model}'");
-        Console.WriteLine($"RegistrationNumber = '{model.RegistrationNumber}'");
-        Console.WriteLine($"ModelYear = {model.ModelYear}");
-        Console.WriteLine($"Vin = '{model.Vin}'");
-        Console.WriteLine($"ModelState.IsValid = {ModelState.IsValid}");
+        // Първо пишем в конзолата, че сме влезли в метода
+        Console.WriteLine("--- POST Create Car Method Started ---");
+        Console.WriteLine($"User ID: {userId}");
+        Console.WriteLine($"MakeId: {model.MakeId}, ModelId: {model.ModelId}");
+        Console.WriteLine($"RegNumber: {model.RegistrationNumber}");
 
         if (!ModelState.IsValid)
         {
-            Console.WriteLine("--- ModelState ГРЕШКИ ---");
+            // Ако има грешки, те ще излязат в CMD промпта тук:
+            Console.WriteLine("!!! ModelState is INVALID !!!");
+
             foreach (var entry in ModelState)
             {
                 if (entry.Value.Errors.Count > 0)
                 {
-                    var errors = string.Join(" | ", entry.Value.Errors.Select(e => e.ErrorMessage));
-                    Console.WriteLine($"  {entry.Key}: {errors}");
+                    foreach (var error in entry.Value.Errors)
+                    {
+                        // Това ще се изпише в черния прозорец на CMD
+                        Console.WriteLine($"Property: {entry.Key} -> Error: {error.ErrorMessage}");
+                    }
                 }
             }
 
-            // По-добър check за AntiForgery проблем
-            if (ModelState.ContainsKey("__RequestVerificationToken"))
-            {
-                Console.WriteLine("ВНИМАНИЕ: Проблем с AntiForgeryToken!");
-            }
-            else if (ModelState.ErrorCount > 0)
-            {
-                Console.WriteLine($"Общо грешки в ModelState: {ModelState.ErrorCount}");
-            }
+            // Презареждаме марките, за да не гръмне дропдауна при връщане на изгледа
+            var freshModel = await carsService.GetCreateCarViewModelAsync();
+            model.MakeList = freshModel.MakeList;
 
             return View(model);
-        }
-
-        var userId = GetUserId();
-        if (string.IsNullOrEmpty(userId))
-        {
-            Console.WriteLine("ГРЕШКА: UserId е null!");
-            return Unauthorized();
         }
 
         try
         {
-            await _carsService.CreateCarAsync(userId, model);
-            Console.WriteLine("УСПЕШНО създаден автомобил!");
-            TempData["SuccessMessage"] = "Автомобилът беше добавен успешно!";
+            Console.WriteLine("Validation passed. Calling service to save car...");
+
+            await carsService.AddCarToUserAsync(model, userId);
+
+            Console.WriteLine("Car successfully saved to database!");
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"ГРЕШКА: {ex.Message}");
-            ModelState.AddModelError("", ex.Message);
+            // Ако има проблем с базата данни, ще го видиш тук
+            Console.WriteLine("!!! DATABASE ERROR !!!");
+            Console.WriteLine(ex.Message);
+
+            var freshModel = await carsService.GetCreateCarViewModelAsync();
+            model.MakeList = freshModel.MakeList;
             return View(model);
         }
     }
-
-
-
-
-
-
-
-
-    // GET: API endpoint за VIN decode (използва се от JavaScript)
-    [HttpGet]
-    public async Task<IActionResult> GetCarByVin(string vin)
-    {
-        if (string.IsNullOrWhiteSpace(vin))
-            return BadRequest("VIN номерът е задължителен");
-
-        var carInfo = await _carsService.GetCarInfoByVinAsync(vin);
-
-        if (carInfo == null)
-            return NotFound(new { message = "Не успяхме да декодираме VIN номера." });
-
-        return Json(carInfo);
-    }
-
-
-
-
-
-
-
 }

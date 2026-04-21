@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarGarage.ViewModels.MyCars
+namespace CarGarage.ViewModels.Cars
 {
     public class IndexMyCarsViewModel
     {

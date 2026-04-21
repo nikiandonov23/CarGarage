@@ -1,6 +1,5 @@
 ﻿using CarGarage.Data;
 using CarGarage.Services.Core;
-using CarGarage.Services.Core.Contracts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

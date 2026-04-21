@@ -1,144 +1,90 @@
-﻿@model CarGarage.ViewModels.MyCars.CreateCarViewModel
-@{
-    ViewData["Title"] = "Добави нов автомобил – CarGarage";
-}
+﻿@model CarGarage.ViewModels.Cars.CreateCarViewModel
 
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-9">
-            <h1 class="display-5 fw-bold text-primary text-center mb-4">
-                Добави нов автомобил
-            </h1>
-            <p class="text-center text-muted mb-5">
-                Попълни данните за автомобила
-            </p>
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
 
-            <form asp-action="Create" method="post" id="createCarForm">
-                @Html.AntiForgeryToken()
-                <div asp-validation-summary="All" class="text-danger mb-4"></div>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <label asp-for="RegistrationNumber" class="form-label fw-bold"></label>
+            <input asp-for="RegistrationNumber" class="form-control" />
+            <span asp-validation-for="RegistrationNumber" class="text-danger"></span>
+        </div>
 
-                <div class="row g-4">
-                    <!-- 1. Регистрационен номер -->
-                    <div class="col-12">
-                        <label class="form-label fw-bold">Регистрационен номер <span class="text-danger">*</span></label>
-                        <input name="RegistrationNumber" class="form-control form-control-lg" />
-                        <span asp-validation-for="RegistrationNumber" class="text-danger"></span>
-                    </div>
+        <div class="col-md-6">
+            <label asp-for="Vin" class="form-label fw-bold"></label>
+            <input asp-for="Vin" class="form-control" />
+            <span asp-validation-for="Vin" class="text-danger"></span>
+        </div>
 
-                    <!-- 2. Марка -->
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Марка <span class="text-danger">*</span></label>
-                        <select name="Make" class="form-select form-select-lg" id="Make">
-                            <option value="">-- Избери марка --</option>
-                        </select>
-                        <span asp-validation-for="Make" class="text-danger"></span>
-                    </div>
+        <div class="col-md-4">
+            <label asp-for="MakeId" class="form-label fw-bold">Марка *</label>
+            <select asp-for="MakeId" id="MakeSelect" class="form-select"
+                    asp-items="@(new SelectList(Model.MakeList, "Id", "Name"))">
+                <option value="">-- Избери марка --</option>
+            </select>
+            <span asp-validation-for="MakeId" class="text-danger"></span>
+        </div>
 
-                    <!-- 3. Модел -->
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Модел <span class="text-danger">*</span></label>
-                        <select name="Model" class="form-select form-select-lg" id="Model">
-                            <option value="">-- Избери модел --</option>
-                        </select>
-                        <span asp-validation-for="Model" class="text-danger"></span>
-                    </div>
+        <div class="col-md-4">
+            <label asp-for="ModelId" class="form-label fw-bold">Модел *</label>
+            <select asp-for="ModelId" id="ModelSelect" class="form-select">
+                <option value="">-- Избери модел --</option>
+            </select>
+            <span asp-validation-for="ModelId" class="text-danger"></span>
+        </div>
 
-                    <!-- 4. Година -->
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Година <span class="text-danger">*</span></label>
-                        <input name="ModelYear" type="number" class="form-control form-control-lg" id="ModelYear"
-                               min="1900" max="2100" placeholder="2023" />
-                        <span asp-validation-for="ModelYear" class="text-danger"></span>
-                    </div>
+        <div class="col-md-4">
+            <label asp-for="ModelYear" class="form-label fw-bold"></label>
+            <input asp-for="ModelYear" class="form-control" />
+            <span asp-validation-for="ModelYear" class="text-danger"></span>
+        </div>
 
-                    <!-- Останалите полета (можеш да оставиш asp-for или да сложиш name) -->
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Пробег (км)</label>
-                        <input name="Mileage" type="number" class="form-control form-control-lg" />
-                    </div>
+        <div class="col-md-6">
+            <label asp-for="Mileage" class="form-label fw-bold"></label>
+            <input asp-for="Mileage" class="form-control" />
+        </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">URL на снимка</label>
-                        <input name="ImageUrl" class="form-control form-control-lg" />
-                    </div>
+        <div class="col-md-6">
+            <label asp-for="ImageUrl" class="form-label fw-bold"></label>
+            <input asp-for="ImageUrl" class="form-control" />
+        </div>
 
-                    <div class="col-12">
-                        <label class="form-label fw-bold">VIN номер</label>
-                        <input name="Vin" class="form-control form-control-lg" id="vinInput" maxlength="17" />
-                        <span asp-validation-for="Vin" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-12">
-                        <label class="form-label fw-bold">Бележки</label>
-                        <textarea name="Notes" class="form-control" rows="4"></textarea>
-                    </div>
-                </div>
-
-                <div class="d-grid gap-2 mt-5">
-                    <button type="submit" class="btn btn-success btn-lg py-3">
-                        <i class="bi bi-plus-circle me-2"></i>
-                        Добави автомобил
-                    </button>
-                </div>
-            </form>
+        <div class="col-12">
+            <label asp-for="Notes" class="form-label fw-bold"></label>
+            <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
         </div>
     </div>
-</div>
+
+    <button type="submit" class="btn btn-success mt-4">Запази колата</button>
+</form>
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function () {
+        $(function () {
+            $('#MakeSelect').change(function () {
+                var selectedMakeId = $(this).val();
+                var $modelSelect = $('#ModelSelect');
 
-            // Зареждане на марки
-            $.getJSON('https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json', function (data) {
-                $.each(data.Results, function (_, make) {
-                    $('#Make').append(`<option value="${make.Make_Name}">${make.Make_Name}</option>`);
-                });
-            });
+                // 1. Чистим дропдауна за модели
+                $modelSelect.empty().append('<option value="">-- Избери модел --</option>');
 
-            // Зареждане на модели
-            $('#Make').on('change', function () {
-                const selectedMake = $(this).val();
-                const modelSelect = $('#Model');
-                modelSelect.empty().append('<option value="">-- Избери модел --</option>');
-                if (!selectedMake) return;
+                if (selectedMakeId) {
+                    // 2. AJAX заявка
+                    $.getJSON('@Url.Action("GetModelsByMake", "MyCars")', { makeId: selectedMakeId }, function (data) {
+                        console.log("Данни от сървъра:", data); // Виж това в F12 Console
 
-                $.getJSON(`https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${selectedMake}?format=json`, function (data) {
-                    $.each(data.Results, function (_, m) {
-                        modelSelect.append(`<option value="${m.Model_Name}">${m.Model_Name}</option>`);
+                        $.each(data, function (i, item) {
+                            // ВАЖНО: Тук ползваме малки букви 'id' и 'name'
+                            $modelSelect.append($('<option>', {
+                                value: item.id,
+                                text: item.name
+                            }));
+                        });
+                    }).fail(function() {
+                        alert("Грешка при зареждане на моделите!");
                     });
-                });
-            });
-
-            // VIN попълване
-            $('#vinInput').on('blur', function () {
-                let vin = $(this).val().trim().toUpperCase();
-                if (vin.length !== 17) return;
-                $(this).val(vin);
-
-                $.getJSON(`/MyCars/GetCarByVin?vin=${vin}`, function (data) {
-                    if (!data) return;
-
-                    $('#vinInput').val(data.Vin || vin);
-                    $('#ModelYear').val(data.ModelYear || '');
-
-                    if (data.Make) {
-                        $('#Make').val(data.Make).trigger('change');
-                        setTimeout(() => {
-                            if (data.Model) $('#Model').val(data.Model);
-                        }, 1200);
-                    }
-                });
-            });
-
-            // Дебъг при submit
-            $('#createCarForm').on('submit', function () {
-                console.log("=== FORM SUBMIT DEBUG ===");
-                console.log("Make:", $('#Make').val() || "ПУСТО");
-                console.log("Model:", $('#Model').val() || "ПУСТО");
-                console.log("RegistrationNumber:", $('#RegistrationNumber').val().trim() || "ПУСТО");
-                console.log("ModelYear:", $('#ModelYear').val() || "ПУСТО");
+                }
             });
         });
     </script>

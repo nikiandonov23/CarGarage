@@ -1,4 +1,4 @@
-﻿namespace CarGarage.ViewModels.MyCars
+﻿namespace CarGarage.ViewModels.Cars
 {
     public class CarViewModel
     {

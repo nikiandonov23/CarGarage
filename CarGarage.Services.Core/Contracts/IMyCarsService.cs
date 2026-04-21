@@ -1,17 +1,14 @@
-﻿using CarGarage.ViewModels.MyCars;
-using System.Threading.Tasks;
+﻿using CarGarage.ViewModels.Cars;
+using CarGarage.ViewModels.Cars.Dropdowns;
 
-namespace CarGarage.Services.Core.Contracts
+public interface IMyCarsService
 {
-    public interface IMyCarsService
-    {
-        Task<IndexMyCarsViewModel> GetAllUserCarsAsync(string userId);
+    Task<IndexMyCarsViewModel> GetAllUserCarsAsync(string userId);
 
-        Task CreateCarAsync(string userId, CreateCarViewModel model);
+    // Добави този метод тук:
+    Task<CreateCarViewModel> GetCreateCarViewModelAsync();
 
-        // По-добро име за метода
-        Task<CreateCarViewModel?> GetCarInfoByVinAsync(string vin);
+    Task<IEnumerable<CreateCarModelDropDownViewModel>> GetModelsByMakeAsync(int makeId);
 
-        Task SaveCarAsync(CreateCarViewModel model);
-    }
+    Task AddCarToUserAsync(CreateCarViewModel model, string userId);
 }

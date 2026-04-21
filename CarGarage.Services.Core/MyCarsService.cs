@@ -1,24 +1,18 @@
 ﻿using CarGarage.Data;
 using CarGarage.DataModels;
-using CarGarage.Services.Core.Contracts;
-using CarGarage.ViewModels.MyCars;
+using CarGarage.ViewModels.Cars;
+using CarGarage.ViewModels.Cars.Dropdowns;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarGarage.Services.Core
 {
-    public class MyCarsService : IMyCarsService
+    // Използване на Primary Constructor синтаксис
+    public class MyCarsService(ApplicationDbContext context) : IMyCarsService
     {
-        private readonly ApplicationDbContext _context;
-
-        public MyCarsService(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
         // 1. Връща всички коли на потребителя
         public async Task<IndexMyCarsViewModel> GetAllUserCarsAsync(string userId)
         {
-            var cars = await _context.UserCars
+            var cars = await context.UserCars
                 .Where(uc => uc.UserId == userId)
                 .Select(uc => new CarViewModel
                 {
@@ -35,139 +29,90 @@ namespace CarGarage.Services.Core
             return new IndexMyCarsViewModel { Cars = cars };
         }
 
-
-
-
-        // 2. Основна логика за създаване на автомобил
-        public async Task CreateCarAsync(string userId, CreateCarViewModel model)
+        // 2. Взема данните за първоначално зареждане на формата (марките)
+        public async Task<CreateCarViewModel> GetCreateCarViewModelAsync()
         {
-            if (string.IsNullOrWhiteSpace(model.RegistrationNumber))
-                throw new ArgumentException("Регистрационният номер е задължителен!");
-
-            // Нормализираме VIN (ако е въведен)
-            string? normalizedVin = string.IsNullOrWhiteSpace(model.Vin)
-                ? null
-                : model.Vin.Trim().ToUpper();
-
-            // Проверяваме дали колата вече съществува по VIN
-            Car? existingCar = null;
-            if (!string.IsNullOrEmpty(normalizedVin))
+            return new CreateCarViewModel
             {
-                existingCar = await _context.Cars
-                    .FirstOrDefaultAsync(c => c.Vin == normalizedVin);
-            }
+                MakeList = await context.Makes
+                    .Select(m => new CreateCarMakeDropDownViewModel
+                    {
+                        Id = m.Id,
+                        Name = m.Name
+                    })
+                    .OrderBy(m => m.Name)
+                    .ToListAsync()
+            };
+        }
+
+        // 3. Взема моделите за конкретна марка (за AJAX)
+        public async Task<IEnumerable<CreateCarModelDropDownViewModel>> GetModelsByMakeAsync(int makeId)
+        {
+            return await context.Models
+                .Where(m => m.MakeId == makeId)
+                .Select(m => new CreateCarModelDropDownViewModel
+                {
+                    Id = m.Id,
+                    Name = m.Name
+                })
+                .OrderBy(m => m.Name)
+                .ToListAsync();
+        }
+
+        // 4. Записва новата кола и я свързва с потребителя
+        public async Task AddCarToUserAsync(CreateCarViewModel model, string userId)
+        {
+            // 1. Проверяваме дали кола с този VIN вече съществува в базата
+            var existingCar = await context.Cars
+                .FirstOrDefaultAsync(c => c.Vin == model.Vin && model.Vin != "");
+
+            int carId;
 
             if (existingCar != null)
             {
-                // Обновяваме съществуващата кола
-                existingCar.Make = model.Make;
-                existingCar.Model = model.Model;
-                existingCar.ModelYear = model.ModelYear;
-                existingCar.RegistrationNumber = model.RegistrationNumber;
-                existingCar.Mileage = model.Mileage;
-                existingCar.ImageUrl = model.ImageUrl;
-                existingCar.Notes = model.Notes ?? "";
-
-                await SaveCarAsync(model); // използваме Save метода
+                // Ако колата съществува, използваме нейното ID
+                carId = existingCar.Id;
             }
             else
             {
-                // Създаваме нова кола
-                var newCar = new Car
+                // Ако колата е нова, я записваме
+                var makeObj = await context.Makes.FirstOrDefaultAsync(m => m.Id == model.MakeId);
+                var modelObj = await context.Models.FirstOrDefaultAsync(m => m.Id == model.ModelId);
+
+                var car = new Car
                 {
-                    Vin = normalizedVin ?? "",
-                    Make = model.Make,
-                    Model = model.Model,
+                    RegistrationNumber = model.RegistrationNumber ?? "",
+                    Vin = model.Vin ?? "",
                     ModelYear = model.ModelYear,
-                    RegistrationNumber = model.RegistrationNumber,
                     Mileage = model.Mileage,
                     ImageUrl = model.ImageUrl,
-                    Notes = model.Notes ?? "",
+                    Notes = model.Notes,
+                    Make = makeObj?.Name ?? "Unknown",
+                    Model = modelObj?.Name ?? "Unknown",
                     AddedDate = DateTime.UtcNow
                 };
 
-                _context.Cars.Add(newCar);
-                await _context.SaveChangesAsync();
+                await context.Cars.AddAsync(car);
+                await context.SaveChangesAsync();
+                carId = car.Id;
+            }
 
-                // Записваме връзката с потребителя
+            // 2. Проверяваме дали потребителят вече не е добавил ТАЗИ СЪЩАТА кола
+            var alreadyLinked = await context.UserCars
+                .AnyAsync(uc => uc.UserId == userId && uc.CarId == carId);
+
+            if (!alreadyLinked)
+            {
                 var userCar = new UserCars
                 {
                     UserId = userId,
-                    CarId = newCar.Id,
+                    CarId = carId,
                     AddedDate = DateTime.UtcNow
                 };
 
-                _context.UserCars.Add(userCar);
-                await _context.SaveChangesAsync();
+                await context.UserCars.AddAsync(userCar);
+                await context.SaveChangesAsync();
             }
-        }
-
-
-
-
-
-
-        // 3. Метод за автоматично попълване от VIN (NHTSA API)
-        public async Task<CreateCarViewModel?> GetCarInfoByVinAsync(string vin)
-        {
-            if (string.IsNullOrWhiteSpace(vin))
-                return null;
-
-            vin = vin.Trim().ToUpper();
-
-            var url = $"https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/{vin}?format=json";
-
-            try
-            {
-                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-
-                var response = await http.GetStringAsync(url);
-                var json = System.Text.Json.JsonDocument.Parse(response);
-
-                if (!json.RootElement.TryGetProperty("Results", out var results) || results.GetArrayLength() == 0)
-                    return null;
-
-                var result = results[0];
-
-                var model = new CreateCarViewModel
-                {
-                    Vin = vin,
-                    IsPopulatedFromApi = true
-                };
-
-                if (result.TryGetProperty("Make", out var makeProp))
-                    model.Make = makeProp.GetString() ?? "";
-
-                if (result.TryGetProperty("Model", out var modelProp))
-                    model.Model = modelProp.GetString() ?? "";
-                else if (result.TryGetProperty("Series", out var seriesProp))
-                    model.Model = seriesProp.GetString() ?? "";
-
-                if (result.TryGetProperty("ModelYear", out var yearProp))
-                {
-                    string? yearStr = yearProp.GetString();
-                    if (int.TryParse(yearStr, out int year) && year >= 1900)
-                        model.ModelYear = year;
-                }
-
-                return model;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-
-
-
-
-        // 4. Отделен метод само за запис в базата (Save)
-        public async Task SaveCarAsync(CreateCarViewModel model)
-        {
-            // Този метод може да се използва и за обновяване, ако искаш по-късно
-            // Засега го оставяме празен или с минимална логика
-            await Task.CompletedTask; // placeholder
         }
     }
 }
