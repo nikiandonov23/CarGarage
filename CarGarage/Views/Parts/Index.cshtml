@@ -52,11 +52,21 @@
                                 <td class="fw-bold text-dark">@item.TotalPrice.ToString("N2") лв.</td>
                                 <td class="text-center">
                                     <div class="btn-group shadow-sm">
-                                        <a asp-action="PrintInvoice" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-outline-info">
-                                            <i class="bi bi-file-earmark-pdf"></i> Фактура
-                                        </a>
+                                        @if (item.InvoiceId != null)
+                                        {
+                                            
+                                            <a asp-controller="Invoices" asp-action="Details" asp-route-id="@item.InvoiceId" target="_blank" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-file-earmark-pdf"></i> Фактура
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                           
+                                            <button class="btn btn-sm btn-outline-secondary disabled" title="Частта още не е добавена във фактура">
+                                                <i class="bi bi-hourglass"></i> Нефактурирано
+                                            </button>
+                                        }
 
-                                        
                                         <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-trash"></i> Изтрий
                                         </a>

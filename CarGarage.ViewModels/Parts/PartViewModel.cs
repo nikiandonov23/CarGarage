@@ -16,5 +16,7 @@ namespace CarGarage.ViewModels.Parts
         public decimal TotalPrice { get; set; }
         public DateTime DateAdded { get; set; }
         public string CarInfo { get; set; } = null!; // Марка plus Модел за фактурата
+
+        public int? InvoiceId { get; set; }
     }
 }

@@ -28,7 +28,8 @@ namespace CarGarage.Services.Core
                     Quantity = p.Quantity,
                     UnitPrice = p.UnitPrice,
                     TotalPrice = p.Quantity * p.UnitPrice,
-                    DateAdded = DateTime.Now
+                    DateAdded = DateTime.Now,
+                    InvoiceId = p.InvoiceId
                 })
                 .ToListAsync();
         }
@@ -46,7 +47,8 @@ namespace CarGarage.Services.Core
                     UnitPrice = p.UnitPrice,
                     TotalPrice = p.Quantity * p.UnitPrice,
                     CarInfo = p.Car.Make + " " + p.Car.Model + " [" + p.Car.RegistrationNumber + "]",
-                    DateAdded = DateTime.Now
+                    DateAdded = DateTime.Now,
+                    InvoiceId = p.InvoiceId
                 })
                 .FirstOrDefaultAsync();
         }
