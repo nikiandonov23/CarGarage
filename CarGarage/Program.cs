@@ -1,5 +1,6 @@
 ﻿using CarGarage.Data;
 using CarGarage.Services.Core;
+using CarGarage.Services.Core.Contracts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ namespace CarGarage.Web
 
             // сървисите дето ше си добавям
             builder.Services.AddScoped<IMyCarsService, MyCarsService>();
+            builder.Services.AddScoped<ISearchService, SearchService>();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");

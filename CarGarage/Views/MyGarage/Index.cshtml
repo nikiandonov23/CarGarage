@@ -71,7 +71,8 @@
                     <p class="card-text text-muted">
                         Намери кола по марка, модел, година, регистрационен номер или VIN.
                     </p>
-                    <a asp-controller="Cars" asp-action="Search" class="btn btn-outline-primary stretched-link">
+                    @* ПРОМЯНАТА Е ТУК: controller="Search", action="Index" *@
+                    <a asp-controller="Search" asp-action="Index" class="btn btn-outline-primary stretched-link">
                         Започни търсене
                     </a>
                 </div>

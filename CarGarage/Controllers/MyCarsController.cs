@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 [Authorize]
 public class MyCarsController(IMyCarsService carsService) : BaseController
 {
-    // 1. Списък с коли
+    
     public async Task<IActionResult> Index()
     {
         var userId = GetUserId();
@@ -14,16 +14,16 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
         return View(model);
     }
 
-    // 2. GET: Показва формата с напълнени марки
+    
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        // Вече викаме сървиса, а не просто нов празен обект
+        //   Вече викаме сървиса, а не просто нов празен обект
         var model = await carsService.GetCreateCarViewModelAsync();
         return View(model);
     }
 
-    // 3. AJAX: Връща моделите
+    //връща моделите тпия айакс
     [HttpGet]
     public async Task<IActionResult> GetModelsByMake(int makeId)
     {
@@ -31,7 +31,7 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
         return Json(models);
     }
 
-    // 4. POST: Записва данните
+    //сефваа
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateCarViewModel model)
@@ -45,12 +45,12 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
             return View(model);
         }
 
-        // ТУК вече няма да свети в червено:
+        
         bool success = await carsService.AddCarToUserAsync(model, userId);
 
         if (!success)
         {
-            // Показваме грешката в горната част на формата или до полето
+            
             ModelState.AddModelError("RegistrationNumber", "Вече сте добавили кола с този регистрационен номер или VIN.");
 
             var freshModel = await carsService.GetCreateCarViewModelAsync();
@@ -140,6 +140,6 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
         
         return RedirectToAction(nameof(Index));
     }
-
-    //=================================================================================================
+    
+    //до тука бачка =================================================================================================
 }

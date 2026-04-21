@@ -108,7 +108,7 @@ namespace CarGarage.Services.Core
             return true;
         }
 
-        // връща кола и пита сигурен ли съм ??? 
+        
         public async Task<CarViewModel?> GetCarByIdAsync(int carId, string userId)
         {
             return await context.UserCars
@@ -132,10 +132,10 @@ namespace CarGarage.Services.Core
 
             if (userCar == null) return false;
 
-            // Премахваме връзката
+            // маха връзката
             context.UserCars.Remove(userCar);
 
-            // Изтриваме и самия автомобил от таблица Cars
+        
             var car = await context.Cars.FindAsync(carId);
             if (car != null)
             {
