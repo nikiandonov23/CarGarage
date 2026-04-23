@@ -30,10 +30,11 @@ namespace CarGarage.Web.Controllers
 
         
         [HttpGet]
-        public async Task<IActionResult> Create(int carId)
+        public async Task<IActionResult> Create(int carId, string? returnUrl)
         {
             try
             {
+                ViewBag.ReturnUrl = returnUrl; //записвам от де ида беее
                 var model = await invoicesService.GetNewInvoiceModelAsync(carId);
                 return View(model);
             }
@@ -43,20 +44,20 @@ namespace CarGarage.Web.Controllers
             }
         }
 
-       
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(InvoiceFormModel model)
+        public async Task<IActionResult> Create(InvoiceFormModel model, string? returnUrl)
         {
             if (!ModelState.IsValid)
             {
+                ViewBag.ReturnUrl = returnUrl;
                 return View(model);
             }
 
             var invoiceId = await invoicesService.CreateInvoiceAsync(model);
-
-            
             return RedirectToAction(nameof(Details), new { id = invoiceId });
+
         }
 
         

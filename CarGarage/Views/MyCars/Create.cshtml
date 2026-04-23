@@ -66,16 +66,16 @@
                 var selectedMakeId = $(this).val();
                 var $modelSelect = $('#ModelSelect');
 
-                // 1. Чистим дропдауна за модели
+                
                 $modelSelect.empty().append('<option value="">-- Избери модел --</option>');
 
                 if (selectedMakeId) {
-                    // 2. AJAX заявка
+                    
                     $.getJSON('@Url.Action("GetModelsByMake", "MyCars")', { makeId: selectedMakeId }, function (data) {
-                        console.log("Данни от сървъра:", data); // Виж това в F12 Console
+                        console.log("Данни от сървъра:", data); 
 
                         $.each(data, function (i, item) {
-                            // ВАЖНО: Тук ползваме малки букви 'id' и 'name'
+                            
                             $modelSelect.append($('<option>', {
                                 value: item.id,
                                 text: item.name

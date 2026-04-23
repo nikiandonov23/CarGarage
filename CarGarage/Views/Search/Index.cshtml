@@ -5,6 +5,7 @@
 }
 
 <div class="container my-5">
+    
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="display-5 fw-bold text-primary"><i class="bi bi-search me-2"></i>Търсачка</h1>
         <span class="badge bg-secondary px-3 py-2">Намерени резултати: @Model.Results.Count()</span>
@@ -48,7 +49,7 @@
         </div>
     </div>
 
-    
+   
     @if (!Model.Results.Any())
     {
         <div class="text-center py-5 bg-light rounded-4 border border-dashed">
@@ -64,6 +65,7 @@
             {
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden card-hover">
+                        
                         @if (!string.IsNullOrEmpty(car.ImageUrl))
                         {
                             <img src="@car.ImageUrl" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Car Image">
@@ -71,7 +73,7 @@
                         else
                         {
                             <div class="bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 200px;">
-                                <i class="bi bi-image text-muted display-4"></i>
+                                <i class="bi bi-car-front-fill text-muted display-4"></i>
                             </div>
                         }
 
@@ -81,23 +83,65 @@
                                 <span class="badge bg-primary rounded-pill">@car.ModelYear</span>
                             </div>
 
+                            
                             <div class="small text-muted mb-3">
-                                <div class="mb-1"><i class="bi bi-hash me-2"></i><strong>Рег. номер:</strong> @(car.RegistrationNumber ?? "N/A")</div>
-                                <div><i class="bi bi-speedometer2 me-2"></i><strong>Пробег:</strong> @(car.Mileage?.ToString("N0") ?? "0") км</div>
+                                <div class="mb-1">
+                                    <i class="bi bi-hash text-primary me-2"></i><strong>Рег. номер:</strong>
+                                    <span class="text-uppercase text-secondary">@(car.RegistrationNumber ?? "Няма")</span>
+                                </div>
+                                <div class="mb-1">
+                                    <i class="bi bi-speedometer2 text-primary me-2"></i><strong>Пробег:</strong>
+                                    <span class="text-secondary">@(car.Mileage?.ToString("N0") ?? "0") км</span>
+                                </div>
+                                <div>
+                                    <i class="bi bi-calendar-event text-primary me-2"></i><strong>Добавена на:</strong>
+                                    <span class="text-secondary">@car.AddedDate.ToString("dd.MM.yyyy") г.</span>
+                                </div>
                             </div>
 
+                            
                             @if (!string.IsNullOrWhiteSpace(car.Notes))
                             {
-                                <p class="card-text small text-truncate bg-light p-2 rounded">
-                                    <i class="bi bi-info-circle me-1"></i> @car.Notes
-                                </p>
+                                <div class="mt-3 p-2 bg-light rounded-3 border-start border-primary border-4">
+                                    <small class="fw-bold text-muted d-block text-uppercase small mb-1">Бележки:</small>
+                                    <p class="card-text small text-dark mb-0">@car.Notes</p>
+                                </div>
                             }
                         </div>
 
                         <div class="card-footer bg-white border-0 pb-3">
-                            <a asp-controller="MyCars" asp-action="Edit" asp-route-id="@car.Id" class="btn btn-outline-primary w-100 rounded-pill btn-sm fw-bold">
-                                Преглед и детайли
-                            </a>
+                           
+                            <div class="mb-2">
+                                <a asp-controller="Parts" asp-action="Index" asp-route-carId="@car.Id"
+                                   asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
+                                   class="btn btn-primary w-100 shadow-sm">
+                                    <i class="bi bi-wrench-adjustable me-2"></i>Ремонти и Обслужване
+                                </a>
+                            </div>
+
+                          
+                            <div class="mb-2">
+                                <a asp-controller="Invoices" asp-action="Create" asp-route-carId="@car.Id"
+                                   asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
+                                   class="btn btn-warning w-100 shadow-sm fw-bold">
+                                    <i class="bi bi-receipt me-2"></i>Генерирай Фактура
+                                </a>
+                            </div>
+
+                            
+                            <div class="d-flex gap-2">
+                                <a asp-controller="MyCars" asp-action="Edit" asp-route-id="@car.Id"
+                                   asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
+                                   class="btn btn-outline-secondary flex-grow-1 btn-sm">
+                                    <i class="bi bi-pencil me-1"></i> Редакция
+                                </a>
+
+                                <a asp-controller="MyCars" asp-action="Delete" asp-route-id="@car.Id"
+                                   asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
+                                   class="btn btn-outline-danger flex-grow-1 btn-sm">
+                                    <i class="bi bi-trash me-1"></i> Изтрий
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -114,11 +158,9 @@
                 var makeId = $(this).val();
                 var $modelSelect = $('#modelSelect');
 
-                
                 $modelSelect.empty().append('<option value="">-- Всички модели --</option>');
 
                 if (makeId) {
-                    
                     $.getJSON('/MyCars/GetModelsByMake?makeId=' + makeId, function (data) {
                         $.each(data, function (index, item) {
                             $modelSelect.append($('<option>', {
@@ -137,7 +179,7 @@
     .card-hover {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    //asfd
+
         .card-hover:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
@@ -145,5 +187,12 @@
 
     .border-dashed {
         border-style: dashed !important;
+        border-width: 2px;
+    }
+
+    
+    .btn-sm {
+        font-size: 0.85rem;
+        padding: 0.4rem;
     }
 </style>

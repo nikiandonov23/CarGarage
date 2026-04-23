@@ -101,7 +101,9 @@
                     <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm">
                         <i class="bi bi-check-circle me-2"></i>Запиши фактурата
                     </button>
-                    <a asp-controller="MyCars" asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+
+                    
+                    <a href="@(ViewBag.ReturnUrl ?? Url.Action("Index", "MyCars"))" class="btn btn-outline-secondary btn-lg px-4">
                         Отказ
                     </a>
                 </div>

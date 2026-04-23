@@ -6,15 +6,16 @@ namespace CarGarage.Web.Controllers
 {
     public class PartsController(IPartsService partsService) : Controller
     {
-        
-        public async Task<IActionResult> Index(int carId)
+
+        public async Task<IActionResult> Index(int carId, string? returnUrl)
         {
             ViewBag.CarId = carId;
+            ViewBag.ReturnUrl = returnUrl; // записвам от де идаааа !!!
             var parts = await partsService.GetPartsByCarIdAsync(carId);
             return View(parts);
         }
 
-        
+
         [HttpGet]
         public async Task<IActionResult> Create(int carId)
         {

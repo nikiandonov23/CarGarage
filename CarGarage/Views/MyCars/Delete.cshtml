@@ -13,7 +13,6 @@
                 </div>
                 <div class="card-body">
                     <p class="lead">Сигурни ли сте, че искате да премахнете този автомобил от вашия гараж?</p>
-
                     <div class="alert alert-light border">
                         <ul class="list-unstyled mb-0">
                             <li><strong>Марка и модел:</strong> @Model.Make @Model.Model</li>
@@ -21,14 +20,13 @@
                             <li><strong>Рег. номер:</strong> @(Model.RegistrationNumber ?? "Няма")</li>
                         </ul>
                     </div>
-
-                    <p class="text-muted small">Внимание: Това действие ще изтрие и цялата история на ремонтите и разходите, свързани с този автомобил.</p>
+                    <p class="text-muted small">Внимание: Това действие ще изтрие и цялата история на ремонтите и разходите.</p>
                 </div>
                 <div class="card-footer d-flex justify-content-between bg-white">
-                    <a asp-action="Index" class="btn btn-outline-secondary">
+                    <a href="@(ViewData["ReturnUrl"] ?? Url.Action("Index", "MyCars"))" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-1"></i> Отказ
                     </a>
-                    <form asp-action="Delete" method="post">
+                    <form asp-action="Delete" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
                         <input type="hidden" asp-for="Id" />
                         <button type="submit" class="btn btn-danger">
                             <i class="bi bi-trash me-1"></i> Потвърждавам изтриването
