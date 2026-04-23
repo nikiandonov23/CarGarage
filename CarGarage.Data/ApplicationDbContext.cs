@@ -18,9 +18,17 @@ namespace CarGarage.Data
         public DbSet<Make> Makes { get; set; } = null!;
         public DbSet<Model> Models { get; set; } = null!;
 
-        // 1. ЗАДЪЛЖИТЕЛНО ДОБАВИ ТЕЗИ ДВА РЕДА
+        
+
+
         public DbSet<Part> Parts { get; set; } = null!;
         public DbSet<PartCategory> PartCategories { get; set; } = null!;
+
+
+        //Клиенти и фирми
+        public DbSet<Customer> Customers { get; set; } = null!;
+        public DbSet<IndividualCustomer> IndividualCustomers { get; set; } = null!;
+        public DbSet<LegalEntityCustomer> LegalEntityCustomers { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -84,6 +92,18 @@ namespace CarGarage.Data
                 .HasOne(m => m.Make)
                 .WithMany(mk => mk.Models)
                 .HasForeignKey(m => m.MakeId);
+
+
+            // --- СЕКЦИЯ КЛИЕНТИ (TPT) ---
+            modelBuilder.Entity<Customer>().ToTable("Customers");
+            modelBuilder.Entity<IndividualCustomer>().ToTable("IndividualCustomers");
+            modelBuilder.Entity<LegalEntityCustomer>().ToTable("LegalEntityCustomers");
+
+            modelBuilder.Entity<Car>()
+                .HasOne(c => c.Customer)
+                .WithMany(cust => cust.Cars)
+                .HasForeignKey(c => c.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

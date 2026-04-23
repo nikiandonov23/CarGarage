@@ -53,5 +53,16 @@ namespace CarGarage.DataModels
 
         //връзка към фактурите. 1 кола много фактуррри
         public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+
+
+
+
+
+        // Връзка към клиента - много коли към един клиент
+        
+        public int? CustomerId { get; set; }
+
+        [ForeignKey(nameof(CustomerId))]
+        public virtual Customer? Customer { get; set; } = null!;
     }
 }

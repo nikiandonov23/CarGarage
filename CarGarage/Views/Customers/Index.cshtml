@@ -1,0 +1,63 @@
+﻿@model CarGarage.ViewModels.Customers.CustomerIndexViewModel
+
+@{
+    ViewData["Title"] = "Клиенти";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-users"></i> Управление на клиенти</h2>
+        <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus"></i> Нов Клиент</a>
+    </div>
+
+    <form asp-action="Index" method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Търси по име, телефон, имейл или ЕИК/ЕГН...">
+            <button class="btn btn-outline-secondary" type="submit">
+                <i class="fas fa-search"></i> Търси
+            </button>
+            @if (!string.IsNullOrEmpty(Model.SearchTerm))
+            {
+                <a asp-action="Index" class="btn btn-outline-danger">Изчисти</a>
+            }
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover shadow-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th>Тип</th>
+                    <th>Име / Фирма</th>
+                    <th>Телефон</th>
+                    <th>Град</th>
+                    <th>ЕГН/ЕИК</th>
+                    <th>Коли</th>
+                    <th class="text-center">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customer in Model.Customers)
+                {
+                    <tr>
+                        <td>
+                            <span class="badge @(customer.CustomerType == "Физическо лице" ? "bg-info" : "bg-warning text-dark")">
+                                @customer.CustomerType
+                            </span>
+                        </td>
+                        <td><strong>@customer.DisplayName</strong></td>
+                        <td>@customer.PhoneNumber</td>
+                        <td>@customer.City</td>
+                        <td>@customer.UniqueNumber</td>
+                        <td><span class="badge bg-secondary">@customer.CarsCount</span></td>
+                        <td class="text-center">
+                            <a asp-action="Details" asp-route-id="@customer.Id" class="btn btn-sm btn-success">
+                                <i class="fas fa-eye"></i> Картон
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

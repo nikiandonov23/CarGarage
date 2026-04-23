@@ -33,6 +33,9 @@ namespace CarGarage.Data.Migrations
                     b.Property<DateTime>("AddedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -67,6 +70,8 @@ namespace CarGarage.Data.Migrations
                         .HasColumnType("nvarchar(17)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("Vin")
                         .IsUnique();
@@ -328,6 +333,37 @@ namespace CarGarage.Data.Migrations
                     b.ToTable("UserCars");
                 });
 
+            modelBuilder.Entity("Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Customers", (string)null);
+
+                    b.UseTptMappingStrategy();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -530,6 +566,58 @@ namespace CarGarage.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("IndividualCustomer", b =>
+                {
+                    b.HasBaseType("Customer");
+
+                    b.Property<string>("Egn")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("IndividualCustomers", (string)null);
+                });
+
+            modelBuilder.Entity("LegalEntityCustomer", b =>
+                {
+                    b.HasBaseType("Customer");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsVatRegistered")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ResponsiblePerson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("VatNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("LegalEntityCustomers", (string)null);
+                });
+
+            modelBuilder.Entity("CarGarage.DataModels.Car", b =>
+                {
+                    b.HasOne("Customer", "Customer")
+                        .WithMany("Cars")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("CarGarage.DataModels.Invoice", b =>
                 {
                     b.HasOne("CarGarage.DataModels.Car", "Car")
@@ -647,6 +735,24 @@ namespace CarGarage.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("IndividualCustomer", b =>
+                {
+                    b.HasOne("Customer", null)
+                        .WithOne()
+                        .HasForeignKey("IndividualCustomer", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("LegalEntityCustomer", b =>
+                {
+                    b.HasOne("Customer", null)
+                        .WithOne()
+                        .HasForeignKey("LegalEntityCustomer", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CarGarage.DataModels.Car", b =>
                 {
                     b.Navigation("CarParts");
@@ -669,6 +775,11 @@ namespace CarGarage.Data.Migrations
             modelBuilder.Entity("CarGarage.DataModels.PartCategory", b =>
                 {
                     b.Navigation("ServiceParts");
+                });
+
+            modelBuilder.Entity("Customer", b =>
+                {
+                    b.Navigation("Cars");
                 });
 #pragma warning restore 612, 618
         }
