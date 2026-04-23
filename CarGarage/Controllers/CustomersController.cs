@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CarGarage.Web.Controllers
 {
-    public class CustomersController(ICustomersService customersService) : Controller
+    // Използваме Primary Constructor за двата сървиса
+    public class CustomersController(
+        ICustomersService customersService,
+        IInvoicesService invoicesService) : Controller
     {
         public async Task<IActionResult> Index(string? searchTerm)
         {
@@ -11,10 +14,23 @@ namespace CarGarage.Web.Controllers
             return View(model);
         }
 
-        // Празен метод за Details сега ще го пълня
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            return View();
+            var model = await customersService.GetCustomerDetailsAsync(id);
+            if (model == null) return NotFound();
+            return View(model);
+        }
+
+        
+        public async Task<IActionResult> PrintInvoice(int id)
+        {
+            
+            var model = await invoicesService.GetInvoiceDetailsAsync(id);
+
+            if (model == null) return NotFound();
+
+            
+            return View("~/Views/Invoices/Details.cshtml", model);
         }
     }
 }

@@ -1,0 +1,92 @@
+﻿@model CarGarage.ViewModels.Customers.CustomerDetailsViewModel
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body text-center">
+                    <i class="bi @(Model.CustomerType == "Физическо лице" ? "bi-person-circle" : "bi-building") display-1 text-primary mb-3"></i>
+                    <h3 class="fw-bold">@Model.DisplayName</h3>
+                    <p class="text-muted">@Model.CustomerType</p>
+                    <div class="badge bg-success fs-6 mb-3">Общо: @Model.TotalSpent.ToString("F2") лв.</div>
+                    <hr>
+                    <ul class="list-unstyled text-start small">
+                        <li class="mb-2"><strong>Email:</strong> @Model.Email</li>
+                        <li class="mb-2"><strong>Тел:</strong> @Model.PhoneNumber</li>
+                        <li class="mb-2"><strong>Град:</strong> @Model.City</li>
+                        <li class="mb-2"><strong>Адрес:</strong> @Model.Address</li>
+                        <li class="mb-2"><strong>ЕГН/ЕИК:</strong> @Model.UniqueNumber</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#cars" type="button">Автомобили (@Model.Cars.Count)</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#history" type="button">История на ремонтите</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+
+                        <div class="tab-pane fade show active" id="cars">
+                            <div class="row row-cols-1 row-cols-md-2 g-3 mt-2">
+                                @foreach (var car in Model.Cars)
+                                {
+                                    <div class="col">
+                                        <div class="card h-100 border">
+                                            <img src="@(string.IsNullOrEmpty(car.ImageUrl) ? "https://via.placeholder.com/300x180?text=No+Image" : car.ImageUrl)" class="card-img-top" style="height:150px; object-fit:cover;">
+                                            <div class="card-body">
+                                                <h6 class="fw-bold">@car.Make @car.Model</h6>
+                                                <p class="text-danger small fw-bold">@car.RegistrationNumber</p>
+                                                <a href="/Cars/Details/@car.Id" class="btn btn-sm btn-dark w-100">Картон на кола</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="history">
+                            <div class="table-responsive mt-3">
+                                <table class="table table-hover small">
+                                    <thead>
+                                        <tr>
+                                            <th>Дата</th>
+                                            <th>Кола</th>
+                                            <th>Фактура</th>
+                                            <th class="text-end">Сума</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var repair in Model.RepairHistory)
+                                        {
+                                            <tr>
+                                                <td>@repair.Date.ToString("dd.MM.yyyy")</td>
+                                                <td>@repair.CarModel <br /> <small class="text-muted">@repair.RegistrationNumber</small></td>
+                                                <td>
+                                                    <a asp-controller="Customers" asp-action="PrintInvoice" asp-route-id="@repair.InvoiceId" target="_blank" class="text-decoration-none fw-bold">
+                                                        <i class="bi bi-printer me-1"></i> @repair.InvoiceNumber
+                                                    </a>
+                                                </td>
+                                                <td class="text-end fw-bold text-success">@repair.TotalAmount.ToString("F2") лв.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
