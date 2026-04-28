@@ -1,0 +1,93 @@
+﻿@model CarGarage.ViewModels.Garage.GarageViewModel
+@{
+    ViewData["Title"] = "Редакция на сервиз";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-warning text-dark py-4 rounded-top-4">
+                    <h2 class="text-center mb-0 fw-bold">
+                        <i class="bi bi-pencil-square me-2"></i>Промяна на данни
+                    </h2>
+                </div>
+                <div class="card-body p-5">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row g-3">
+                            @* Име на собственик *@
+                            <div class="col-md-12">
+                                <label asp-for="OwnerName" class="form-label fw-bold">Име на собственик</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-person-badge"></i></span>
+                                    <input asp-for="OwnerName" class="form-control" placeholder="Име и фамилия" />
+                                </div>
+                                <span asp-validation-for="OwnerName" class="text-danger small"></span>
+                            </div>
+
+                            @* Име на сервиза *@
+                            <div class="col-md-12">
+                                <label asp-for="Name" class="form-label fw-bold">Име на сервиза</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-building"></i></span>
+                                    <input asp-for="Name" class="form-control" />
+                                </div>
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+
+                            @* Булстат *@
+                            <div class="col-md-6">
+                                <label asp-for="Bulstat" class="form-label fw-bold">Булстат / ЕИК</label>
+                                <input asp-for="Bulstat" class="form-control" />
+                                <span asp-validation-for="Bulstat" class="text-danger small"></span>
+                            </div>
+
+                            @* Телефон *@
+                            <div class="col-md-6">
+                                <label asp-for="PhoneNumber" class="form-label fw-bold">Телефон за връзка</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+                                    <input asp-for="PhoneNumber" class="form-control" />
+                                </div>
+                                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                            </div>
+
+                            @* Град *@
+                            <div class="col-md-6">
+                                <label asp-for="City" class="form-label fw-bold">Град</label>
+                                <input asp-for="City" class="form-control" />
+                                <span asp-validation-for="City" class="text-danger small"></span>
+                            </div>
+
+                            @* Адрес *@
+                            <div class="col-md-6">
+                                <label asp-for="Address" class="form-label fw-bold">Точен адрес</label>
+                                <input asp-for="Address" class="form-control" />
+                                <span asp-validation-for="Address" class="text-danger small"></span>
+                            </div>
+
+                            @* Скрити полета за координати, за да не се загубят *@
+                            <input type="hidden" asp-for="Latitude" />
+                            <input type="hidden" asp-for="Longitude" />
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-warning btn-lg fw-bold shadow-sm">
+                                <i class="bi bi-save me-2"></i>Запази промените
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Отказ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

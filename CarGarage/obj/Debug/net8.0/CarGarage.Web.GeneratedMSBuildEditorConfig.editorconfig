@@ -76,8 +76,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTXlDYXJzXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/nikia/source/repos/C\# Web/ASP.NET Advanced - юни 2025/CarGarage/CarGarage/Views/MyGarage/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTXlHYXJhZ2VcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/nikia/source/repos/C\# Web/ASP.NET Advanced - юни 2025/CarGarage/CarGarage/Views/MyGarage/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTXlHYXJhZ2VcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/nikia/source/repos/C\# Web/ASP.NET Advanced - юни 2025/CarGarage/CarGarage/Views/MyGarage/Register.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTXlHYXJhZ2VcUmVnaXN0ZXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/nikia/source/repos/C\# Web/ASP.NET Advanced - юни 2025/CarGarage/CarGarage/Views/Parts/Create.cshtml]

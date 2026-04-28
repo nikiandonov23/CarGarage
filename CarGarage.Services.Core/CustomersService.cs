@@ -4,6 +4,7 @@ using CarGarage.Services.Core.Contracts;
 using CarGarage.ViewModels.Customers;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace CarGarage.Services.Core
 {
     public class CustomersService(ApplicationDbContext context) : ICustomersService

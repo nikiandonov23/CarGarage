@@ -1,21 +1,28 @@
 ﻿@{
     ViewData["Title"] = "CarGarage – Твоят гараж онлайн";
+    bool hasGarage = ViewBag.HasGarage ?? false;
 }
 
 <div class="container my-5">
-    
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="display-5 fw-bold text-primary mb-0">Моят гараж</h1>
         </div>
 
         <div class="d-flex gap-2">
-           
+            @* БУТОН ЗА РЕДАКЦИЯ: Показва се само ако има гараж *@
+            @if (hasGarage)
+            {
+                <a asp-action="Edit" class="btn btn-warning btn-lg shadow-sm fw-bold">
+                    <i class="bi bi-pencil-square me-2"></i>Настройки на сервиза
+                </a>
+            }
+
             <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-lg shadow-sm">
                 <i class="bi bi-house-door me-2"></i>Начало
             </a>
 
-            
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <a asp-controller="MyCars" asp-action="Index" class="btn btn-primary btn-lg shadow-sm">
@@ -25,7 +32,20 @@
         </div>
     </div>
 
-    
+    @* СЕКЦИЯ: БАНЕР ЗА РЕГИСТРАЦИЯ НА СЕРВИЗ *@
+    @if (User.Identity?.IsAuthenticated == true && !hasGarage)
+    {
+        <div class="alert alert-primary border-0 shadow-sm p-4 mb-5 rounded-4 d-flex align-items-center justify-content-between bg-gradient text-white" style="background: linear-gradient(90deg, #0d6efd 0%, #0a58ca 100%);">
+            <div>
+                <h4 class="fw-bold mb-1"><i class="bi bi-info-circle-fill me-2"></i>Притежавате ли автосервиз?</h4>
+                <p class="mb-0 opacity-75">Регистрирайте бизнеса си, за да отключите професионалните инструменти за фактуриране и склад.</p>
+            </div>
+            <a asp-action="Register" class="btn btn-light btn-lg px-4 fw-bold shadow-sm text-primary">
+                Регистрирай сервиз сега
+            </a>
+        </div>
+    }
+
     <div class="row mb-5">
         <div class="col-12">
             <p class="lead text-muted">
@@ -36,101 +56,102 @@
 
     <div class="row g-4">
 
+        @* КАРТА: МОИТЕ АВТОМОБИЛИ *@
         <div class="col-md-6 col-lg-4">
             <div class="card h-100 shadow-sm border-0 transition-card">
                 <div class="card-body text-center py-4">
                     <i class="bi bi-car-front-fill display-1 text-success mb-3"></i>
                     <h5 class="card-title fw-bold">Моите автомобили</h5>
-                    <p class="card-text text-muted">
-                        Добавяй и управлявай своите автомобили.
-                    </p>
+                    <p class="card-text text-muted">Добавяй и управлявай своите автомобили.</p>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <a asp-controller="MyCars" asp-action="Index" class="btn btn-outline-success stretched-link">
-                            Към моите автомобили
-                        </a>
+                        <a asp-controller="MyCars" asp-action="Index" class="btn btn-outline-success stretched-link">Към моите автомобили</a>
                     }
                     else
                     {
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-success stretched-link">
-                            Влез, за да добавиш
-                        </a>
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-success stretched-link">Влез, за да добавиш</a>
                     }
                 </div>
             </div>
         </div>
 
+        @* КАРТА: ТЪРСЕНЕ *@
         <div class="col-md-6 col-lg-4">
             <div class="card h-100 shadow-sm border-0 transition-card">
                 <div class="card-body text-center py-4">
                     <i class="bi bi-search display-1 text-primary mb-3"></i>
                     <h5 class="card-title fw-bold">Търси автомобил</h5>
-                    <p class="card-text text-muted">
-                        Намери кола по марка, модел, година или VIN.
-                    </p>
-                    <a asp-controller="Search" asp-action="Index" class="btn btn-outline-primary stretched-link">
-                        Започни търсене
-                    </a>
+                    <p class="card-text text-muted">Намери кола по марка, модел, година или VIN.</p>
+                    <a asp-controller="Search" asp-action="Index" class="btn btn-outline-primary stretched-link">Започни търсене</a>
                 </div>
             </div>
         </div>
 
+        @* КАРТА: ФАКТУРИ *@
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 transition-card">
+            <div class="card h-100 shadow-sm border-0 transition-card @(!hasGarage ? "opacity-75 bg-light" : "")">
                 <div class="card-body text-center py-4">
-                    <i class="bi bi-receipt display-1 text-warning mb-3"></i>
+                    <i class="bi bi-receipt display-1 @(hasGarage ? "text-warning" : "text-muted") mb-3"></i>
                     <h5 class="card-title fw-bold">Фактури & разходи</h5>
-                    <p class="card-text text-muted">
-                        Следи всички ремонти и плащания на едно място.
-                    </p>
-                    <a asp-controller="Invoices" asp-action="Index" class="btn btn-outline-warning stretched-link">
-                        Моите фактури
-                    </a>
+                    <p class="card-text text-muted">Следи всички ремонти и плащания.</p>
+                    @if (hasGarage)
+                    {
+                        <a asp-controller="Invoices" asp-action="Index" class="btn btn-outline-warning stretched-link">Моите фактури</a>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Изисква активен сервиз</span>
+                    }
                 </div>
             </div>
         </div>
 
+        @* КАРТА: КЛИЕНТИ *@
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 transition-card">
+            <div class="card h-100 shadow-sm border-0 transition-card @(!hasGarage ? "opacity-75 bg-light" : "")">
                 <div class="card-body text-center py-4">
-                    <i class="bi bi-people display-1 text-secondary mb-3"></i>
+                    <i class="bi bi-people display-1 @(hasGarage ? "text-secondary" : "text-muted") mb-3"></i>
                     <h5 class="card-title fw-bold">Клиенти / Фирми</h5>
-                    <p class="card-text text-muted">
-                        Управлявай клиенти и история на ремонти.
-                    </p>
-                    <a asp-controller="Customers" asp-action="Index" class="btn btn-outline-secondary stretched-link">
-                        Преглед на клиенти
-                    </a>
+                    <p class="card-text text-muted">Управлявай клиенти и история на ремонти.</p>
+                    @if (hasGarage)
+                    {
+                        <a asp-controller="Customers" asp-action="Index" class="btn btn-outline-secondary stretched-link">Преглед на клиенти</a>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Изисква активен сервиз</span>
+                    }
                 </div>
             </div>
         </div>
 
+        @* КАРТА: MARKETPLACE *@
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 transition-card">
+            <div class="card h-100 shadow-sm border-0 transition-card @(!hasGarage ? "opacity-75 bg-light" : "")">
                 <div class="card-body text-center py-4">
-                    <i class="bi bi-shop-window display-1 text-danger mb-3"></i>
+                    <i class="bi bi-shop-window display-1 @(hasGarage ? "text-danger" : "text-muted") mb-3"></i>
                     <h5 class="card-title fw-bold">Marketplace</h5>
-                    <p class="card-text text-muted">
-                        Търси части втора ръка от реални сервизи.
-                    </p>
-                    <a asp-controller="Marketplace" asp-action="Index" class="btn btn-outline-danger stretched-link">
-                        Прегледай обяви
-                    </a>
+                    <p class="card-text text-muted">Търси и продавай части от твоя склад.</p>
+                    @if (hasGarage)
+                    {
+                        <a asp-controller="Marketplace" asp-action="Index" class="btn btn-outline-danger stretched-link">Прегледай обяви</a>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Изисква активен сервиз</span>
+                    }
                 </div>
             </div>
         </div>
 
+        @* КАРТА: КОМЕНТАРИ *@
         <div class="col-md-6 col-lg-4">
             <div class="card h-100 shadow-sm border-0 transition-card">
                 <div class="card-body text-center py-4">
                     <i class="bi bi-chat-dots display-1 text-dark mb-3"></i>
-                    <h5 class="card-title fw-bold">Коментари & части</h5>
-                    <p class="card-text text-muted">
-                        Чети ревюта и споделяй опит с другите.
-                    </p>
-                    <a asp-controller="Comments" asp-action="Index" class="btn btn-outline-dark stretched-link">
-                        Към коментарите
-                    </a>
+                    <h5 class="card-title fw-bold">Коментари & опит</h5>
+                    <p class="card-text text-muted">Чети ревюта и споделяй опит с другите.</p>
+                    <a asp-controller="Comments" asp-action="Index" class="btn btn-outline-dark stretched-link">Към коментарите</a>
                 </div>
             </div>
         </div>
@@ -142,21 +163,24 @@
             <h3 class="mb-4 fw-bold">Защо да избереш CarGarage?</h3>
             <div class="row g-4">
                 <div class="col-md-4">
-                    <div class="p-4 bg-light rounded-3 shadow-sm border">
+                    <div class="p-4 bg-light rounded-3 shadow-sm border h-100">
                         <i class="bi bi-car-front-fill fs-1 text-primary mb-3 d-block"></i>
                         <h5 class="fw-bold">Лесно управление</h5>
+                        <p class="small text-muted">Всички документи за колата ти на един клик разстояние.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="p-4 bg-light rounded-3 shadow-sm border">
+                    <div class="p-4 bg-light rounded-3 shadow-sm border h-100">
                         <i class="bi bi-tools fs-1 text-success mb-3 d-block"></i>
-                        <h5 class="fw-bold">Проследяване</h5>
+                        <h5 class="fw-bold">Професионален склад</h5>
+                        <p class="small text-muted">Инструменти за сервизи, които искат да растат.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="p-4 bg-light rounded-3 shadow-sm border">
-                        <i class="bi bi-currency-euro fs-1 text-warning mb-3 d-block"></i>
-                        <h5 class="fw-bold">Контрол</h5>
+                    <div class="p-4 bg-light rounded-3 shadow-sm border h-100">
+                        <i class="bi bi-shield-check fs-1 text-warning mb-3 d-block"></i>
+                        <h5 class="fw-bold">Сигурност</h5>
+                        <p class="small text-muted">Твоите данни са криптирани и защитени.</p>
                     </div>
                 </div>
             </div>
@@ -165,14 +189,17 @@
 </div>
 
 <style>
-    
     .transition-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-radius: 15px; 
+        border-radius: 20px;
     }
 
         .transition-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
         }
+
+    .bg-gradient {
+        background-size: 200% auto;
+    }
 </style>

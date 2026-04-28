@@ -1,0 +1,85 @@
+﻿@model CarGarage.ViewModels.Garage.GarageViewModel
+
+@{
+    ViewData["Title"] = "Регистрация на сервиз";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-primary text-white py-4 rounded-top-4">
+                    <h2 class="text-center mb-0 fw-bold">
+                        <i class="bi bi-gear-wide-connected me-2"></i>Данни за Вашия сервиз
+                    </h2>
+                </div>
+                <div class="card-body p-5">
+                    <p class="text-muted text-center mb-4">
+                        Попълнете официалните данни на Вашата фирма, за да започнете да използвате професионалните функции.
+                    </p>
+
+                    <form asp-action="Register" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row g-3">
+                            @* Име на сервиза *@
+                            <div class="col-md-12">
+                                <label asp-for="Name" class="form-label fw-bold">Име на сервиза</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-building"></i></span>
+                                    <input asp-for="Name" class="form-control" placeholder="Прим: Автоцентър Макс" />
+                                </div>
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+
+                            @* Булстат *@
+                            <div class="col-md-6">
+                                <label asp-for="Bulstat" class="form-label fw-bold">Булстат / ЕИК</label>
+                                <input asp-for="Bulstat" class="form-control" placeholder="123456789" />
+                                <span asp-validation-for="Bulstat" class="text-danger small"></span>
+                            </div>
+
+                            @* Телефон *@
+                            <div class="col-md-6">
+                                <label asp-for="PhoneNumber" class="form-label fw-bold">Телефон за връзка</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="08XXXXXXXX" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                            </div>
+
+                            @* Град *@
+                            <div class="col-md-6">
+                                <label asp-for="City" class="form-label fw-bold">Град</label>
+                                <input asp-for="City" class="form-control" />
+                                <span asp-validation-for="City" class="text-danger small"></span>
+                            </div>
+
+                            @* Адрес *@
+                            <div class="col-md-6">
+                                <label asp-for="Address" class="form-label fw-bold">Точен адрес</label>
+                                <input asp-for="Address" class="form-control" placeholder="ул. Примерна №10" />
+                                <span asp-validation-for="Address" class="text-danger small"></span>
+                            </div>
+
+                            @* Гео данни (скрити за момента) *@
+                            <input type="hidden" asp-for="Latitude" />
+                            <input type="hidden" asp-for="Longitude" />
+                        </div>
+
+                        <hr class="my-4 opacity-25">
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                                <i class="bi bi-check-circle me-2"></i>Запази и активирай
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Отказ</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

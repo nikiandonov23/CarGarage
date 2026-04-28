@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CarGarage.ViewModels.Invoices
-{
+namespace CarGarage.ViewModels.Invoices{
     public class InvoiceFormModel
     {
         public int CarId { get; set; }
