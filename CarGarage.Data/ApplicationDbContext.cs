@@ -30,6 +30,10 @@ namespace CarGarage.Data
         public DbSet<IndividualCustomer> IndividualCustomers { get; set; } = null!;
         public DbSet<LegalEntityCustomer> LegalEntityCustomers { get; set; } = null!;
 
+
+        //собствен сервиз
+        public DbSet<Garage> Garages { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -103,6 +107,29 @@ namespace CarGarage.Data
                 .HasOne(c => c.Customer)
                 .WithMany(cust => cust.Cars)
                 .HasForeignKey(c => c.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+
+            // Релация Garage към Invoices
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.Garage)
+                .WithMany(g => g.Invoices)
+                .HasForeignKey(i => i.GarageId)
+                .OnDelete(DeleteBehavior.Restrict); // Препоръчително: не трий сервиза, ако има фактури
+
+            // Релация Garage към Parts
+            modelBuilder.Entity<Part>()
+                .HasOne(p => p.Garage)
+                .WithMany(g => g.Parts)
+                .HasForeignKey(p => p.GarageId)
+                .OnDelete(DeleteBehavior.Cascade); // Ако сервизът се закрие, частите му изчезват от маркетплейса
+
+            // Релация Garage към Customers
+            modelBuilder.Entity<Customer>()
+                .HasOne(c => c.Garage)
+                .WithMany(g => g.Customers)
+                .HasForeignKey(c => c.GarageId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

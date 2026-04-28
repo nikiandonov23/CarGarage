@@ -1,5 +1,6 @@
 ﻿using CarGarage.DataModels;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 public abstract class Customer
 {
@@ -20,4 +21,12 @@ public abstract class Customer
 
     // Връзка към колите - един клиент може да има много автомобили
     public virtual ICollection<Car> Cars { get; set; } = new List<Car>();
+
+
+    // В Customer.cs
+    [Required]
+    public int GarageId { get; set; }
+
+    [ForeignKey(nameof(GarageId))]
+    public virtual Garage? Garage { get; set; }
 }

@@ -37,5 +37,14 @@ namespace CarGarage.DataModels
 
         
         public string? Notes { get; set; }
+
+
+
+        // В Invoice.cs
+        [Required]
+        public int GarageId { get; set; }
+
+        [ForeignKey(nameof(GarageId))]
+        public virtual Garage? Garage { get; set; }
     }
 }

@@ -44,5 +44,16 @@ namespace CarGarage.DataModels
 
         [Required]
         public DateTime DateAdded { get; set; } = DateTime.UtcNow;
+
+
+
+
+
+        // В Part.cs
+        [Required]
+        public int GarageId { get; set; }
+
+        [ForeignKey(nameof(GarageId))]
+        public virtual Garage? Garage { get; set; }
     }
 }
