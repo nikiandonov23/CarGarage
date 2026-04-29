@@ -93,5 +93,103 @@ namespace CarGarage.Services.Core
 
             return model;
         }
+
+
+        public async Task<CustomerFormViewModel?> GetCustomerForEditAsync(int id)
+        {
+            var c = await context.Customers.FirstOrDefaultAsync(x => x.Id == id);
+            if (c == null) return null;
+
+            var model = new CustomerFormViewModel
+            {
+                Id = c.Id,
+                Email = c.Email,
+                PhoneNumber = c.PhoneNumber,
+                Address = c.Address,
+                City = c.City,
+                GarageId = c.GarageId,
+                CustomerType = c is IndividualCustomer ? "Individual" : "Legal"
+            };
+
+            if (c is IndividualCustomer ind)
+            {
+                model.FirstName = ind.FirstName;
+                model.LastName = ind.LastName;
+                model.Egn = ind.Egn;
+            }
+            else if (c is LegalEntityCustomer leg)
+            {
+                model.CompanyName = leg.CompanyName;
+                model.VatNumber = leg.VatNumber;
+                model.IsVatRegistered = leg.IsVatRegistered;
+                model.ResponsiblePerson = leg.ResponsiblePerson;
+            }
+
+            return model;
+        }
+
+        public async Task SaveCustomerAsync(CustomerFormViewModel model)
+        {
+            Customer entity;
+
+            if (model.Id.HasValue && model.Id > 0)
+            {
+                // Edit логика - намираме съществуващия
+                entity = await context.Customers.FirstAsync(c => c.Id == model.Id);
+                // Тук се обновяват общите полета
+                entity.Email = model.Email;
+                entity.PhoneNumber = model.PhoneNumber;
+                entity.Address = model.Address;
+                entity.City = model.City;
+
+                // ВАЖНО: Тук се обновяват специфичните полета според типа
+                if (entity is IndividualCustomer ind)
+                {
+                    ind.FirstName = model.FirstName!;
+                    ind.LastName = model.LastName!;
+                    ind.Egn = model.Egn!;
+                }
+                else if (entity is LegalEntityCustomer leg)
+                {
+                    leg.CompanyName = model.CompanyName!;
+                    leg.VatNumber = model.VatNumber!;
+                    leg.IsVatRegistered = model.IsVatRegistered;
+                    leg.ResponsiblePerson = model.ResponsiblePerson!;
+                }
+            }
+            else
+            {
+                // Create логика - инстанцираме правилния клас
+                if (model.CustomerType == "Individual")
+                {
+                    entity = new IndividualCustomer
+                    {
+                        FirstName = model.FirstName!,
+                        LastName = model.LastName!,
+                        Egn = model.Egn!
+                    };
+                }
+                else
+                {
+                    entity = new LegalEntityCustomer
+                    {
+                        CompanyName = model.CompanyName!,
+                        VatNumber = model.VatNumber!,
+                        IsVatRegistered = model.IsVatRegistered,
+                        ResponsiblePerson = model.ResponsiblePerson!
+                    };
+                }
+
+                entity.Email = model.Email;
+                entity.PhoneNumber = model.PhoneNumber;
+                entity.Address = model.Address;
+                entity.City = model.City;
+                entity.GarageId = 1; // Замени с текущия GarageId на логнатия потребител
+
+                await context.Customers.AddAsync(entity);
+            }
+
+            await context.SaveChangesAsync();
+        }
     }
 }

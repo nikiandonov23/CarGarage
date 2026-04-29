@@ -7,5 +7,9 @@ namespace CarGarage.Services.Core.Contracts
         Task<CustomerIndexViewModel> GetAllCustomersAsync(string? searchTerm);
 
         Task<CustomerDetailsViewModel?> GetCustomerDetailsAsync(int id);
+
+
+        Task SaveCustomerAsync(CustomerFormViewModel model);
+        Task<CustomerFormViewModel?> GetCustomerForEditAsync(int id);
     }
 }

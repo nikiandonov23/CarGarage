@@ -1,0 +1,108 @@
+﻿@model CarGarage.ViewModels.Customers.CustomerFormViewModel
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4>@(Model.Id > 0 ? "Редакция на клиент" : "Нов клиент")</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Save" method="post">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Тип клиент</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" asp-for="CustomerType" value="Individual" id="typeInd" checked>
+                            <label class="btn btn-outline-primary" for="typeInd"><i class="bi bi-person"></i> Физическо лице</label>
+
+                            <input type="radio" class="btn-check" asp-for="CustomerType" value="Legal" id="typeLeg">
+                            <label class="btn btn-outline-primary" for="typeLeg"><i class="bi bi-building"></i> Юридическо лице (Фирма)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Email" class="form-label">Имейл</label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="PhoneNumber" class="form-label">Телефон</label>
+                        <input asp-for="PhoneNumber" class="form-control" />
+                    </div>
+
+                    <div id="sectionIndividual" class="row p-0 m-0">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="FirstName" class="form-label">Име</label>
+                            <input asp-for="FirstName" class="form-control" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="LastName" class="form-label">Фамилия</label>
+                            <input asp-for="LastName" class="form-control" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Egn" class="form-label">ЕГН</label>
+                            <input asp-for="Egn" class="form-control" maxlength="10" />
+                        </div>
+                    </div>
+
+                    <div id="sectionLegal" class="row p-0 m-0" style="display:none;">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CompanyName" class="form-label">Име на фирмата</label>
+                            <input asp-for="CompanyName" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="VatNumber" class="form-label">ЕИК / ДДС Номер</label>
+                            <input asp-for="VatNumber" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ResponsiblePerson" class="form-label">МОЛ</label>
+                            <input asp-for="ResponsiblePerson" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3 pt-4">
+                            <div class="form-check">
+                                <input asp-for="IsVatRegistered" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" asp-for="IsVatRegistered">Регистрирана по ДДС</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="City" class="form-label">Град</label>
+                        <input asp-for="City" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Address" class="form-label">Адрес</label>
+                        <input asp-for="Address" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="mt-4 border-top pt-3 text-end">
+                    <a asp-action="Index" class="btn btn-secondary">Отказ</a>
+                    <button type="submit" class="btn btn-success px-5">Запис</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            function toggleFields() {
+                if ($('#typeInd').is(':checked')) {
+                    $('#sectionIndividual').show();
+                    $('#sectionLegal').hide();
+                } else {
+                    $('#sectionIndividual').hide();
+                    $('#sectionLegal').show();
+                }
+            }
+
+            $('input[name="CustomerType"]').change(toggleFields);
+            toggleFields(); // Първоначално извикване
+        });
+    </script>
+}
