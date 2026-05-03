@@ -4,12 +4,12 @@ namespace CarGarage.Services.Core.Contracts
 {
     public interface ICustomersService
     {
-        Task<CustomerIndexViewModel> GetAllCustomersAsync(string? searchTerm);
+        Task<CustomerIndexViewModel> GetAllCustomersAsync(string? searchTerm, string userId);
 
-        Task<CustomerDetailsViewModel?> GetCustomerDetailsAsync(int id);
+        Task<CustomerDetailsViewModel?> GetCustomerDetailsAsync(int id, string userId);
 
 
-        Task SaveCustomerAsync(CustomerFormViewModel model);
-        Task<CustomerFormViewModel?> GetCustomerForEditAsync(int id);
+        Task SaveCustomerAsync(CustomerFormViewModel model, string userId);
+        Task<CustomerFormViewModel?> GetCustomerForEditAsync(int id, string userId);
     }
 }

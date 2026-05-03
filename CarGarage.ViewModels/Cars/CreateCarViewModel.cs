@@ -53,5 +53,7 @@ namespace CarGarage.ViewModels.Cars
 
         public IEnumerable<CreateCarModelDropDownViewModel> ModelList { get; set; } =
             new HashSet<CreateCarModelDropDownViewModel>();
+
+        
     }
 }

@@ -1,20 +1,23 @@
 ﻿using CarGarage.Services.Core.Contracts;
 using CarGarage.ViewModels.Parts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CarGarage.Web.Controllers
 {
+    [Authorize]
     public class PartsController(IPartsService partsService) : Controller
     {
+        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
         public async Task<IActionResult> Index(int carId, string? returnUrl)
         {
             ViewBag.CarId = carId;
-            ViewBag.ReturnUrl = returnUrl; // записвам от де идаааа !!!
-            var parts = await partsService.GetPartsByCarIdAsync(carId);
+            ViewBag.ReturnUrl = returnUrl;
+            var parts = await partsService.GetPartsByCarIdAsync(carId, GetUserId());
             return View(parts);
         }
-
 
         [HttpGet]
         public async Task<IActionResult> Create(int carId)
@@ -24,11 +27,9 @@ namespace CarGarage.Web.Controllers
                 CarId = carId,
                 Categories = await partsService.GetCategoriesAsync()
             };
-
             return View(model);
         }
 
-        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PartFormModel model)
@@ -39,26 +40,20 @@ namespace CarGarage.Web.Controllers
                 return View(model);
             }
 
-            await partsService.AddPartAsync(model);
+            await partsService.AddPartAsync(model, GetUserId());
             return RedirectToAction(nameof(Index), new { carId = model.CarId });
         }
 
-        
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var model = await partsService.GetPartFormModelByIdAsync(id);
-
-            if (model == null)
-            {
-                return NotFound();
-            }
+            var model = await partsService.GetPartFormModelByIdAsync(id, GetUserId());
+            if (model == null) return NotFound();
 
             model.Categories = await partsService.GetCategoriesAsync();
             return View(model);
         }
 
-        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, PartFormModel model)
@@ -69,23 +64,17 @@ namespace CarGarage.Web.Controllers
                 return View(model);
             }
 
-            await partsService.UpdatePartAsync(id, model);
+            await partsService.UpdatePartAsync(id, model, GetUserId());
             return RedirectToAction(nameof(Index), new { carId = model.CarId });
         }
 
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
-            var part = await partsService.GetPartByIdAsync(id);
+            var part = await partsService.GetPartByIdAsync(id, GetUserId());
+            if (part == null) return NotFound();
 
-            if (part == null)
-            {
-                return NotFound();
-            }
-
-            
-            var formModel = await partsService.GetPartFormModelByIdAsync(id);
-
+            var formModel = await partsService.GetPartFormModelByIdAsync(id, GetUserId());
             var model = new PartDeleteViewModel
             {
                 Id = part.Id,
@@ -98,23 +87,13 @@ namespace CarGarage.Web.Controllers
             return View(model);
         }
 
-        
         [HttpPost]
         [ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id, int carId)
         {
-            await partsService.DeleteAsync(id);
+            await partsService.DeleteAsync(id, GetUserId());
             return RedirectToAction(nameof(Index), new { carId = carId });
-        }
-
-        
-        public async Task<IActionResult> PrintInvoice(int id)
-        {
-            var part = await partsService.GetPartByIdAsync(id);
-            if (part == null) return NotFound();
-
-            return View(part);
         }
     }
 }

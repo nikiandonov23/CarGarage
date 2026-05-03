@@ -24,6 +24,8 @@ namespace CarGarage.ViewModels.Parts
         [Range(0.01, 100000)]
         public decimal UnitPrice { get; set; }
 
+
+        public int GarageId { get; set; }
         public IEnumerable<PartCategoryViewModel>? Categories { get; set; }
     }
 }

@@ -4,14 +4,16 @@ using CarGarage.Services.Core.Contracts;
 using CarGarage.ViewModels.Customers;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace CarGarage.Services.Core
 {
     public class CustomersService(ApplicationDbContext context) : ICustomersService
     {
-        public async Task<CustomerIndexViewModel> GetAllCustomersAsync(string? searchTerm)
+        public async Task<CustomerIndexViewModel> GetAllCustomersAsync(string? searchTerm, string userId)
         {
-            var query = context.Customers.AsQueryable();
+            // Филтрираме клиентите, така че потребителят да вижда само тези от неговия гараж
+            var query = context.Customers
+                .Where(c => c.Garage.OwnerId == userId)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
@@ -42,17 +44,18 @@ namespace CarGarage.Services.Core
             return new CustomerIndexViewModel { Customers = customers, SearchTerm = searchTerm };
         }
 
-        public async Task<CustomerDetailsViewModel?> GetCustomerDetailsAsync(int id)
+        public async Task<CustomerDetailsViewModel?> GetCustomerDetailsAsync(int id, string userId)
         {
+            // Проверка дали клиентът принадлежи на гаража на текущия потребител
             var customer = await context.Customers
                 .Include(c => c.Cars)
                     .ThenInclude(car => car.Invoices)
                         .ThenInclude(inv => inv.Parts)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(c => c.Id == id && c.Garage.OwnerId == userId);
 
             if (customer == null) return null;
 
-            var model = new CustomerDetailsViewModel
+            return new CustomerDetailsViewModel
             {
                 Id = customer.Id,
                 Email = customer.Email,
@@ -78,26 +81,24 @@ namespace CarGarage.Services.Core
                 RepairHistory = customer.Cars
                     .SelectMany(car => car.Invoices.Select(inv => new CustomerRepairHistoryViewModel
                     {
-                        InvoiceId = inv.Id, 
+                        InvoiceId = inv.Id,
                         CarModel = $"{car.Make} {car.Model}",
                         RegistrationNumber = car.RegistrationNumber,
                         Date = inv.IssuedDate,
                         InvoiceNumber = inv.InvoiceNumber,
-                        Description = inv.Notes, //туй май ша го махаммм
-                       
+                        Description = inv.Notes,
                         TotalAmount = inv.TotalLaborPrice + inv.Parts.Sum(p => p.TotalPrice)
                     }))
                     .OrderByDescending(r => r.Date)
                     .ToList()
             };
-
-            return model;
         }
 
-
-        public async Task<CustomerFormViewModel?> GetCustomerForEditAsync(int id)
+        public async Task<CustomerFormViewModel?> GetCustomerForEditAsync(int id, string userId)
         {
-            var c = await context.Customers.FirstOrDefaultAsync(x => x.Id == id);
+            var c = await context.Customers
+                .FirstOrDefaultAsync(x => x.Id == id && x.Garage.OwnerId == userId);
+
             if (c == null) return null;
 
             var model = new CustomerFormViewModel
@@ -128,65 +129,61 @@ namespace CarGarage.Services.Core
             return model;
         }
 
-        public async Task SaveCustomerAsync(CustomerFormViewModel model)
+        public async Task SaveCustomerAsync(CustomerFormViewModel model, string userId)
         {
-            Customer entity;
+            // 1. Намираме гаража на потребителя
+            var garageId = await context.Garages
+                .Where(g => g.OwnerId == userId)
+                .Select(g => g.Id)
+                .FirstOrDefaultAsync();
+
+            if (garageId == 0) throw new InvalidOperationException("Потребителят няма регистриран гараж.");
+
+            Customer? entity;
 
             if (model.Id.HasValue && model.Id > 0)
             {
-                // Edit логика - намираме съществуващия
-                entity = await context.Customers.FirstAsync(c => c.Id == model.Id);
-                // Тук се обновяват общите полета
-                entity.Email = model.Email;
-                entity.PhoneNumber = model.PhoneNumber;
-                entity.Address = model.Address;
-                entity.City = model.City;
+                // EDIT: Намираме съществуващия клиент, като се уверяваме, че е от същия гараж
+                entity = await context.Customers
+                    .FirstOrDefaultAsync(c => c.Id == model.Id && c.GarageId == garageId);
 
-                // ВАЖНО: Тук се обновяват специфичните полета според типа
-                if (entity is IndividualCustomer ind)
-                {
-                    ind.FirstName = model.FirstName!;
-                    ind.LastName = model.LastName!;
-                    ind.Egn = model.Egn!;
-                }
-                else if (entity is LegalEntityCustomer leg)
-                {
-                    leg.CompanyName = model.CompanyName!;
-                    leg.VatNumber = model.VatNumber!;
-                    leg.IsVatRegistered = model.IsVatRegistered;
-                    leg.ResponsiblePerson = model.ResponsiblePerson!;
-                }
+                if (entity == null) throw new UnauthorizedAccessException("Нямате достъп до този клиент.");
             }
             else
             {
-                // Create логика - инстанцираме правилния клас
+                // CREATE: Инстанцираме правилния тип
                 if (model.CustomerType == "Individual")
                 {
-                    entity = new IndividualCustomer
-                    {
-                        FirstName = model.FirstName!,
-                        LastName = model.LastName!,
-                        Egn = model.Egn!
-                    };
+                    entity = new IndividualCustomer();
                 }
                 else
                 {
-                    entity = new LegalEntityCustomer
-                    {
-                        CompanyName = model.CompanyName!,
-                        VatNumber = model.VatNumber!,
-                        IsVatRegistered = model.IsVatRegistered,
-                        ResponsiblePerson = model.ResponsiblePerson!
-                    };
+                    entity = new LegalEntityCustomer();
                 }
 
-                entity.Email = model.Email;
-                entity.PhoneNumber = model.PhoneNumber;
-                entity.Address = model.Address;
-                entity.City = model.City;
-                entity.GarageId = 1; // Замени с текущия GarageId на логнатия потребител
-
+                entity.GarageId = garageId;
                 await context.Customers.AddAsync(entity);
+            }
+
+            // Общи полета
+            entity.Email = model.Email;
+            entity.PhoneNumber = model.PhoneNumber;
+            entity.Address = model.Address;
+            entity.City = model.City;
+
+            // Специфични полета
+            if (entity is IndividualCustomer ind)
+            {
+                ind.FirstName = model.FirstName!;
+                ind.LastName = model.LastName!;
+                ind.Egn = model.Egn!;
+            }
+            else if (entity is LegalEntityCustomer leg)
+            {
+                leg.CompanyName = model.CompanyName!;
+                leg.VatNumber = model.VatNumber!;
+                leg.IsVatRegistered = model.IsVatRegistered;
+                leg.ResponsiblePerson = model.ResponsiblePerson!;
             }
 
             await context.SaveChangesAsync();

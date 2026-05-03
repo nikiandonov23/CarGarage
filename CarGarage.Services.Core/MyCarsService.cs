@@ -89,7 +89,8 @@ namespace CarGarage.Services.Core
                 Notes = model.Notes,
                 Make = makeObj?.Name ?? "Unknown",
                 Model = modelObj?.Name ?? "Unknown",
-                AddedDate = DateTime.UtcNow
+                AddedDate = DateTime.UtcNow,
+                
             };
 
             await context.Cars.AddAsync(car);
