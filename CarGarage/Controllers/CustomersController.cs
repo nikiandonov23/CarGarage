@@ -6,12 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CarGarage.Web.Controllers
 {
-    [Authorize] // Гарантираме, че само логнати потребители влизат тук
+    [Authorize]
     public class CustomersController(
         ICustomersService customersService,
         IInvoicesService invoicesService) : Controller
     {
-        // Помощен метод за извличане на ID на логнатия потребител
         private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
         public async Task<IActionResult> Index(string? searchTerm)
@@ -29,7 +28,7 @@ namespace CarGarage.Web.Controllers
 
         public async Task<IActionResult> PrintInvoice(int id)
         {
-            var model = await invoicesService.GetInvoiceDetailsAsync(id);
+            var model = await invoicesService.GetInvoiceDetailsAsync(id, GetUserId());
             if (model == null) return NotFound();
             return View("~/Views/Invoices/Details.cshtml", model);
         }
@@ -57,7 +56,6 @@ namespace CarGarage.Web.Controllers
             }
             catch (Exception ex)
             {
-                // Тук може да добавите логика за показване на съобщение за грешка
                 ModelState.AddModelError("", ex.Message);
                 return View("Form", model);
             }

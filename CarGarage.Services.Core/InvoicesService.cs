@@ -8,20 +8,19 @@ namespace CarGarage.Services.Core
 {
     public class InvoicesService(ApplicationDbContext context) : IInvoicesService
     {
-
-
-
-
-
-        public async Task<InvoiceFormModel> GetNewInvoiceModelAsync(int carId)
+        public async Task<InvoiceFormModel> GetNewInvoiceModelAsync(int carId, string userId)
         {
             var car = await context.Cars
-                .FirstOrDefaultAsync(c => c.Id == carId);
+                .Include(c => c.Customer)
+                    .ThenInclude(cust => cust.Garage)
+                .FirstOrDefaultAsync(c => c.Id == carId && c.Customer.Garage.OwnerId == userId);
 
-            if (car == null) throw new Exception("Car not found");
+            if (car == null) throw new Exception("Car not found or access denied");
 
             var parts = await context.Parts
-                .Where(p => p.CarId == carId && p.InvoiceId == null)
+                .Where(p => p.CarId == carId &&
+                            p.InvoiceId == null &&
+                            p.Car.Customer.Garage.OwnerId == userId)
                 .ToListAsync();
 
             return new InvoiceFormModel
@@ -38,11 +37,22 @@ namespace CarGarage.Services.Core
             };
         }
 
-        public async Task<int> CreateInvoiceAsync(InvoiceFormModel model)
+        public async Task<int> CreateInvoiceAsync(InvoiceFormModel model, string userId)
         {
+            var carData = await context.Cars
+                .Where(c => c.Id == model.CarId && c.Customer.Garage.OwnerId == userId)
+                .Select(c => new { c.Customer.GarageId })
+                .FirstOrDefaultAsync();
+
+            if (carData == null)
+            {
+                throw new InvalidOperationException("Garage not found or access denied for this car.");
+            }
+
             var invoice = new Invoice
             {
                 CarId = model.CarId,
+                GarageId = carData.GarageId,
                 IssuedDate = DateTime.UtcNow,
                 InvoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-{new Random().Next(1000, 9999)}",
                 LaborPricePerHour = model.LaborPricePerHour,
@@ -57,7 +67,7 @@ namespace CarGarage.Services.Core
                 .ToList();
 
             var parts = await context.Parts
-                .Where(p => selectedIds.Contains(p.Id))
+                .Where(p => selectedIds.Contains(p.Id) && p.Car.Customer.Garage.OwnerId == userId)
                 .ToListAsync();
 
             foreach (var part in parts)
@@ -71,14 +81,15 @@ namespace CarGarage.Services.Core
             return invoice.Id;
         }
 
-        public async Task<InvoiceFullViewModel> GetInvoiceDetailsAsync(int invoiceId)
+        public async Task<InvoiceFullViewModel> GetInvoiceDetailsAsync(int invoiceId, string userId)
         {
             var inv = await context.Invoices
                 .Include(i => i.Car)
                 .Include(i => i.Parts)
-                .FirstOrDefaultAsync(i => i.Id == invoiceId);
+                .Include(i => i.Garage)
+                .FirstOrDefaultAsync(i => i.Id == invoiceId && i.Garage.OwnerId == userId);
 
-            if (inv == null) throw new Exception("Invoice not found");
+            if (inv == null) throw new Exception("Invoice not found or access denied");
 
             decimal subTotalParts = inv.Parts.Sum(p => p.TotalPrice);
             decimal subTotalLabor = (decimal)inv.LaborHours * inv.LaborPricePerHour;
@@ -105,13 +116,10 @@ namespace CarGarage.Services.Core
             };
         }
 
-
-
-
         public async Task<IEnumerable<InvoiceFullViewModel>> GetAllUserInvoicesAsync(string userId)
         {
             return await context.Invoices
-                .Where(i => i.Car.UserCars.Any(uc => uc.UserId == userId)) 
+                .Where(i => i.Garage.OwnerId == userId)
                 .Select(i => new InvoiceFullViewModel
                 {
                     Id = i.Id,
@@ -119,7 +127,6 @@ namespace CarGarage.Services.Core
                     IssuedDate = i.IssuedDate,
                     CarInfo = i.Car.Make + " " + i.Car.Model + " (" + i.Car.RegistrationNumber + ")",
                     GrandTotal = i.Parts.Sum(p => p.UnitPrice * p.Quantity) + (decimal)i.LaborHours * i.LaborPricePerHour
-                   
                 })
                 .OrderByDescending(i => i.IssuedDate)
                 .ToListAsync();

@@ -6,44 +6,28 @@ namespace CarGarage.Web.Controllers
 {
     public class InvoicesController(IInvoicesService invoicesService) : BaseController
     {
-
-
-        
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            
-            var userId = GetUserId();
-
-            
-            var model = await invoicesService.GetAllUserInvoicesAsync(userId);
-
+            var model = await invoicesService.GetAllUserInvoicesAsync(GetUserId());
             return View(model);
         }
 
-
-
-
-
-
-
-
-        
         [HttpGet]
         public async Task<IActionResult> Create(int carId, string? returnUrl)
         {
             try
             {
-                ViewBag.ReturnUrl = returnUrl; //записвам от де ида беее
-                var model = await invoicesService.GetNewInvoiceModelAsync(carId);
+                ViewBag.ReturnUrl = returnUrl;
+                var model = await invoicesService.GetNewInvoiceModelAsync(carId, GetUserId());
                 return View(model);
             }
-            catch (Exception)
+            catch (Exception ex) // Добави 'ex' тук
             {
-                return RedirectToAction("Index", "MyCars");
+                // Вместо редирект, хвърли грешката на екрана, за да я прочетеш:
+                return Content($"Грешка при генериране: {ex.Message}. Вътрешна грешка: {ex.InnerException?.Message}");
             }
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -55,24 +39,27 @@ namespace CarGarage.Web.Controllers
                 return View(model);
             }
 
-            var invoiceId = await invoicesService.CreateInvoiceAsync(model);
-            return RedirectToAction(nameof(Details), new { id = invoiceId });
-
+            try
+            {
+                var invoiceId = await invoicesService.CreateInvoiceAsync(model, GetUserId());
+                return RedirectToAction(nameof(Details), new { id = invoiceId });
+            }
+            catch (Exception)
+            {
+                return View(model);
+            }
         }
 
-        
         [HttpGet]
-        
         public async Task<IActionResult> Details(int id)
         {
             try
             {
-                var model = await invoicesService.GetInvoiceDetailsAsync(id);
+                var model = await invoicesService.GetInvoiceDetailsAsync(id, GetUserId());
                 return View(model);
             }
             catch (Exception)
             {
-                
                 return RedirectToAction(nameof(Index));
             }
         }
