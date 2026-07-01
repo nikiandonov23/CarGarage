@@ -17,7 +17,8 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        var model = await carsService.GetCreateCarViewModelAsync();
+        var userId = GetUserId();
+        var model = await carsService.GetCreateCarViewModelAsync(userId);
         return View(model);
     }
 
@@ -63,7 +64,7 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
 
         if (!ModelState.IsValid)
         {
-            var freshModel = await carsService.GetCreateCarViewModelAsync();
+            var freshModel = await carsService.GetCreateCarViewModelAsync(userId);
             model.MakeList = freshModel.MakeList;
             model.CustomerList = freshModel.CustomerList;
             if (model.MakeId > 0)
@@ -78,7 +79,7 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
         if (!success)
         {
             ModelState.AddModelError("RegistrationNumber", "Неуспешен запис. Възможно е колата вече да съществува или да липсват задължителни данни.");
-            var freshModel = await carsService.GetCreateCarViewModelAsync();
+            var freshModel = await carsService.GetCreateCarViewModelAsync(userId);
             model.MakeList = freshModel.MakeList;
             model.CustomerList = freshModel.CustomerList;
             if (model.MakeId > 0)
@@ -137,7 +138,7 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
 
         if (!ModelState.IsValid)
         {
-            var fresh = await carsService.GetCreateCarViewModelAsync();
+            var fresh = await carsService.GetCreateCarViewModelAsync(userId);
             model.MakeList = fresh.MakeList;
             model.CustomerList = fresh.CustomerList;
             model.ModelList = await carsService.GetModelsByMakeAsync(model.MakeId);

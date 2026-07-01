@@ -4,7 +4,7 @@ using CarGarage.ViewModels.Cars.Dropdowns;
 public interface IMyCarsService
 {
     Task<IndexMyCarsViewModel> GetAllUserCarsAsync(string userId);
-    Task<CreateCarViewModel> GetCreateCarViewModelAsync();
+    Task<CreateCarViewModel> GetCreateCarViewModelAsync(string userId);
     Task<IEnumerable<CreateCarModelDropDownViewModel>> GetModelsByMakeAsync(int makeId);
     Task<bool> AddCarToUserAsync(CreateCarViewModel model, string userId);
     Task<CarViewModel?> GetCarByIdAsync(int carId, string userId);

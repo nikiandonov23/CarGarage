@@ -29,9 +29,15 @@ namespace CarGarage.Services.Core
             return new IndexMyCarsViewModel { Cars = cars };
         }
 
-        public async Task<CreateCarViewModel> GetCreateCarViewModelAsync()
+        public async Task<CreateCarViewModel> GetCreateCarViewModelAsync(string userId)
         {
+            // 1. Намираме гаража на потребителя, за да филтрираме само неговите клиенти
+            var userGarage = await context.Set<Garage>().FirstOrDefaultAsync(g => g.OwnerId == userId);
+            int garageId = userGarage?.Id ?? 0;
+
+            // 2. Взимаме само клиентите, които принадлежат на този гараж
             var customers = await context.Set<Customer>()
+                .Where(c => c.GarageId == garageId)
                 .Select(c => new CreateCarCustomerDropDownViewModel
                 {
                     Id = c.Id,
@@ -71,7 +77,7 @@ namespace CarGarage.Services.Core
 
             if (alreadyHasThisCar) return false;
 
-            // 2. Намиране на ОРИГИНАЛНИЯ гараж на текущия потребител (ВМЕСТО ПЪРВИЯ СРЕЩНАТ)
+            // 2. Намиране на ОРИГИНАЛНИЯ гараж на текущия потребител
             var userGarage = await context.Set<Garage>().FirstOrDefaultAsync(g => g.OwnerId == userId);
 
             // Ако потребителят няма гараж, не можем да добавим клиент/кола към нищо
@@ -108,7 +114,7 @@ namespace CarGarage.Services.Core
                         PhoneNumber = model.NewCustomerPhoneNumber.Trim(),
                         Address = model.NewCustomerAddress.Trim(),
                         City = model.NewCustomerCity.Trim(),
-                        GarageId = garageId // Вече е правилният гараж на потребителя!
+                        GarageId = garageId
                     };
                     await context.Set<Customer>().AddAsync(newIndividual);
                     await context.SaveChangesAsync();
@@ -135,7 +141,7 @@ namespace CarGarage.Services.Core
                         PhoneNumber = model.NewCustomerPhoneNumber.Trim(),
                         Address = model.NewCustomerAddress.Trim(),
                         City = model.NewCustomerCity.Trim(),
-                        GarageId = garageId // Вече е правилният гараж на потребителя!
+                        GarageId = garageId
                     };
                     await context.Set<Customer>().AddAsync(newCompany);
                     await context.SaveChangesAsync();
@@ -167,7 +173,7 @@ namespace CarGarage.Services.Core
             // 5. Обвързване на колата с ТЕКУЩИЯ потребител
             var userCar = new UserCars
             {
-                UserId = userId, // Провери дали методът GetUserId() в BaseController връща точно правилното ID
+                UserId = userId,
                 CarId = car.Id,
                 AddedDate = DateTime.UtcNow
             };
@@ -218,7 +224,11 @@ namespace CarGarage.Services.Core
 
             if (car == null) return null;
 
+            var userGarage = await context.Set<Garage>().FirstOrDefaultAsync(g => g.OwnerId == userId);
+            int garageId = userGarage?.Id ?? 0;
+
             var customers = await context.Set<Customer>()
+                .Where(c => c.GarageId == garageId)
                 .Select(c => new CreateCarCustomerDropDownViewModel
                 {
                     Id = c.Id,
