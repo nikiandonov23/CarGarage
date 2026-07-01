@@ -1,81 +1,227 @@
 ﻿@model CarGarage.ViewModels.Cars.CreateCarViewModel
 
-<form asp-action="Create" method="post">
-    @Html.AntiForgeryToken()
+@{
+    ViewData["Title"] = "Добавяне на автомобил";
+}
 
-    <div class="row g-4">
-        <div class="col-md-6">
-            <label asp-for="RegistrationNumber" class="form-label fw-bold"></label>
-            <input asp-for="RegistrationNumber" class="form-control" />
-            <span asp-validation-for="RegistrationNumber" class="text-danger"></span>
-        </div>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white py-3">
+                    <h3 class="card-title mb-0 fw-bold">
+                        <i class="bi bi-plus-circle me-2"></i>Добавяне на нов автомобил
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
 
-        <div class="col-md-6">
-            <label asp-for="Vin" class="form-label fw-bold"></label>
-            <input asp-for="Vin" class="form-control" />
-            <span asp-validation-for="Vin" class="text-danger"></span>
-        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label asp-for="RegistrationNumber" class="form-label fw-bold text-secondary"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
+                                    <input asp-for="RegistrationNumber" class="form-control" placeholder="напр. CB1234AB" />
+                                </div>
+                                <span asp-validation-for="RegistrationNumber" class="text-danger small"></span>
+                            </div>
 
-        <div class="col-md-4">
-            <label asp-for="MakeId" class="form-label fw-bold">Марка *</label>
-            <select asp-for="MakeId" id="MakeSelect" class="form-select"
-                    asp-items="@(new SelectList(Model.MakeList, "Id", "Name"))">
-                <option value="">-- Избери марка --</option>
-            </select>
-            <span asp-validation-for="MakeId" class="text-danger"></span>
-        </div>
+                            <div class="col-md-6">
+                                <label asp-for="Vin" class="form-label fw-bold text-secondary"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-info-circle"></i></span>
+                                    <input asp-for="Vin" class="form-control" placeholder="17-цифрен VIN" />
+                                </div>
+                                <span asp-validation-for="Vin" class="text-danger small"></span>
+                            </div>
 
-        <div class="col-md-4">
-            <label asp-for="ModelId" class="form-label fw-bold">Модел *</label>
-            <select asp-for="ModelId" id="ModelSelect" class="form-select">
-                <option value="">-- Избери модел --</option>
-            </select>
-            <span asp-validation-for="ModelId" class="text-danger"></span>
-        </div>
+                            <div class="col-md-4">
+                                <label asp-for="MakeId" class="form-label fw-bold text-secondary">Марка *</label>
+                                <select asp-for="MakeId" id="MakeSelect" class="form-select shadow-none"
+                                        asp-items="@(new SelectList(Model.MakeList, "Id", "Name"))">
+                                    <option value="">-- Избери марка --</option>
+                                </select>
+                                <span asp-validation-for="MakeId" class="text-danger small"></span>
+                            </div>
 
-        <div class="col-md-4">
-            <label asp-for="ModelYear" class="form-label fw-bold"></label>
-            <input asp-for="ModelYear" class="form-control" />
-            <span asp-validation-for="ModelYear" class="text-danger"></span>
-        </div>
+                            <div class="col-md-4">
+                                <label asp-for="ModelId" class="form-label fw-bold text-secondary">Модел *</label>
+                                <select asp-for="ModelId" id="ModelSelect" class="form-select shadow-none"
+                                        asp-items="@(Model.ModelList != null ? new SelectList(Model.ModelList, "Id", "Name") : Enumerable.Empty<SelectListItem>())">
+                                    <option value="">-- Избери модел --</option>
+                                </select>
+                                <span asp-validation-for="ModelId" class="text-danger small"></span>
+                            </div>
 
-        <div class="col-md-6">
-            <label asp-for="Mileage" class="form-label fw-bold"></label>
-            <input asp-for="Mileage" class="form-control" />
-        </div>
+                            <div class="col-md-4">
+                                <label asp-for="ModelYear" class="form-label fw-bold text-secondary"></label>
+                                <input asp-for="ModelYear" class="form-control shadow-none" />
+                                <span asp-validation-for="ModelYear" class="text-danger small"></span>
+                            </div>
 
-        <div class="col-md-6">
-            <label asp-for="ImageUrl" class="form-label fw-bold"></label>
-            <input asp-for="ImageUrl" class="form-control" />
-        </div>
+                            <div class="col-md-12 border-top pt-3 mt-4">
+                                <h5 class="text-success mb-3"><i class="bi bi-person-fill me-2"></i>Информация за собственик (Клиент) *</h5>
 
-        <div class="col-12">
-            <label asp-for="Notes" class="form-label fw-bold"></label>
-            <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                                <div class="mb-3">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" asp-for="IsNewCustomer" value="false" id="radioExisting" checked />
+                                        <label class="form-check-label fw-bold" for="radioExisting">Съществуващ клиент</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" asp-for="IsNewCustomer" value="true" id="radioNew" />
+                                        <label class="form-check-label fw-bold" for="radioNew">Нов клиент</label>
+                                    </div>
+                                </div>
+
+                                <div id="existingCustomerBlock" class="mb-3">
+                                    <label asp-for="CustomerId" class="form-label fw-bold text-secondary">Изберете клиент *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="bi bi-person-badge"></i></span>
+                                        <select asp-for="CustomerId" class="form-select shadow-none"
+                                                asp-items="@(new SelectList(Model.CustomerList, "Id", "Name"))">
+                                            <option value="">-- Изберете клиент --</option>
+                                        </select>
+                                    </div>
+                                    <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                                </div>
+
+                                <div id="newCustomerBlock" class="p-3 border rounded bg-light mb-3" style="display: none;">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-secondary">Вид на новия клиент</label>
+                                        <div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" asp-for="NewCustomerType" value="Individual" id="typeIndividual" checked />
+                                                <label class="form-check-label" for="typeIndividual">Физическо лице</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" asp-for="NewCustomerType" value="LegalEntity" id="typeLegal" />
+                                                <label class="form-check-label" for="typeLegal">Юридическо лице (Фирма)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label asp-for="NewCustomerEmail" class="form-label small fw-bold text-secondary">Имейл *</label>
+                                            <input asp-for="NewCustomerEmail" class="form-control form-control-sm shadow-none" type="email" />
+                                            <span asp-validation-for="NewCustomerEmail" class="text-danger small"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="NewCustomerPhoneNumber" class="form-label small fw-bold text-secondary">Телефонен номер *</label>
+                                            <input asp-for="NewCustomerPhoneNumber" class="form-control form-control-sm shadow-none" />
+                                            <span asp-validation-for="NewCustomerPhoneNumber" class="text-danger small"></span>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <label asp-for="NewCustomerAddress" class="form-label small fw-bold text-secondary">Адрес *</label>
+                                            <input asp-for="NewCustomerAddress" class="form-control form-control-sm shadow-none" />
+                                            <span asp-validation-for="NewCustomerAddress" class="text-danger small"></span>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label asp-for="NewCustomerCity" class="form-label small fw-bold text-secondary">Град *</label>
+                                            <input asp-for="NewCustomerCity" class="form-control form-control-sm shadow-none" />
+                                            <span asp-validation-for="NewCustomerCity" class="text-danger small"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3" id="individualFields">
+                                        <div class="col-md-4">
+                                            <label asp-for="NewFirstName" class="form-label small fw-bold text-secondary">Име *</label>
+                                            <input asp-for="NewFirstName" class="form-control form-control-sm shadow-none" />
+                                            <span asp-validation-for="NewFirstName" class="text-danger small"></span>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label asp-for="NewLastName" class="form-label small fw-bold text-secondary">Фамилия *</label>
+                                            <input asp-for="NewLastName" class="form-control form-control-sm shadow-none" />
+                                            <span asp-validation-for="NewLastName" class="text-danger small"></span>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label asp-for="NewCustomerEgn" class="form-label small fw-bold text-secondary">ЕГН *</label>
+                                            <input asp-for="NewCustomerEgn" class="form-control form-control-sm shadow-none" maxlength="10" />
+                                            <span asp-validation-for="NewCustomerEgn" class="text-danger small"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3" id="legalFields" style="display: none;">
+                                        <div class="col-md-6">
+                                            <label asp-for="NewCompanyName" class="form-label small fw-bold text-secondary">Име на фирма *</label>
+                                            <input asp-for="NewCompanyName" class="form-control form-control-sm shadow-none" />
+                                            <span asp-validation-for="NewCompanyName" class="text-danger small"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="NewCustomerVatNumber" class="form-label small fw-bold text-secondary">ЕИК / БУЛСТАТ *</label>
+                                            <input asp-for="NewCustomerVatNumber" class="form-control form-control-sm shadow-none" />
+                                            <span asp-validation-for="NewCustomerVatNumber" class="text-danger small"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="NewCustomerResponsiblePerson" class="form-label small fw-bold text-secondary">МОЛ *</label>
+                                            <input asp-for="NewCustomerResponsiblePerson" class="form-control form-control-sm shadow-none" />
+                                            <span asp-validation-for="NewCustomerResponsiblePerson" class="text-danger small"></span>
+                                        </div>
+                                        <div class="col-md-6 d-flex align-items-end pb-1">
+                                            <div class="form-check ms-2">
+                                                <input class="form-check-input" type="checkbox" asp-for="NewCustomerIsVatRegistered" id="checkVat" />
+                                                <label class="form-check-label fw-bold text-secondary small" for="checkVat">Регистриран по ДДС</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Mileage" class="form-label fw-bold text-secondary"></label>
+                                <div class="input-group">
+                                    <input asp-for="Mileage" class="form-control shadow-none" />
+                                    <span class="input-group-text bg-light">км</span>
+                                </div>
+                                <span asp-validation-for="Mileage" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="ImageUrl" class="form-label fw-bold text-secondary"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-image"></i></span>
+                                    <input asp-for="ImageUrl" class="form-control shadow-none" placeholder="https://..." />
+                                </div>
+                                <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Notes" class="form-label fw-bold text-secondary"></label>
+                                <textarea asp-for="Notes" class="form-control shadow-none" rows="3" placeholder="Добавете важна информация тук..."></textarea>
+                                <span asp-validation-for="Notes" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-arrow-left me-2"></i>Отказ
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm">
+                                <i class="bi bi-check-circle me-2"></i>Запази колата
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
-
-    <button type="submit" class="btn btn-success mt-4">Запази колата</button>
-</form>
+</div>
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
     <script>
         $(function () {
+            // Логика за марките и моделите
             $('#MakeSelect').change(function () {
                 var selectedMakeId = $(this).val();
                 var $modelSelect = $('#ModelSelect');
-
-                
                 $modelSelect.empty().append('<option value="">-- Избери модел --</option>');
 
                 if (selectedMakeId) {
-                    
                     $.getJSON('@Url.Action("GetModelsByMake", "MyCars")', { makeId: selectedMakeId }, function (data) {
-                        console.log("Данни от сървъра:", data); 
-
                         $.each(data, function (i, item) {
-                            
                             $modelSelect.append($('<option>', {
                                 value: item.id,
                                 text: item.name
@@ -84,6 +230,28 @@
                     }).fail(function() {
                         alert("Грешка при зареждане на моделите!");
                     });
+                }
+            });
+
+            // Логика за превключване между Нов и Съществуващ клиент
+            $('input[name="IsNewCustomer"]').change(function () {
+                if ($(this).val() === 'true') {
+                    $('#existingCustomerBlock').hide();
+                    $('#newCustomerBlock').show();
+                } else {
+                    $('#existingCustomerBlock').show();
+                    $('#newCustomerBlock').hide();
+                }
+            });
+
+            // Логика за превключване между Физическо и Юридическо лице
+            $('input[name="NewCustomerType"]').change(function () {
+                if ($(this).val() === 'Individual') {
+                    $('#individualFields').show();
+                    $('#legalFields').hide();
+                } else {
+                    $('#individualFields').hide();
+                    $('#legalFields').show();
                 }
             });
         });

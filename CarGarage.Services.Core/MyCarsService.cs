@@ -8,7 +8,6 @@ namespace CarGarage.Services.Core
 {
     public class MyCarsService(ApplicationDbContext context) : IMyCarsService
     {
-        // връща списък с колите на юзърааа
         public async Task<IndexMyCarsViewModel> GetAllUserCarsAsync(string userId)
         {
             var cars = await context.UserCars
@@ -30,55 +29,124 @@ namespace CarGarage.Services.Core
             return new IndexMyCarsViewModel { Cars = cars };
         }
 
-
-        //връща криеййт моделчееее
-
         public async Task<CreateCarViewModel> GetCreateCarViewModelAsync()
         {
+            var customers = await context.Set<Customer>()
+                .Select(c => new CreateCarCustomerDropDownViewModel
+                {
+                    Id = c.Id,
+                    Name = c is IndividualCustomer
+                        ? ((IndividualCustomer)c).FirstName + " " + ((IndividualCustomer)c).LastName
+                        : ((LegalEntityCustomer)c).CompanyName
+                })
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
             return new CreateCarViewModel
             {
                 MakeList = await context.Makes
-                    .Select(m => new CreateCarMakeDropDownViewModel
-                    {
-                        Id = m.Id,
-                        Name = m.Name
-                    })
+                    .Select(m => new CreateCarMakeDropDownViewModel { Id = m.Id, Name = m.Name })
                     .OrderBy(m => m.Name)
-                    .ToListAsync()
+                    .ToListAsync(),
+                CustomerList = customers
             };
         }
 
-
-
-        //връща моделитее за даден мейк
         public async Task<IEnumerable<CreateCarModelDropDownViewModel>> GetModelsByMakeAsync(int makeId)
         {
             return await context.Models
                 .Where(m => m.MakeId == makeId)
-                .Select(m => new CreateCarModelDropDownViewModel
-                {
-                    Id = m.Id,
-                    Name = m.Name
-                })
+                .Select(m => new CreateCarModelDropDownViewModel { Id = m.Id, Name = m.Name })
                 .OrderBy(m => m.Name)
                 .ToListAsync();
         }
 
         public async Task<bool> AddCarToUserAsync(CreateCarViewModel model, string userId)
         {
+            // 1. Проверка за дублиран автомобил за ТОЗИ потребител
             var alreadyHasThisCar = await context.UserCars
                 .AnyAsync(uc => uc.UserId == userId &&
                                 (uc.Car.RegistrationNumber == model.RegistrationNumber ||
-                                (uc.Car.Vin == model.Vin && model.Vin != "")));
+                                (uc.Car.Vin == model.Vin && model.Vin != "" && model.Vin != null)));
 
-            if (alreadyHasThisCar)
+            if (alreadyHasThisCar) return false;
+
+            // 2. Намиране на ОРИГИНАЛНИЯ гараж на текущия потребител (ВМЕСТО ПЪРВИЯ СРЕЩНАТ)
+            var userGarage = await context.Set<Garage>().FirstOrDefaultAsync(g => g.OwnerId == userId);
+
+            // Ако потребителят няма гараж, не можем да добавим клиент/кола към нищо
+            if (userGarage == null) return false;
+
+            int garageId = userGarage.Id;
+            int? finalCustomerId = null;
+
+            // 3. Обработка на Клиента - Съществуващ или Нов
+            if (!model.IsNewCustomer)
             {
-                return false;
+                if (!model.CustomerId.HasValue) return false;
+                finalCustomerId = model.CustomerId.Value;
+            }
+            else
+            {
+                if (model.NewCustomerType == "Individual")
+                {
+                    if (string.IsNullOrWhiteSpace(model.NewFirstName) ||
+                        string.IsNullOrWhiteSpace(model.NewLastName) ||
+                        string.IsNullOrWhiteSpace(model.NewCustomerAddress) ||
+                        string.IsNullOrWhiteSpace(model.NewCustomerCity) ||
+                        string.IsNullOrWhiteSpace(model.NewCustomerEmail) ||
+                        string.IsNullOrWhiteSpace(model.NewCustomerPhoneNumber) ||
+                        string.IsNullOrWhiteSpace(model.NewCustomerEgn))
+                        return false;
+
+                    var newIndividual = new IndividualCustomer
+                    {
+                        FirstName = model.NewFirstName.Trim(),
+                        LastName = model.NewLastName.Trim(),
+                        Egn = model.NewCustomerEgn.Trim(),
+                        Email = model.NewCustomerEmail.Trim(),
+                        PhoneNumber = model.NewCustomerPhoneNumber.Trim(),
+                        Address = model.NewCustomerAddress.Trim(),
+                        City = model.NewCustomerCity.Trim(),
+                        GarageId = garageId // Вече е правилният гараж на потребителя!
+                    };
+                    await context.Set<Customer>().AddAsync(newIndividual);
+                    await context.SaveChangesAsync();
+                    finalCustomerId = newIndividual.Id;
+                }
+                else if (model.NewCustomerType == "LegalEntity")
+                {
+                    if (string.IsNullOrWhiteSpace(model.NewCompanyName) ||
+                        string.IsNullOrWhiteSpace(model.NewCustomerVatNumber) ||
+                        string.IsNullOrWhiteSpace(model.NewCustomerResponsiblePerson) ||
+                        string.IsNullOrWhiteSpace(model.NewCustomerAddress) ||
+                        string.IsNullOrWhiteSpace(model.NewCustomerCity) ||
+                        string.IsNullOrWhiteSpace(model.NewCustomerEmail) ||
+                        string.IsNullOrWhiteSpace(model.NewCustomerPhoneNumber))
+                        return false;
+
+                    var newCompany = new LegalEntityCustomer
+                    {
+                        CompanyName = model.NewCompanyName.Trim(),
+                        VatNumber = model.NewCustomerVatNumber.Trim(),
+                        IsVatRegistered = model.NewCustomerIsVatRegistered,
+                        ResponsiblePerson = model.NewCustomerResponsiblePerson.Trim(),
+                        Email = model.NewCustomerEmail.Trim(),
+                        PhoneNumber = model.NewCustomerPhoneNumber.Trim(),
+                        Address = model.NewCustomerAddress.Trim(),
+                        City = model.NewCustomerCity.Trim(),
+                        GarageId = garageId // Вече е правилният гараж на потребителя!
+                    };
+                    await context.Set<Customer>().AddAsync(newCompany);
+                    await context.SaveChangesAsync();
+                    finalCustomerId = newCompany.Id;
+                }
             }
 
             var makeObj = await context.Makes.FirstOrDefaultAsync(m => m.Id == model.MakeId);
             var modelObj = await context.Models.FirstOrDefaultAsync(m => m.Id == model.ModelId);
 
+            // 4. Създаване на колата
             var car = new Car
             {
                 RegistrationNumber = model.RegistrationNumber ?? "",
@@ -90,15 +158,16 @@ namespace CarGarage.Services.Core
                 Make = makeObj?.Name ?? "Unknown",
                 Model = modelObj?.Name ?? "Unknown",
                 AddedDate = DateTime.UtcNow,
-                
+                CustomerId = finalCustomerId
             };
 
             await context.Cars.AddAsync(car);
             await context.SaveChangesAsync();
 
+            // 5. Обвързване на колата с ТЕКУЩИЯ потребител
             var userCar = new UserCars
             {
-                UserId = userId,
+                UserId = userId, // Провери дали методът GetUserId() в BaseController връща точно правилното ID
                 CarId = car.Id,
                 AddedDate = DateTime.UtcNow
             };
@@ -108,7 +177,6 @@ namespace CarGarage.Services.Core
 
             return true;
         }
-
 
         public async Task<CarViewModel?> GetCarByIdAsync(int carId, string userId)
         {
@@ -125,7 +193,6 @@ namespace CarGarage.Services.Core
                 .FirstOrDefaultAsync();
         }
 
-        // ТРИЕеееееееееее
         public async Task<bool> DeleteCarForUserAsync(int carId, string userId)
         {
             var userCar = await context.UserCars
@@ -133,21 +200,14 @@ namespace CarGarage.Services.Core
 
             if (userCar == null) return false;
 
-            // маха връзката
             context.UserCars.Remove(userCar);
 
-
             var car = await context.Cars.FindAsync(carId);
-            if (car != null)
-            {
-                context.Cars.Remove(car);
-            }
+            if (car != null) context.Cars.Remove(car);
 
             await context.SaveChangesAsync();
             return true;
         }
-
-
 
         public async Task<CreateCarViewModel?> GetCarForEditAsync(int carId, string userId)
         {
@@ -158,22 +218,34 @@ namespace CarGarage.Services.Core
 
             if (car == null) return null;
 
+            var customers = await context.Set<Customer>()
+                .Select(c => new CreateCarCustomerDropDownViewModel
+                {
+                    Id = c.Id,
+                    Name = c is IndividualCustomer
+                        ? ((IndividualCustomer)c).FirstName + " " + ((IndividualCustomer)c).LastName
+                        : ((LegalEntityCustomer)c).CompanyName
+                })
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
             var viewModel = new CreateCarViewModel
             {
-
+                Id = car.Id,
                 Vin = car.Vin,
                 RegistrationNumber = car.RegistrationNumber,
                 ModelYear = car.ModelYear,
                 Mileage = car.Mileage,
                 ImageUrl = car.ImageUrl,
                 Notes = car.Notes,
+                CustomerId = car.CustomerId,
 
                 MakeList = await context.Makes
                     .Select(m => new CreateCarMakeDropDownViewModel { Id = m.Id, Name = m.Name })
                     .OrderBy(m => m.Name)
-                    .ToListAsync()
+                    .ToListAsync(),
+                CustomerList = customers
             };
-
 
             var make = await context.Makes.FirstOrDefaultAsync(m => m.Name == car.Make);
             if (make != null)
@@ -190,7 +262,6 @@ namespace CarGarage.Services.Core
 
         public async Task<bool> UpdateCarAsync(CreateCarViewModel model, string userId)
         {
-
             var car = await context.UserCars
                 .Where(uc => uc.UserId == userId && uc.CarId == model.Id)
                 .Select(uc => uc.Car)
@@ -198,10 +269,8 @@ namespace CarGarage.Services.Core
 
             if (car == null) return false;
 
-
             var makeObj = await context.Makes.FindAsync(model.MakeId);
             var modelObj = await context.Models.FindAsync(model.ModelId);
-
 
             car.RegistrationNumber = model.RegistrationNumber;
             car.Vin = model.Vin ?? "";
@@ -211,13 +280,10 @@ namespace CarGarage.Services.Core
             car.Notes = model.Notes;
             car.Make = makeObj?.Name ?? "Unknown";
             car.Model = modelObj?.Name ?? "Unknown";
-
+            car.CustomerId = model.CustomerId;
 
             await context.SaveChangesAsync();
-
             return true;
         }
-
-        // ======================================================================== до тук бачка 
     }
 }
