@@ -11,7 +11,7 @@ namespace CarGarage.Services.Core
         public async Task<IEnumerable<PartViewModel>> GetPartsByCarIdAsync(int carId, string userId)
         {
             return await context.Parts
-                .Where(p => p.CarId == carId && p.Garage.OwnerId == userId) // Филтър по потребител
+                .Where(p => p.CarId == carId && p.Garage != null && p.Garage.OwnerId == userId) // Филтър по потребител
                 .OrderByDescending(p => p.Id)
                 .Select(p => new PartViewModel
                 {
@@ -29,7 +29,7 @@ namespace CarGarage.Services.Core
         public async Task<PartViewModel?> GetPartByIdAsync(int id, string userId)
         {
             return await context.Parts
-                .Where(p => p.Id == id && p.Garage.OwnerId == userId)
+                .Where(p => p.Id == id && p.Garage != null && p.Garage.OwnerId == userId)
                 .Select(p => new PartViewModel
                 {
                     Id = p.Id,
@@ -47,7 +47,7 @@ namespace CarGarage.Services.Core
         public async Task<PartFormModel?> GetPartFormModelByIdAsync(int id, string userId)
         {
             return await context.Parts
-                .Where(p => p.Id == id && p.Garage.OwnerId == userId)
+                .Where(p => p.Id == id && p.Garage != null && p.Garage.OwnerId == userId)
                 .Select(p => new PartFormModel
                 {
                     CarId = p.CarId,
@@ -86,7 +86,7 @@ namespace CarGarage.Services.Core
         public async Task UpdatePartAsync(int id, PartFormModel model, string userId)
         {
             var part = await context.Parts
-                .FirstOrDefaultAsync(p => p.Id == id && p.Garage.OwnerId == userId);
+                .FirstOrDefaultAsync(p => p.Id == id && p.Garage != null && p.Garage.OwnerId == userId);
 
             if (part != null)
             {
@@ -102,7 +102,7 @@ namespace CarGarage.Services.Core
         public async Task DeleteAsync(int id, string userId)
         {
             var part = await context.Parts
-                .FirstOrDefaultAsync(p => p.Id == id && p.Garage.OwnerId == userId);
+                .FirstOrDefaultAsync(p => p.Id == id && p.Garage != null && p.Garage.OwnerId == userId);
 
             if (part != null)
             {

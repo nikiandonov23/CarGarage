@@ -12,18 +12,18 @@ namespace CarGarage.Services.Core
         {
             // Филтрираме клиентите, така че потребителят да вижда само тези от неговия гараж
             var query = context.Customers
-                .Where(c => c.Garage.OwnerId == userId)
+                .Where(c => c.Garage != null && c.Garage.OwnerId == userId)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 searchTerm = searchTerm.ToLower();
                 query = query.Where(c =>
-                    c.Email.ToLower().Contains(searchTerm) ||
-                    c.PhoneNumber.Contains(searchTerm) ||
-                    (c is IndividualCustomer && ((IndividualCustomer)c).FirstName.ToLower().Contains(searchTerm)) ||
-                    (c is IndividualCustomer && ((IndividualCustomer)c).LastName.ToLower().Contains(searchTerm)) ||
-                    (c is LegalEntityCustomer && ((LegalEntityCustomer)c).CompanyName.ToLower().Contains(searchTerm)));
+                    (c.Email ?? string.Empty).ToLower().Contains(searchTerm) ||
+                    (c.PhoneNumber ?? string.Empty).Contains(searchTerm) ||
+                    (c is IndividualCustomer && (((IndividualCustomer)c).FirstName ?? string.Empty).ToLower().Contains(searchTerm)) ||
+                    (c is IndividualCustomer && (((IndividualCustomer)c).LastName ?? string.Empty).ToLower().Contains(searchTerm)) ||
+                    (c is LegalEntityCustomer && (((LegalEntityCustomer)c).CompanyName ?? string.Empty).ToLower().Contains(searchTerm)));
             }
 
             var customers = await query
@@ -51,7 +51,7 @@ namespace CarGarage.Services.Core
                 .Include(c => c.Cars)
                     .ThenInclude(car => car.Invoices)
                         .ThenInclude(inv => inv.Parts)
-                .FirstOrDefaultAsync(c => c.Id == id && c.Garage.OwnerId == userId);
+                .FirstOrDefaultAsync(c => c.Id == id && c.Garage != null && c.Garage.OwnerId == userId);
 
             if (customer == null) return null;
 
@@ -97,7 +97,7 @@ namespace CarGarage.Services.Core
         public async Task<CustomerFormViewModel?> GetCustomerForEditAsync(int id, string userId)
         {
             var c = await context.Customers
-                .FirstOrDefaultAsync(x => x.Id == id && x.Garage.OwnerId == userId);
+                .FirstOrDefaultAsync(x => x.Id == id && x.Garage != null && x.Garage.OwnerId == userId);
 
             if (c == null) return null;
 

@@ -11,26 +11,27 @@ namespace CarGarage.Web.Controllers
         
         [HttpGet]
         [HttpGet("Index")]
-        public async Task<IActionResult> Index(string? searchTerm, int? makeId, int? modelId)
+        public async Task<IActionResult> Index(string? searchTerm, string? customerName, int? makeId, int? modelId)
         {
             
             var viewModel = await searchService.GetSearchModelAsync();
 
-            
+
+
             viewModel.SearchTerm = searchTerm;
+            viewModel.CustomerName = customerName;
             viewModel.MakeId = makeId;
             viewModel.ModelId = modelId;
 
-            
             if (makeId.HasValue && makeId > 0)
             {
                 viewModel.Models = await myCarsService.GetModelsByMakeAsync(makeId.Value);
             }
 
-           
-            viewModel.Results = await searchService.SearchCarsAsync(searchTerm, makeId, modelId);
+            viewModel.Results = await searchService.SearchCarsAsync(searchTerm, customerName, makeId, modelId);
 
             return View(viewModel);
+
         }
     }
 }

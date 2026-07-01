@@ -270,3 +270,4 @@ C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarG
 C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage\obj\Debug\net8.0\ref\CarGarage.Web.dll
 C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage\bin\Debug\net8.0\CarGarage.Services.Core.dll
 C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage\bin\Debug\net8.0\CarGarage.Services.Core.pdb
+C:\Users\nikia\source\repos\C# Web\ASP.NET Advanced - юни 2025\CarGarage\CarGarage\obj\Debug\net8.0\swae.build.ex.cache

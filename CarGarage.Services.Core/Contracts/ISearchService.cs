@@ -9,6 +9,6 @@ namespace CarGarage.Services.Core.Contracts
         Task<SearchCarsViewModel> GetSearchModelAsync();
 
         // филтърче
-        Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, int? makeId, int? modelId);
+        Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId);
     }
 }

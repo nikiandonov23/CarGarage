@@ -31,17 +31,17 @@ public class GarageService : IGarageService
     {
         return await _context.Garages
             .Where(g => g.OwnerId == userId)
-            .Select(g => new GarageViewModel
-            {
-                OwnerName = g.OwnerName,
-                Name = g.Name,
-                Bulstat = g.Bulstat,
-                City = g.City,
-                Address = g.Address,
-                PhoneNumber = g.PhoneNumber,
-                Latitude = g.Latitude,
-                Longitude = g.Longitude
-            })
+                .Select(g => new GarageViewModel
+                {
+                    OwnerName = g.OwnerName,
+                    Name = g.Name!,
+                    Bulstat = g.Bulstat!,
+                    City = g.City!,
+                    Address = g.Address!,
+                    PhoneNumber = g.PhoneNumber,
+                    Latitude = g.Latitude,
+                    Longitude = g.Longitude
+                })
             .FirstOrDefaultAsync();
     }
 

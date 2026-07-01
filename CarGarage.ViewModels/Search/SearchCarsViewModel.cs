@@ -5,8 +5,9 @@ namespace CarGarage.ViewModels.Search
 {
     public class SearchCarsViewModel
     {
-        
-        public string? SearchTerm { get; set; } 
+
+        public string? SearchTerm { get; set; }
+        public string? CustomerName { get; set; }
         public int? MakeId { get; set; }
         public int? ModelId { get; set; }
 

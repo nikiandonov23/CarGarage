@@ -28,7 +28,7 @@ namespace CarGarage.Services.Core
         }
 
         
-        public async Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, int? makeId, int? modelId)
+        public async Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId)
         {
             //лепя филтрите към осн. заявка дето зема вс коли 
             var query = context.Cars.AsNoTracking().AsQueryable();
@@ -37,8 +37,8 @@ namespace CarGarage.Services.Core
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 var term = searchTerm.Trim().ToLower();
-                query = query.Where(c => c.RegistrationNumber.ToLower().Contains(term) ||
-                                         c.Vin.ToLower().Contains(term));
+                query = query.Where(c => (c.RegistrationNumber ?? string.Empty).ToLower().Contains(term) ||
+                                         (c.Vin ?? string.Empty).ToLower().Contains(term));
             }
 
             // пресявам ги по марката
@@ -69,7 +69,15 @@ namespace CarGarage.Services.Core
                 }
             }
 
-          
+            // търсене по име на клиент (физическо или юридическо лице)
+            if (!string.IsNullOrWhiteSpace(customerName))
+            {
+                var term = customerName.Trim().ToLower();
+                query = query.Where(c => c.Customer != null && (
+                    (c.Customer is IndividualCustomer && ((((IndividualCustomer)c.Customer).FirstName ?? string.Empty).ToLower().Contains(term) || (((IndividualCustomer)c.Customer).LastName ?? string.Empty).ToLower().Contains(term))) ||
+                    (c.Customer is LegalEntityCustomer && (((LegalEntityCustomer)c.Customer).CompanyName ?? string.Empty).ToLower().Contains(term))
+                ));
+            }
             return await query
                 .Select(c => new CarViewModel
                 {
