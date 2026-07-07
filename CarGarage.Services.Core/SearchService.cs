@@ -27,6 +27,40 @@ namespace CarGarage.Services.Core
             };
         }
 
+        public async Task<SearchCarsViewModel> GetSearchModelAsync(string? searchTerm, string? customerName, int? makeId, int? modelId)
+        {
+            // Start from base model with makes
+            var viewModel = await GetSearchModelAsync();
+
+            // set filter values
+            viewModel.SearchTerm = searchTerm;
+            viewModel.CustomerName = customerName;
+            viewModel.MakeId = makeId;
+            viewModel.ModelId = modelId;
+
+            // load models for selected make
+            if (makeId.HasValue && makeId > 0)
+            {
+                var models = await context.Models
+                    .Where(m => m.MakeId == makeId.Value)
+                    .Select(m => new CreateCarModelDropDownViewModel
+                    {
+                        Id = m.Id,
+                        Name = m.Name,
+                        MakeId = m.MakeId
+                    })
+                    .OrderBy(m => m.Name)
+                    .ToListAsync();
+
+                viewModel.Models = models;
+            }
+
+            // search results
+            viewModel.Results = (await SearchCarsAsync(searchTerm, customerName, makeId, modelId)).ToList();
+
+            return viewModel;
+        }
+
         
         public async Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId)
         {
@@ -41,7 +75,7 @@ namespace CarGarage.Services.Core
                                          (c.Vin ?? string.Empty).ToLower().Contains(term));
             }
 
-            // пресявам ги по марката
+            // пресявам ги по марката 
             if (makeId.HasValue && makeId > 0)
             {
                 var makeName = await context.Makes

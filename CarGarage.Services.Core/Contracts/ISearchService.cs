@@ -8,6 +8,8 @@ namespace CarGarage.Services.Core.Contracts
         // гласи марките за дропдауна
         Task<SearchCarsViewModel> GetSearchModelAsync();
 
+        Task<SearchCarsViewModel> GetSearchModelAsync(string? searchTerm, string? customerName, int? makeId, int? modelId);
+
         // филтърче
         Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId);
     }
