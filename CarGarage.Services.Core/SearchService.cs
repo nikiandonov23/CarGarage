@@ -27,7 +27,7 @@ namespace CarGarage.Services.Core
             };
         }
 
-        public async Task<SearchCarsViewModel> GetSearchModelAsync(string? searchTerm, string? customerName, int? makeId, int? modelId)
+        public async Task<SearchCarsViewModel> GetSearchModelAsync(string? searchTerm, string? customerName, int? makeId, int? modelId, string? userId)
         {
             // Start from base model with makes
             var viewModel = await GetSearchModelAsync();
@@ -56,13 +56,19 @@ namespace CarGarage.Services.Core
             }
 
             // search results
-            viewModel.Results = (await SearchCarsAsync(searchTerm, customerName, makeId, modelId)).ToList();
+            viewModel.Results = (await SearchCarsAsync(searchTerm, customerName, makeId, modelId, userId)).ToList();
 
             return viewModel;
         }
 
+        // Backwards-compatible overload without userId
+        public async Task<SearchCarsViewModel> GetSearchModelAsync(string? searchTerm, string? customerName, int? makeId, int? modelId)
+        {
+            return await GetSearchModelAsync(searchTerm, customerName, makeId, modelId, null);
+        }
+
         
-        public async Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId)
+        public async Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId, string? userId)
         {
             //лепя филтрите към осн. заявка дето зема вс коли 
             var query = context.Cars.AsNoTracking().AsQueryable();
@@ -112,6 +118,12 @@ namespace CarGarage.Services.Core
                     (c.Customer is LegalEntityCustomer && (((LegalEntityCustomer)c.Customer).CompanyName ?? string.Empty).ToLower().Contains(term))
                 ));
             }
+
+            // Ограничаваме резултатите до тези, които принадлежат на текущия потребител
+            if (!string.IsNullOrEmpty(userId))
+            {
+                query = query.Where(c => c.UserCars.Any(uc => uc.UserId == userId));
+            }
             return await query
                 .Select(c => new CarViewModel
                 {
@@ -126,6 +138,12 @@ namespace CarGarage.Services.Core
                     AddedDate = c.AddedDate
                 })
                 .ToListAsync();
+        }
+
+        // Backwards-compatible overload without userId
+        public async Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId)
+        {
+            return await SearchCarsAsync(searchTerm, customerName, makeId, modelId, null);
         }
     }
 }
