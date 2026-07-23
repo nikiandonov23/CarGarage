@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using CarGarage.Services.Core.Contracts;
 using CarGarage.ViewModels.Customers;
 using Microsoft.AspNetCore.Authorization;
@@ -48,7 +48,6 @@ namespace CarGarage.Web.Controllers
 
 
 
-
             var model = await invoicesService.GetInvoiceDetailsAsync(id, userId);
             if (model == null) return NotFound();
             return View("~/Views/Invoices/Details.cshtml", model);
@@ -71,7 +70,6 @@ namespace CarGarage.Web.Controllers
 
 
 
-
             var model = await customersService.GetCustomerForEditAsync(id, userId);
             if (model == null) return NotFound();
             return View("Form", model);
@@ -85,7 +83,6 @@ namespace CarGarage.Web.Controllers
                 return Unauthorized();
 
 
-
             if (!ModelState.IsValid) return View("Form", model);
 
             try
@@ -97,30 +94,6 @@ namespace CarGarage.Web.Controllers
             {
                 ModelState.AddModelError("", ex.Message);
                 return View("Form", model);
-            }
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var userId = GetUserId();
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-            try
-            {
-                await customersService.DeleteCustomerAsync(id, userId);
-                return RedirectToAction(nameof(Index));
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = ex.Message;
-                return RedirectToAction(nameof(Details), new { id });
             }
         }
     }

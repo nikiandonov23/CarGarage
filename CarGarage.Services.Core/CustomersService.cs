@@ -188,5 +188,39 @@ namespace CarGarage.Services.Core
 
             await context.SaveChangesAsync();
         }
+
+        public async Task DeleteCustomerAsync(int id, string userId)
+        {
+            // Ensure the customer belongs to the garage of the current user
+            var customer = await context.Customers
+                .Include(c => c.Cars)
+                    .ThenInclude(car => car.Invoices)
+                        .ThenInclude(inv => inv.Parts)
+                .FirstOrDefaultAsync(c => c.Id == id && c.Garage != null && c.Garage.OwnerId == userId);
+
+            if (customer == null) throw new UnauthorizedAccessException("Нямате достъп до този клиент или клиентът не съществува.");
+
+            // Remove related parts, invoices and cars explicitly to ensure cascade behavior is predictable
+            foreach (var car in customer.Cars.ToList())
+            {
+                foreach (var invoice in car.Invoices.ToList())
+                {
+                    // Remove parts
+                    foreach (var part in invoice.Parts.ToList())
+                    {
+                        context.Parts.Remove(part);
+                    }
+
+                    context.Invoices.Remove(invoice);
+                }
+
+                context.Cars.Remove(car);
+            }
+
+            // Finally remove the customer
+            context.Customers.Remove(customer);
+
+            await context.SaveChangesAsync();
+        }
     }
 }
