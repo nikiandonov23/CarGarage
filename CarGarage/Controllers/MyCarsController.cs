@@ -10,6 +10,10 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
     public async Task<IActionResult> Index()
     {
         var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+
         var model = await carsService.GetAllUserCarsAsync(userId);
         return View(model);
     }
@@ -17,7 +21,11 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        var userId = GetUserId();
+        var userId = GetUserId(); 
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+
         var model = await carsService.GetCreateCarViewModelAsync(userId);
         return View(model);
     }
@@ -31,62 +39,64 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CreateCarViewModel model)
+    public async Task<IActionResult> Create(CreateCarViewModel carModel)
     {
         var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
 
         // РЪЧНА СЪРВЪРНА ВАЛИДАЦИЯ ЗА КЛИЕНТА
-        if (!model.IsNewCustomer && !model.CustomerId.HasValue)
+        if (!carModel.IsNewCustomer && !carModel.CustomerId.HasValue)
         {
             ModelState.AddModelError("CustomerId", "Моля, изберете съществуващ клиент.");
         }
-        else if (model.IsNewCustomer)
+        else if (carModel.IsNewCustomer)
         {
             // Проверка на общите задължителни полета за базата данни
-            if (string.IsNullOrWhiteSpace(model.NewCustomerEmail)) ModelState.AddModelError("NewCustomerEmail", "Имейлът е задължителен.");
-            if (string.IsNullOrWhiteSpace(model.NewCustomerPhoneNumber)) ModelState.AddModelError("NewCustomerPhoneNumber", "Телефонният номер е задължителен.");
-            if (string.IsNullOrWhiteSpace(model.NewCustomerAddress)) ModelState.AddModelError("NewCustomerAddress", "Адресът е задължителен.");
-            if (string.IsNullOrWhiteSpace(model.NewCustomerCity)) ModelState.AddModelError("NewCustomerCity", "Градът е задължителен.");
+            if (string.IsNullOrWhiteSpace(carModel.NewCustomerEmail)) ModelState.AddModelError("NewCustomerEmail", "Имейлът е задължителен.");
+            if (string.IsNullOrWhiteSpace(carModel.NewCustomerPhoneNumber)) ModelState.AddModelError("NewCustomerPhoneNumber", "Телефонният номер е задължителен.");
+            if (string.IsNullOrWhiteSpace(carModel.NewCustomerAddress)) ModelState.AddModelError("NewCustomerAddress", "Адресът е задължителен.");
+            if (string.IsNullOrWhiteSpace(carModel.NewCustomerCity)) ModelState.AddModelError("NewCustomerCity", "Градът е задължителен.");
 
-            if (model.NewCustomerType == "Individual")
+            if (carModel.NewCustomerType == "Individual")
             {
-                if (string.IsNullOrWhiteSpace(model.NewFirstName)) ModelState.AddModelError("NewFirstName", "Името е задължително.");
-                if (string.IsNullOrWhiteSpace(model.NewLastName)) ModelState.AddModelError("NewLastName", "Фамилията е задължителна.");
-                if (string.IsNullOrWhiteSpace(model.NewCustomerEgn)) ModelState.AddModelError("NewCustomerEgn", "ЕГН е задължително.");
+                if (string.IsNullOrWhiteSpace(carModel.NewFirstName)) ModelState.AddModelError("NewFirstName", "Името е задължително.");
+                if (string.IsNullOrWhiteSpace(carModel.NewLastName)) ModelState.AddModelError("NewLastName", "Фамилията е задължителна.");
+                if (string.IsNullOrWhiteSpace(carModel.NewCustomerEgn)) ModelState.AddModelError("NewCustomerEgn", "ЕГН е задължително.");
             }
-            else if (model.NewCustomerType == "LegalEntity")
+            else if (carModel.NewCustomerType == "LegalEntity")
             {
-                if (string.IsNullOrWhiteSpace(model.NewCompanyName)) ModelState.AddModelError("NewCompanyName", "Името на фирмата е задължително.");
-                if (string.IsNullOrWhiteSpace(model.NewCustomerVatNumber)) ModelState.AddModelError("NewCustomerVatNumber", "ЕИК / БУЛСТАТ е задължителен.");
-                if (string.IsNullOrWhiteSpace(model.NewCustomerResponsiblePerson)) ModelState.AddModelError("NewCustomerResponsiblePerson", "МОЛ е задължителен.");
+                if (string.IsNullOrWhiteSpace(carModel.NewCompanyName)) ModelState.AddModelError("NewCompanyName", "Името на фирмата е задължително.");
+                if (string.IsNullOrWhiteSpace(carModel.NewCustomerVatNumber)) ModelState.AddModelError("NewCustomerVatNumber", "ЕИК / БУЛСТАТ е задължителен.");
+                if (string.IsNullOrWhiteSpace(carModel.NewCustomerResponsiblePerson)) ModelState.AddModelError("NewCustomerResponsiblePerson", "МОЛ е задължителен.");
             }
         }
 
         if (!ModelState.IsValid)
         {
             var freshModel = await carsService.GetCreateCarViewModelAsync(userId);
-            model.MakeList = freshModel.MakeList;
-            model.CustomerList = freshModel.CustomerList;
-            if (model.MakeId > 0)
+            carModel.MakeList = freshModel.MakeList;
+            carModel.CustomerList = freshModel.CustomerList;
+            if (carModel.MakeId > 0)
             {
-                model.ModelList = await carsService.GetModelsByMakeAsync(model.MakeId);
+                carModel.ModelList = await carsService.GetModelsByMakeAsync(carModel.MakeId);
             }
-            return View(model);
+            return View(carModel);
         }
 
-        bool success = await carsService.AddCarToUserAsync(model, userId);
+        bool success = await carsService.AddCarToUserAsync(carModel, userId);
 
         if (!success)
         {
             ModelState.AddModelError("RegistrationNumber", "Неуспешен запис. Възможно е колата вече да съществува или да липсват задължителни данни.");
             var freshModel = await carsService.GetCreateCarViewModelAsync(userId);
-            model.MakeList = freshModel.MakeList;
-            model.CustomerList = freshModel.CustomerList;
-            if (model.MakeId > 0)
+            carModel.MakeList = freshModel.MakeList;
+            carModel.CustomerList = freshModel.CustomerList;
+            if (carModel.MakeId > 0)
             {
-                model.ModelList = await carsService.GetModelsByMakeAsync(model.MakeId);
+                carModel.ModelList = await carsService.GetModelsByMakeAsync(carModel.MakeId);
             }
-            return View(model);
+            return View(carModel);
         }
 
         return RedirectToAction(nameof(Index));
@@ -96,6 +106,10 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
     public async Task<IActionResult> Delete(int id, string returnUrl = null)
     {
         var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+
         var car = await carsService.GetCarByIdAsync(id, userId);
 
         if (car == null) return NotFound();
@@ -109,6 +123,11 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
     public async Task<IActionResult> DeleteConfirmed(int id, string returnUrl = null)
     {
         var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+
+
         var success = await carsService.DeleteCarForUserAsync(id, userId);
 
         if (!success) return BadRequest();
@@ -121,6 +140,11 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
     public async Task<IActionResult> Edit(int id, string returnUrl = null)
     {
         var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+
+
         var model = await carsService.GetCarForEditAsync(id, userId);
 
         if (model == null) return NotFound();
@@ -131,22 +155,27 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, CreateCarViewModel model, string returnUrl = null)
+    public async Task<IActionResult> Edit(int id, CreateCarViewModel carModel, string returnUrl = null)
     {
         var userId = GetUserId();
-        model.Id = id;
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+
+
+        carModel.Id = id;
 
         if (!ModelState.IsValid)
         {
             var fresh = await carsService.GetCreateCarViewModelAsync(userId);
-            model.MakeList = fresh.MakeList;
-            model.CustomerList = fresh.CustomerList;
-            model.ModelList = await carsService.GetModelsByMakeAsync(model.MakeId);
+            carModel.MakeList = fresh.MakeList;
+            carModel.CustomerList = fresh.CustomerList;
+            carModel.ModelList = await carsService.GetModelsByMakeAsync(carModel.MakeId);
             ViewData["ReturnUrl"] = returnUrl;
-            return View(model);
+            return View(carModel);
         }
 
-        bool success = await carsService.UpdateCarAsync(model, userId);
+        bool success = await carsService.UpdateCarAsync(carModel, userId);
 
         if (!success) return NotFound();
 

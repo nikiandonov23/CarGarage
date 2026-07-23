@@ -9,29 +9,54 @@ namespace CarGarage.Web.Controllers
     [Authorize]
     public class CustomersController(
         ICustomersService customersService,
-        IInvoicesService invoicesService) : Controller
+        IInvoicesService invoicesService) : BaseController
     {
-        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+
+
 
         public async Task<IActionResult> Index(string? searchTerm)
         {
-            var model = await customersService.GetAllCustomersAsync(searchTerm, GetUserId());
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+
+            var model = await customersService.GetAllCustomersAsync(searchTerm, userId);
             return View(model);
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            var model = await customersService.GetCustomerDetailsAsync(id, GetUserId());
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+
+
+            var model = await customersService.GetCustomerDetailsAsync(id, userId);
             if (model == null) return NotFound();
             return View(model);
         }
 
         public async Task<IActionResult> PrintInvoice(int id)
         {
-            var model = await invoicesService.GetInvoiceDetailsAsync(id, GetUserId());
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+
+
+
+
+            var model = await invoicesService.GetInvoiceDetailsAsync(id, userId);
             if (model == null) return NotFound();
             return View("~/Views/Invoices/Details.cshtml", model);
         }
+
+
+
+
 
         [HttpGet]
         public IActionResult Create() => View("Form", new CustomerFormViewModel { CustomerType = "Individual" });
@@ -39,7 +64,15 @@ namespace CarGarage.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var model = await customersService.GetCustomerForEditAsync(id, GetUserId());
+
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+
+
+
+            var model = await customersService.GetCustomerForEditAsync(id, userId);
             if (model == null) return NotFound();
             return View("Form", model);
         }
@@ -47,11 +80,17 @@ namespace CarGarage.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Save(CustomerFormViewModel model)
         {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+
+
             if (!ModelState.IsValid) return View("Form", model);
 
             try
             {
-                await customersService.SaveCustomerAsync(model, GetUserId());
+                await customersService.SaveCustomerAsync(model, userId);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)

@@ -13,7 +13,11 @@ public class MyGarageController : BaseController
 
     public async Task<IActionResult> Index()
     {
-        var userId = GetUserId(); // Вземи ID-то от BaseController
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+
         var hasGarage = await _garageService.HasGarageAsync(userId);
 
         ViewBag.HasGarage = hasGarage;
@@ -26,9 +30,14 @@ public class MyGarageController : BaseController
     [HttpPost]
     public async Task<IActionResult> Register(GarageViewModel model)
     {
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+
         if (!ModelState.IsValid) return View(model);
 
-        await _garageService.CreateGarageAsync(model, GetUserId());
+        await _garageService.CreateGarageAsync(model, userId);
         return RedirectToAction(nameof(Index));
     }
 
@@ -36,7 +45,13 @@ public class MyGarageController : BaseController
     [HttpGet]
     public async Task<IActionResult> Edit()
     {
-        var model = await _garageService.GetGarageDetailsAsync(GetUserId());
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+
+
+        var model = await _garageService.GetGarageDetailsAsync(userId);
         if (model == null) return RedirectToAction(nameof(Register));
 
         return View(model);
@@ -45,9 +60,15 @@ public class MyGarageController : BaseController
     [HttpPost]
     public async Task<IActionResult> Edit(GarageViewModel model)
     {
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+
+
         if (!ModelState.IsValid) return View(model);
 
-        await _garageService.UpdateGarageAsync(model, GetUserId());
+        await _garageService.UpdateGarageAsync(model, userId);
         return RedirectToAction(nameof(Index));
     }
 }

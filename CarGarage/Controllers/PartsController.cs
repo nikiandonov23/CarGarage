@@ -7,17 +7,19 @@ using System.Security.Claims;
 namespace CarGarage.Web.Controllers
 {
     [Authorize]
-    public class PartsController(IPartsService partsService) : Controller
+    public class PartsController(IPartsService partsService) : BaseController
     {
-        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        
 
         public async Task<IActionResult> Index(int carId, string? returnUrl)
-        {
-            ViewBag.CarId = carId;
-            ViewBag.ReturnUrl = returnUrl;
-            var parts = await partsService.GetPartsByCarIdAsync(carId, GetUserId());
-            return View(parts);
-        }
+        { 
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            
+            ViewBag.CarId = carId; ViewBag.ReturnUrl = returnUrl;
+            var parts = await partsService.GetPartsByCarIdAsync(carId, userId); return View(parts); }
 
         [HttpGet]
         public async Task<IActionResult> Create(int carId)
@@ -33,22 +35,36 @@ namespace CarGarage.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PartFormModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                model.Categories = await partsService.GetCategoriesAsync();
+        { 
+            if (!ModelState.IsValid) 
+            { model.Categories = await partsService.GetCategoriesAsync();
                 return View(model);
             }
-
-            await partsService.AddPartAsync(model, GetUserId());
-            return RedirectToAction(nameof(Index), new { carId = model.CarId });
+            
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+            
+            await partsService.AddPartAsync(model, userId);
+            return RedirectToAction(nameof(Index), new { carId = model.CarId }); 
         }
+
+
+
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var model = await partsService.GetPartFormModelByIdAsync(id, GetUserId());
-            if (model == null) return NotFound();
+
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+
+
+            var model = await partsService.GetPartFormModelByIdAsync(id, userId);
+            if (model == null) 
+                return NotFound();
 
             model.Categories = await partsService.GetCategoriesAsync();
             return View(model);
@@ -58,23 +74,41 @@ namespace CarGarage.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, PartFormModel model)
         {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+
+
+
             if (!ModelState.IsValid)
             {
                 model.Categories = await partsService.GetCategoriesAsync();
                 return View(model);
             }
 
-            await partsService.UpdatePartAsync(id, model, GetUserId());
+
+
+
+
+            await partsService.UpdatePartAsync(id, model, userId);
             return RedirectToAction(nameof(Index), new { carId = model.CarId });
         }
 
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
-            var part = await partsService.GetPartByIdAsync(id, GetUserId());
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+
+
+
+            var part = await partsService.GetPartByIdAsync(id, userId);
             if (part == null) return NotFound();
 
-            var formModel = await partsService.GetPartFormModelByIdAsync(id, GetUserId());
+            var formModel = await partsService.GetPartFormModelByIdAsync(id, userId);
             var model = new PartDeleteViewModel
             {
                 Id = part.Id,
@@ -92,7 +126,11 @@ namespace CarGarage.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id, int carId)
         {
-            await partsService.DeleteAsync(id, GetUserId());
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            await partsService.DeleteAsync(id, userId  );
             return RedirectToAction(nameof(Index), new { carId = carId });
         }
     }

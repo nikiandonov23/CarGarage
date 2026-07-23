@@ -13,14 +13,18 @@ namespace CarGarage.Services.Core
             var car = await context.Cars
                 .Include(c => c.Customer)
                     .ThenInclude(cust => cust.Garage)
-                .FirstOrDefaultAsync(c => c.Id == carId && c.Customer != null && c.Customer.Garage != null && c.Customer.Garage.OwnerId == userId);
+                .FirstOrDefaultAsync(c => c.Id == carId && (
+                    (c.Customer != null && c.Customer.Garage != null && c.Customer.Garage.OwnerId == userId)
+                    || c.UserCars.Any(uc => uc.UserId == userId)
+                ));
 
             if (car == null) throw new Exception("Car not found or access denied");
 
             var parts = await context.Parts
                 .Where(p => p.CarId == carId &&
                             p.InvoiceId == null &&
-                            p.Car.Customer != null && p.Car.Customer.Garage != null && p.Car.Customer.Garage.OwnerId == userId)
+                            ((p.Car.Customer != null && p.Car.Customer.Garage != null && p.Car.Customer.Garage.OwnerId == userId)
+                              || p.Car.UserCars.Any(uc => uc.UserId == userId)))
                 .ToListAsync();
 
             return new InvoiceFormModel
@@ -40,8 +44,11 @@ namespace CarGarage.Services.Core
         public async Task<int> CreateInvoiceAsync(InvoiceFormModel model, string userId)
         {
             var carData = await context.Cars
-                .Where(c => c.Id == model.CarId && c.Customer != null && c.Customer.Garage != null && c.Customer.Garage.OwnerId == userId)
-                .Select(c => new { c.Customer.GarageId })
+                .Where(c => c.Id == model.CarId && (
+                    (c.Customer != null && c.Customer.Garage != null && c.Customer.Garage.OwnerId == userId)
+                    || c.UserCars.Any(uc => uc.UserId == userId)
+                ))
+                .Select(c => new { GarageId = c.Customer != null ? (int?)c.Customer.GarageId : null })
                 .FirstOrDefaultAsync();
 
             if (carData == null)
@@ -49,10 +56,25 @@ namespace CarGarage.Services.Core
                 throw new InvalidOperationException("Garage not found or access denied for this car.");
             }
 
+            // Determine garageId: prefer the car's customer's garage, otherwise fall back to the user's garage
+            var garageId = carData.GarageId;
+            if (!garageId.HasValue)
+            {
+                garageId = await context.Garages
+                    .Where(g => g.OwnerId == userId)
+                    .Select(g => (int?)g.Id)
+                    .FirstOrDefaultAsync();
+            }
+
+            if (!garageId.HasValue || garageId.Value == 0)
+            {
+                throw new InvalidOperationException("Garage not found or access denied for this car.");
+            }
+
             var invoice = new Invoice
             {
                 CarId = model.CarId,
-                GarageId = carData.GarageId,
+                GarageId = garageId.Value,
                 IssuedDate = DateTime.UtcNow,
                 InvoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-{new Random().Next(1000, 9999)}",
                 LaborPricePerHour = model.LaborPricePerHour,
@@ -67,7 +89,10 @@ namespace CarGarage.Services.Core
                 .ToList();
 
             var parts = await context.Parts
-                .Where(p => selectedIds.Contains(p.Id) && p.Car.Customer != null && p.Car.Customer.Garage != null && p.Car.Customer.Garage.OwnerId == userId)
+                .Where(p => selectedIds.Contains(p.Id) && (
+                    (p.Car.Customer != null && p.Car.Customer.Garage != null && p.Car.Customer.Garage.OwnerId == userId)
+                    || p.Car.UserCars.Any(uc => uc.UserId == userId)
+                ))
                 .ToListAsync();
 
             foreach (var part in parts)

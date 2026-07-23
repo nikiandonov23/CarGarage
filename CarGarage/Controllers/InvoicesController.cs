@@ -9,59 +9,65 @@ namespace CarGarage.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var model = await invoicesService.GetAllUserInvoicesAsync(GetUserId());
+
+            var userId = GetUserId(); 
+
+            if (string.IsNullOrEmpty(userId)) 
+
+                return Unauthorized();
+
+
+            var model = await invoicesService.GetAllUserInvoicesAsync(userId);
             return View(model);
         }
 
         [HttpGet]
         public async Task<IActionResult> Create(int carId, string? returnUrl)
         {
-            try
-            {
-                ViewBag.ReturnUrl = returnUrl;
-                var model = await invoicesService.GetNewInvoiceModelAsync(carId, GetUserId());
-                return View(model);
-            }
-            catch (Exception ex) // Добави 'ex' тук
-            {
-                // Вместо редирект, хвърли грешката на екрана, за да я прочетеш:
-                return Content($"Грешка при генериране: {ex.Message}. Вътрешна грешка: {ex.InnerException?.Message}");
-            }
+            var userId = GetUserId();
+
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            ViewBag.ReturnUrl = returnUrl;
+            var model = await invoicesService.GetNewInvoiceModelAsync(carId, userId);
+            return View(model);
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(InvoiceFormModel model, string? returnUrl)
-        {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.ReturnUrl = returnUrl;
-                return View(model);
+        [ValidateAntiForgeryToken] 
+        public async Task<IActionResult> Create(InvoiceFormModel model, string? returnUrl) 
+        { 
+            if (!ModelState.IsValid) 
+            { ViewBag.ReturnUrl = returnUrl;
+                return View(model); 
             }
+            
+            var userId = GetUserId();
 
-            try
-            {
-                var invoiceId = await invoicesService.CreateInvoiceAsync(model, GetUserId());
-                return RedirectToAction(nameof(Details), new { id = invoiceId });
-            }
-            catch (Exception)
-            {
-                return View(model);
-            }
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+            
+            
+            var invoiceId = await invoicesService.CreateInvoiceAsync(model, userId);
+            
+            return RedirectToAction(nameof(Details), new { id = invoiceId }); 
+        
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Details(int id)
+        [HttpGet] public async Task<IActionResult> Details(int id) 
         {
-            try
-            {
-                var model = await invoicesService.GetInvoiceDetailsAsync(id, GetUserId());
-                return View(model);
-            }
-            catch (Exception)
-            {
-                return RedirectToAction(nameof(Index));
-            }
+            var userId = GetUserId();
+            
+            if (string.IsNullOrEmpty(userId)) 
+                
+                return Unauthorized();
+            
+            
+            var model = await invoicesService.GetInvoiceDetailsAsync(id, userId);
+            
+            
+            if (model == null) 
+                return RedirectToAction(nameof(Index)); return View(model);
         }
     }
 }
