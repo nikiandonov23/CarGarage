@@ -1,5 +1,10 @@
-﻿using CarGarage.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using CarGarage.Data;
 using CarGarage.DataModels;
+using CarGarage.DataModels.Enums;
 using CarGarage.Services.Core.Contracts;
 using CarGarage.ViewModels.Invoices;
 using Microsoft.EntityFrameworkCore;
@@ -56,7 +61,6 @@ namespace CarGarage.Services.Core
                 throw new InvalidOperationException("Garage not found or access denied for this car.");
             }
 
-            // Determine garageId: prefer the car's customer's garage, otherwise fall back to the user's garage
             var garageId = carData.GarageId;
             if (!garageId.HasValue)
             {
@@ -71,12 +75,40 @@ namespace CarGarage.Services.Core
                 throw new InvalidOperationException("Garage not found or access denied for this car.");
             }
 
+            // --- СЧЕТОВОДНО ГЕНЕРИРАНЕ НА НОМЕР ---
+            // 1. Намираме всички номера на фактури за този гараж
+            var existingInvoiceNumbers = await context.Invoices
+                .Where(i => i.GarageId == garageId.Value)
+                .Select(i => i.InvoiceNumber)
+                .ToListAsync();
+
+            // 2. Преобразуваме ги в числа и намираме най-голямото
+            long maxNumber = 0;
+            foreach (var numStr in existingInvoiceNumbers)
+            {
+                if (long.TryParse(numStr, out long currentNum))
+                {
+                    if (currentNum > maxNumber)
+                    {
+                        maxNumber = currentNum;
+                    }
+                }
+            }
+
+            // 3. Увеличаваме с 1 (ако няма издадени, първата фактура ще бъде 1)
+            long nextNumber = maxNumber + 1;
+
+            // 4. Форматираме до 10 цифри с водещи нули (D10)
+            string formattedInvoiceNumber = nextNumber.ToString("D10");
+            // -------------------------------------
+
             var invoice = new Invoice
             {
                 CarId = model.CarId,
                 GarageId = garageId.Value,
                 IssuedDate = DateTime.UtcNow,
-                InvoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-{new Random().Next(1000, 9999)}",
+                InvoiceNumber = formattedInvoiceNumber,
+                PaymentMethod = model.PaymentMethod, // <-- ЗАПИСВАМЕ ИЗБРАНИЯ МЕТОД
                 LaborPricePerHour = model.LaborPricePerHour,
                 LaborHours = model.LaborHours,
                 TaxPercentage = model.TaxPercentage,
@@ -126,6 +158,11 @@ namespace CarGarage.Services.Core
                 Id = invoiceId,
                 InvoiceNumber = inv.InvoiceNumber,
                 IssuedDate = inv.IssuedDate,
+
+                // --- МАПВАНЕ НА ПЛАЩАНЕТО ---
+                PaymentMethod = inv.PaymentMethod,
+                PaymentMethodText = GetPaymentMethodDisplayName(inv.PaymentMethod),
+
                 CarInfo = $"{inv.Car.Make} {inv.Car.Model}",
                 Vin = inv.Car.Vin,
                 RegNumber = inv.Car.RegistrationNumber,
@@ -137,24 +174,49 @@ namespace CarGarage.Services.Core
                 LaborTotal = subTotalLabor,
                 TaxAmount = taxAmount,
                 GrandTotal = totalBeforeTax + taxAmount,
-                Notes = inv.Notes
+                Notes = inv.Notes,
+
+                // --- МАПВАНЕ НА ДАННИТЕ ЗА СЕРВИЗА ---
+                GarageName = inv.Garage?.Name ?? "Сервиз",
+                GarageBulstat = inv.Garage?.Bulstat ?? "-",
+                GarageOwnerName = inv.Garage?.OwnerName,
+                GarageCity = inv.Garage?.City ?? "-",
+                GarageAddress = inv.Garage?.Address ?? "-",
+                GaragePhoneNumber = inv.Garage?.PhoneNumber
             };
         }
 
         public async Task<IEnumerable<InvoiceFullViewModel>> GetAllUserInvoicesAsync(string userId)
         {
-            return await context.Invoices
+            var invoices = await context.Invoices
                 .Where(i => i.Garage != null && i.Garage.OwnerId == userId)
-                .Select(i => new InvoiceFullViewModel
-                {
-                    Id = i.Id,
-                    InvoiceNumber = i.InvoiceNumber,
-                    IssuedDate = i.IssuedDate,
-                    CarInfo = i.Car.Make + " " + i.Car.Model + " (" + i.Car.RegistrationNumber + ")",
-                    GrandTotal = i.Parts.Sum(p => p.UnitPrice * p.Quantity) + (decimal)i.LaborHours * i.LaborPricePerHour
-                })
+                .Include(i => i.Car)
+                .Include(i => i.Parts)
                 .OrderByDescending(i => i.IssuedDate)
                 .ToListAsync();
+
+            return invoices.Select(i => new InvoiceFullViewModel
+            {
+                Id = i.Id,
+                InvoiceNumber = i.InvoiceNumber,
+                IssuedDate = i.IssuedDate,
+                PaymentMethod = i.PaymentMethod,
+                PaymentMethodText = GetPaymentMethodDisplayName(i.PaymentMethod),
+                CarInfo = i.Car.Make + " " + i.Car.Model + " (" + i.Car.RegistrationNumber + ")",
+                GrandTotal = i.Parts.Sum(p => p.TotalPrice) + (decimal)i.LaborHours * i.LaborPricePerHour
+            });
+        }
+
+        // Помощен метод за превод на български според енума
+        private static string GetPaymentMethodDisplayName(PaymentMethod method)
+        {
+            return method switch
+            {
+                PaymentMethod.Cash => "В брой",
+                PaymentMethod.Card => "С карта",
+                PaymentMethod.BankTransfer => "По банков път",
+                _ => "В брой"
+            };
         }
     }
 }

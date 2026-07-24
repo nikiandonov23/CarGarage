@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
 
+using CarGarage.DataModels.Enums;
+using System.ComponentModel.DataAnnotations;
 namespace CarGarage.ViewModels.Invoices{
     public class InvoiceFormModel
     {
@@ -19,6 +21,8 @@ namespace CarGarage.ViewModels.Invoices{
 
         [Display(Name = "Бележки")]
         public string? Notes { get; set; }
+
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
 
         public List<PartSelectionViewModel> AvailableParts { get; set; } = new();
     }

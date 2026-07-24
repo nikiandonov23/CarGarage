@@ -1,105 +1,214 @@
 ﻿@model CarGarage.ViewModels.Invoices.InvoiceFullViewModel
 
 <style>
+    /* Стилове за екран */
+    .a4-page {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 15mm 20mm;
+        margin: 20px auto;
+        background: #ffffff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .invoice-header-title {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: #1a252f;
+    }
+
+    .table-invoice th {
+        background-color: #f8f9fa !important;
+        color: #2c3e50;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .party-box {
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 12px;
+        background-color: #fafafa;
+        height: 100%;
+    }
+
+    /* Настройки за печат (А4) */
     @@media print {
-        
-        .d-print-none, .navbar, footer, .btn {
+        body {
+            background-color: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .d-print-none, .navbar, footer, nav {
             display: none !important;
         }
-        
-        .container {
+
+        .a4-page {
             width: 100% !important;
-            max-width: none !important;
+            min-height: auto !important;
             margin: 0 !important;
             padding: 0 !important;
             box-shadow: none !important;
+            border: none !important;
         }
 
-        body {
-            background-color: white !important;
-        }
-
-        .shadow {
-            box-shadow: none !important;
+        @@page {
+            size: A4 portrait;
+            margin: 12mm;
         }
     }
 </style>
 
-<div class="container my-5 shadow p-5 bg-white">
-    <div class="row mb-4">
+<!-- А4 Лист -->
+<div class="a4-page">
+
+    <!-- Шапка на фактурата -->
+    <div class="row align-items-center mb-4">
         <div class="col-6">
-            <h1 class="text-primary fw-bold">ФАКТУРА</h1>
-            <p class="text-muted mb-1">Номер: <strong>@Model.InvoiceNumber</strong></p>
-            <p class="text-muted">Дата: @Model.IssuedDate.ToString("dd.MM.yyyy")</p>
+            <h1 class="invoice-header-title mb-1">ФАКТУРА</h1>
+            <p class="mb-0 text-muted fs-6">Оригинал</p>
         </div>
         <div class="col-6 text-end">
-            <h3>Сервиз "CarGarage"</h3>
-            <p>гр. Русе, ул. Автомобилна 10<br>Телефон: +359 888 123 456</p>
+            <div class="fs-5 fw-bold text-dark">№ @Model.InvoiceNumber</div>
+            <div class="text-muted">Дата на издаване: <strong>@Model.IssuedDate.ToString("dd.MM.yyyy") г.</strong></div>
+            <div class="text-muted">Дата на дан. събитие: <strong>@Model.IssuedDate.ToString("dd.MM.yyyy") г.</strong></div>
         </div>
     </div>
 
-    <hr>
+    <!-- Страни по фактурата (Доставчик / Получател) -->
+    <div class="row g-3 mb-4">
+        <!-- Доставчик (Сервиза) -->
+        <div class="col-6">
+            <div class="party-box">
+                <h6 class="fw-bold border-bottom pb-2 mb-2 text-uppercase text-primary">Доставчик (Издател)</h6>
+                <div class="fw-bold fs-6 text-dark">@Model.GarageName</div>
+                <div><strong>ЕИК / Булстат:</strong> @Model.GarageBulstat</div>
+                <div><strong>Град / Адрес:</strong> гр. @Model.GarageCity, @Model.GarageAddress</div>
+                @if (!string.IsNullOrEmpty(Model.GarageOwnerName))
+                {
+                    <div><strong>МОЛ:</strong> @Model.GarageOwnerName</div>
+                }
+                @if (!string.IsNullOrEmpty(Model.GaragePhoneNumber))
+                {
+                    <div><strong>Тел.:</strong> @Model.GaragePhoneNumber</div>
+                }
+            </div>
+        </div>
 
-    <div class="row my-4">
-        <div class="col-12">
-            <h5><strong>Данни за автомобила:</strong></h5>
-            <p class="mb-1">Марка/Модел: @Model.CarInfo</p>
-            <p class="mb-1">VIN: @Model.Vin</p>
-            <p>Рег. номер: @Model.RegNumber</p>
+        <!-- Получател (Клиент) -->
+        <div class="col-6">
+            <div class="party-box">
+                <h6 class="fw-bold border-bottom pb-2 mb-2 text-uppercase text-primary">Получател (Клиент)</h6>
+                <div><strong>Автомобил:</strong> @Model.CarInfo</div>
+                <div><strong>Рег. номер:</strong> @Model.RegNumber</div>
+                <div><strong>VIN (Шаси):</strong> @Model.Vin</div>
+                <div class="mt-2 pt-2 border-top text-muted small">
+                    <em>Забележка: Документът е издаден за обслужване на посоченото МПС.</em>
+                </div>
+            </div>
         </div>
     </div>
 
-    <table class="table table-bordered">
-        <thead class="table-light">
+    <!-- Таблица с услуги и части -->
+    <table class="table table-bordered table-invoice align-middle mb-4">
+        <thead>
             <tr>
-                <th>Описание на услугата / частта</th>
-                <th class="text-end" width="150">Цена</th>
+                <th style="width: 5%;">№</th>
+                <th style="width: 60%;">Наименование на стоката / услугата</th>
+                <th class="text-center" style="width: 10%;">К-во</th>
+                <th class="text-end" style="width: 25%;">Стойност (лв.)</th>
             </tr>
         </thead>
         <tbody>
+            @{
+                int index = 1;
+            }
             @foreach (var part in Model.Parts)
             {
                 <tr>
+                    <td class="text-center">@(index++)</td>
                     <td>@part.Name</td>
-                    <td class="text-end">@part.Price.ToString("F2") лв.</td>
+                    <td class="text-center">1 бр.</td>
+                    <td class="text-end">@part.Price.ToString("N2") лв.</td>
                 </tr>
             }
-            <tr>
-                <td>Труд (Сервизна дейност)</td>
-                <td class="text-end">@Model.LaborTotal.ToString("F2") лв.</td>
-            </tr>
+            @if (Model.LaborTotal > 0)
+            {
+                <tr>
+                    <td class="text-center">@(index++)</td>
+                    <td>Сервизен труд / Извършени услуги</td>
+                    <td class="text-center">1 Усл.</td>
+                    <td class="text-end">@Model.LaborTotal.ToString("N2") лв.</td>
+                </tr>
+            }
         </tbody>
-        <tfoot>
-            <tr>
-                <th class="text-end">Данъчна основа:</th>
-                <td class="text-end">@((Model.GrandTotal - Model.TaxAmount).ToString("F2")) лв.</td>
-            </tr>
-            <tr>
-                <th class="text-end">ДДС:</th>
-                <td class="text-end">@Model.TaxAmount.ToString("F2") лв.</td>
-            </tr>
-            <tr class="table-primary">
-                <th class="text-end h4">ОБЩО ЗА ПЛАЩАНЕ:</th>
-                <td class="text-end h4 fw-bold">@Model.GrandTotal.ToString("F2") лв.</td>
-            </tr>
-        </tfoot>
     </table>
 
-    @if (!string.IsNullOrEmpty(Model.Notes))
-    {
-        <div class="mt-4 p-3 border-start border-4 border-primary bg-light">
-            <strong>Забележки:</strong>
-            <p class="mb-0">@Model.Notes</p>
+    <!-- Финансов обобщителен блок -->
+    <div class="row mb-4">
+        <div class="col-6">
+            <div class="p-3 border rounded bg-light">
+                <div class="mb-1"><strong>Начин на плащане:</strong> @Model.PaymentMethodText</div>
+                <div class="mb-1"><strong>Място на сделката:</strong> гр. @Model.GarageCity</div>
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="mt-2 pt-2 border-top small">
+                        <strong>Бележки:</strong> @Model.Notes
+                    </div>
+                }
+            </div>
         </div>
-    }
+
+        <div class="col-6">
+            <table class="table table-bordered mb-0">
+                <tbody>
+                    <tr>
+                        <td class="text-end fw-bold bg-light align-middle">Данъчна основа (без ДДС):</td>
+                        <td class="text-end fw-bold align-middle" style="width: 40%;">@((Model.GrandTotal - Model.TaxAmount).ToString("N2")) лв.</td>
+                    </tr>
+                    <tr>
+                        <td class="text-end fw-bold bg-light align-middle">ДДС (20%):</td>
+                        <td class="text-end fw-bold align-middle">@Model.TaxAmount.ToString("N2") лв.</td>
+                    </tr>
+                    <!-- ИЗЧИСТЕН И СТИЛЕН ТАКЪВ БЛОК ЗА СУМАТА ЗА ПЛАЩАНЕ -->
+                    <tr style="border-top: 2px solid #2c3e50;">
+                        <td class="text-end fw-bold fs-6 bg-light align-middle">Сума за плащане:</td>
+                        <td class="text-end fw-bold fs-5 text-dark align-middle" style="background-color: #f1f3f5;">
+                            @Model.GrandTotal.ToString("N2") лв.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Подписи и подножие -->
+    <div class="row mt-5 pt-4 border-top">
+        <div class="col-6">
+            <div class="mb-4">
+                <strong>Съставил (Подпис):</strong> ......................................
+            </div>
+            <div class="small text-muted">(@(Model.GarageOwnerName ?? "Оторизирано лице"))</div>
+        </div>
+        <div class="col-6 text-end">
+            <div class="mb-4">
+                <strong>Получил (Подпис):</strong> ......................................
+            </div>
+            <div class="small text-muted">(Клиент / Представител)</div>
+        </div>
+    </div>
 </div>
 
-
-<div class="container text-center mb-5 d-print-none">
-    <button onclick="window.print()" class="btn btn-success btn-lg me-2">
-        <i class="bi bi-printer"></i> Принтирай фактурата
+<!-- Бутони за управление (Скрити при печат) -->
+<div class="container text-center my-4 d-print-none">
+    <button onclick="window.print()" class="btn btn-primary btn-lg shadow-sm me-2 px-4">
+        <i class="bi bi-printer me-2"></i> Принтирай / Запази като PDF
     </button>
-    <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
-        Назад към архива
+    <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+        <i class="bi bi-arrow-left me-1"></i> Назад
     </a>
 </div>

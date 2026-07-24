@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CarGarage.DataModels.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CarGarage.DataModels
@@ -13,6 +14,11 @@ namespace CarGarage.DataModels
 
         [Required]
         public DateTime IssuedDate { get; set; } = DateTime.UtcNow;
+
+
+        [Required]
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash; // <-- НОВО ПРОПЪРТИ
+
 
         // Връзка към колата
         [Required]

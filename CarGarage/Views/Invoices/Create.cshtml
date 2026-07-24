@@ -1,4 +1,5 @@
-﻿@using CarGarage.ViewModels.Invoices
+﻿@using CarGarage.DataModels.Enums
+@using CarGarage.ViewModels.Invoices
 @model InvoiceFormModel
 
 @{
@@ -17,7 +18,7 @@
                 <input type="hidden" asp-for="CarId" />
                 <input type="hidden" asp-for="CarInfo" />
 
-                
+                <!-- 1. Вложени части -->
                 <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">1. Избор на вложени части</h5>
                 <div class="table-responsive mb-4">
                     <table class="table table-hover border">
@@ -38,7 +39,6 @@
                                             <div class="form-check">
                                                 <input type="checkbox" asp-for="@Model.AvailableParts[i].IsSelected" class="form-check-input" />
                                                 <input type="hidden" asp-for="@Model.AvailableParts[i].PartId" />
-                                                
                                                 <input type="hidden" asp-for="@Model.AvailableParts[i].Description" />
                                                 <input type="hidden" asp-for="@Model.AvailableParts[i].TotalPrice" />
                                             </div>
@@ -61,10 +61,10 @@
                     </table>
                 </div>
 
-               
-                <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">2. Сервизен труд и ДДС</h5>
+                <!-- 2. Сервизен труд, ДДС и Начин на плащане -->
+                <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">2. Труд, ДДС и Начин на плащане</h5>
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label asp-for="LaborHours" class="form-label fw-bold">Работни часове</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-clock"></i></span>
@@ -72,7 +72,8 @@
                         </div>
                         <span asp-validation-for="LaborHours" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-4">
+
+                    <div class="col-md-3">
                         <label asp-for="LaborPricePerHour" class="form-label fw-bold">Цена на час (лв.)</label>
                         <div class="input-group">
                             <span class="input-group-text">лв.</span>
@@ -80,7 +81,8 @@
                         </div>
                         <span asp-validation-for="LaborPricePerHour" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-4">
+
+                    <div class="col-md-3">
                         <label asp-for="TaxPercentage" class="form-label fw-bold">ДДС (%)</label>
                         <div class="input-group">
                             <input asp-for="TaxPercentage" class="form-control" type="number" />
@@ -88,9 +90,19 @@
                         </div>
                         <span asp-validation-for="TaxPercentage" class="text-danger small"></span>
                     </div>
+
+                    <!-- ПАДАЩО МЕНЮ ЗА ПЛАЩАНЕ -->
+                    <div class="col-md-3">
+                        <label asp-for="PaymentMethod" class="form-label fw-bold">Начин на плащане</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
+                            <select asp-for="PaymentMethod" asp-items="Html.GetEnumSelectList<PaymentMethod>()" class="form-select">
+                            </select>
+                        </div>
+                        <span asp-validation-for="PaymentMethod" class="text-danger small"></span>
+                    </div>
                 </div>
 
-                
                 <div class="mt-4">
                     <label asp-for="Notes" class="form-label fw-bold">Допълнителни бележки</label>
                     <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Добавете информация за гаранция или извършена дейност..."></textarea>
@@ -102,7 +114,6 @@
                         <i class="bi bi-check-circle me-2"></i>Запиши фактурата
                     </button>
 
-                    
                     <a href="@(ViewBag.ReturnUrl ?? Url.Action("Index", "MyCars"))" class="btn btn-outline-secondary btn-lg px-4">
                         Отказ
                     </a>
