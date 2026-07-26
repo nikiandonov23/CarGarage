@@ -81,6 +81,20 @@
 
     <!-- Страни по фактурата (Доставчик / Получател) -->
     <div class="row g-3 mb-4">
+
+        <!-- Получател (Клиент) -->
+        <div class="col-6">
+            <div class="party-box">
+                <h6 class="fw-bold border-bottom pb-2 mb-2 text-uppercase text-primary">Получател (Клиент)</h6>
+                <div><strong>Автомобил:</strong> @Model.CarInfo</div>
+                <div><strong>Рег. номер:</strong> @Model.RegNumber</div>
+                <div><strong>VIN (Шаси):</strong> @Model.Vin</div>
+                <div class="mt-2 pt-2 border-top text-muted small">
+                    <em>Забележка: Документът е издаден за обслужване на посоченото МПС.</em>
+                </div>
+            </div>
+        </div>
+
         <!-- Доставчик (Сервиза) -->
         <div class="col-6">
             <div class="party-box">
@@ -99,18 +113,7 @@
             </div>
         </div>
 
-        <!-- Получател (Клиент) -->
-        <div class="col-6">
-            <div class="party-box">
-                <h6 class="fw-bold border-bottom pb-2 mb-2 text-uppercase text-primary">Получател (Клиент)</h6>
-                <div><strong>Автомобил:</strong> @Model.CarInfo</div>
-                <div><strong>Рег. номер:</strong> @Model.RegNumber</div>
-                <div><strong>VIN (Шаси):</strong> @Model.Vin</div>
-                <div class="mt-2 pt-2 border-top text-muted small">
-                    <em>Забележка: Документът е издаден за обслужване на посоченото МПС.</em>
-                </div>
-            </div>
-        </div>
+      
     </div>
 
     <!-- Таблица с услуги и части -->
