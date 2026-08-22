@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj": {}
+    "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj": {}
   },
   "projects": {
-    "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj": {
+    "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj",
+        "projectUniqueName": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj",
         "projectName": "CarGarage.DataModels",
-        "projectPath": "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj",
+        "projectPath": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj",
         "packagesPath": "C:\\Users\\nikia\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.DataModels\\obj\\",
+        "outputPath": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.DataModels\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -46,7 +46,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net8.0": {
@@ -94,18 +94,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj": {
+    "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj",
+        "projectUniqueName": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj",
         "projectName": "CarGarage.Data",
-        "projectPath": "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj",
+        "projectPath": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj",
         "packagesPath": "C:\\Users\\nikia\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.Data\\obj\\",
+        "outputPath": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.Data\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -128,8 +128,8 @@
             "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj": {
-                "projectPath": "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj"
+              "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj": {
+                "projectPath": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj"
               }
             }
           }
@@ -144,7 +144,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net8.0": {
@@ -192,7 +192,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

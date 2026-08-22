@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "VGhves9QmvM=",
+  "dgSpecHash": "3Cpcq93/qPU=",
   "success": true,
-  "projectFilePath": "C:\\Users\\nikia\\source\\repos\\C# Web\\ASP.NET Advanced - юни 2025\\CarGarage\\CarGarage.ViewModels\\CarGarage.ViewModels.csproj",
+  "projectFilePath": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.ViewModels\\CarGarage.ViewModels.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\nikia\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\nikia\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
