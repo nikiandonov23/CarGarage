@@ -12,7 +12,7 @@ namespace CarGarage.Web.Controllers
         IInvoicesService invoicesService) : BaseController
     {
 
-        //test
+        
 
 
         public async Task<IActionResult> Index(string? searchTerm)
