@@ -6,7 +6,7 @@ namespace CarGarage.Web.Controllers
 {
     public class InvoicesController(IInvoicesService invoicesService) : BaseController
     {
-        [HttpGet] //tesing github
+        [HttpGet] 
         public async Task<IActionResult> Index()
         {
 
