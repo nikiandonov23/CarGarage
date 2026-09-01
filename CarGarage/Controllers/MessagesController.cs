@@ -3,6 +3,7 @@ using CarGarage.ViewModels.Messages;
 using CarGarage.Web.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace CarGarage.Controllers
 {
@@ -11,24 +12,38 @@ namespace CarGarage.Controllers
     {
         private readonly IMessagesService _messagesService;
         private readonly IMarketplaceService _marketplaceService;
+        private readonly IHubContext<Notifications.NotificationsHub> _hubContext;
+        private readonly Microsoft.AspNetCore.Identity.UserManager<Microsoft.AspNetCore.Identity.IdentityUser> _userManager;
 
-        public MessagesController(IMessagesService messagesService, IMarketplaceService marketplaceService)
+        public MessagesController(IMessagesService messagesService, IMarketplaceService marketplaceService,
+            IHubContext<Notifications.NotificationsHub> hubContext,
+            Microsoft.AspNetCore.Identity.UserManager<Microsoft.AspNetCore.Identity.IdentityUser> userManager)
         {
             _messagesService = messagesService;
             _marketplaceService = marketplaceService;
+            _hubContext = hubContext;
+            _userManager = userManager;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Create(int partId)
+        public async Task<IActionResult> Create(int? partId, string? receiverId, string? conversationId)
         {
-            var part = await _marketplaceService.GetByIdAsync(partId);
-            if (part == null) return NotFound();
+            MessageFormModel model;
 
-            var model = new MessageFormModel
+            if (!string.IsNullOrEmpty(receiverId))
             {
-                PartId = partId,
-                ReceiverId = part.OwnerId
-            };
+                model = new MessageFormModel { PartId = partId, ReceiverId = receiverId, ConversationId = conversationId };
+            }
+            else if (partId.HasValue)
+            {
+                var part = await _marketplaceService.GetByIdAsync(partId.Value);
+                if (part == null) return NotFound();
+                model = new MessageFormModel { PartId = partId, ReceiverId = part.OwnerId, ConversationId = conversationId };
+            }
+            else
+            {
+                return BadRequest();
+            }
 
             return View(model);
         }
@@ -79,10 +94,23 @@ namespace CarGarage.Controllers
             if (msg.ReceiverId == userId && !msg.IsRead)
             {
                 await _messagesService.MarkAsReadAsync(id, userId);
+                // send updated unread count to the current user so badge refreshes
+                try
+                {
+                    var unread = await _messagesService.GetUnreadCountAsync(userId);
+                    await _hubContext.Clients.User(userId).SendAsync("UnreadCountUpdated", unread);
+                }
+                catch
+                {
+                    // ignore SignalR errors
+                }
             }
 
             return View(msg);
         }
+
+   
+        // Pin/unpin handled in UI via future endpoint; temporarily not exposed to avoid interface mismatch.
 
         [HttpPost]
         [ValidateAntiForgeryToken]

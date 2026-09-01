@@ -9,7 +9,7 @@
     <div class="list-group mt-3">
         @foreach (var msg in Model)
         {
-            <a asp-action="Index" class="list-group-item list-group-item-action">
+            <a asp-action="Details" asp-route-id="@msg.Id" class="list-group-item list-group-item-action">
                 <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1">From: @msg.SenderId</h5>
                     <small>@msg.SentAt.ToString("g")</small>

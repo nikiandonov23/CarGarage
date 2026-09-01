@@ -5,6 +5,7 @@ namespace CarGarage.ViewModels.Messages
     public class MessageFormModel
     {
         public int? PartId { get; set; }
+        public string? ConversationId { get; set; }
 
         [Required]
         public string ReceiverId { get; set; } = null!;

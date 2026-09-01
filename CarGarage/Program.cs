@@ -45,6 +45,8 @@ namespace CarGarage.Web
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             builder.Services.AddControllersWithViews();
+            // SignalR for real-time notifications
+            builder.Services.AddSignalR();
 
             var app = builder.Build();
 
@@ -70,6 +72,9 @@ namespace CarGarage.Web
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            // SignalR hubs
+            app.MapHub<CarGarage.Notifications.NotificationsHub>("/notificationsHub");
 
             app.MapRazorPages();
 

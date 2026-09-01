@@ -28,5 +28,8 @@ namespace CarGarage.DataModels
 
         // Threading can be implemented via ConversationId
         public string? ConversationId { get; set; }
+
+        // Soft-delete flag
+        public bool IsDeleted { get; set; } = false;
     }
 }

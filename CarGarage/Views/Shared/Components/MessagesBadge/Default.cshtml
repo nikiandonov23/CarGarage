@@ -2,11 +2,5 @@
 
 <a class="nav-link position-relative" asp-controller="Messages" asp-action="Index">
     <i class="bi bi-envelope fs-5"></i>
-    @if (Model > 0)
-    {
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-            @Model
-            <span class="visually-hidden">unread messages</span>
-        </span>
-    }
+    <span class="messages-unread-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:@(Model>0?"inline-block":"none")">@Model</span>
 </a>
