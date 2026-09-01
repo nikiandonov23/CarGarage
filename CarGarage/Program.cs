@@ -18,6 +18,7 @@ namespace CarGarage.Web
             builder.Services.AddScoped<IPartsService, PartsService>();
             builder.Services.AddScoped<IMarketplaceService, MarketplaceService>();
             builder.Services.AddScoped<IOffersService, OffersService>();
+            // Ensure offers and messages services are registered
             builder.Services.AddScoped<IMessagesService, MessagesService>();
             builder.Services.AddScoped<IInvoicesService, InvoicesService>();
             builder.Services.AddScoped<ICustomersService, CustomersService>();

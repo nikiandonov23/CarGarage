@@ -56,5 +56,43 @@ namespace CarGarage.Controllers
             var inbox = await _messagesService.GetInboxAsync(userId);
             return View(inbox);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Outbox()
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var outbox = await _messagesService.GetOutboxAsync(userId);
+            return View(outbox);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var msg = await _messagesService.GetByIdAsync(id, userId);
+            if (msg == null) return NotFound();
+
+            if (msg.ReceiverId == userId && !msg.IsRead)
+            {
+                await _messagesService.MarkAsReadAsync(id, userId);
+            }
+
+            return View(msg);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            await _messagesService.DeleteAsync(id, userId);
+            return RedirectToAction("Index");
+        }
     }
 }

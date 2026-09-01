@@ -38,5 +38,39 @@ namespace CarGarage.Services.Core
                 .OrderByDescending(m => m.SentAt)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<CarGarage.DataModels.Message>> GetOutboxAsync(string userId)
+        {
+            return await _context.Messages
+                .Where(m => m.SenderId == userId)
+                .OrderByDescending(m => m.SentAt)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetUnreadCountAsync(string userId)
+        {
+            return await _context.Messages.CountAsync(m => m.ReceiverId == userId && !m.IsRead);
+        }
+
+        public async Task<CarGarage.DataModels.Message?> GetByIdAsync(int id, string userId)
+        {
+            return await _context.Messages.FirstOrDefaultAsync(m => m.Id == id && (m.ReceiverId == userId || m.SenderId == userId));
+        }
+
+        public async Task MarkAsReadAsync(int id, string userId)
+        {
+            var msg = await _context.Messages.FirstOrDefaultAsync(m => m.Id == id && m.ReceiverId == userId);
+            if (msg == null) return;
+            msg.IsRead = true;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id, string userId)
+        {
+            var msg = await _context.Messages.FirstOrDefaultAsync(m => m.Id == id && (m.ReceiverId == userId || m.SenderId == userId));
+            if (msg == null) return;
+            _context.Messages.Remove(msg);
+            await _context.SaveChangesAsync();
+        }
     }
 }
