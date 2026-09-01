@@ -37,6 +37,20 @@
 
             <div class="mt-4 text-muted small">
                 Добавено: @Model.DateAdded.ToString("g")
+                <div>
+                    @if (Model.Status == "Pending")
+                    {
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    }
+                    else if (Model.Status == "Available")
+                    {
+                        <span class="badge bg-success">Available</span>
+                    }
+                    else if (!string.IsNullOrEmpty(Model.Status))
+                    {
+                        <span class="badge bg-secondary">@Model.Status</span>
+                    }
+                </div>
                 @if (!string.IsNullOrEmpty(Model.GarageName)) { <div>Сервиз: @Model.GarageName @if(!string.IsNullOrEmpty(Model.City)){<span>(@Model.City)</span>}</div> }
             </div>
         </div>

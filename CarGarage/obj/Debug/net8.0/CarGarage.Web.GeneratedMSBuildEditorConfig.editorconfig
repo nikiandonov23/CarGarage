@@ -135,6 +135,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTXlHYXJhZ2VcUmVnaXN0ZXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/nikia/source/CarGarage/CarGarage/Views/Offers/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT2ZmZXJzXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/nikia/source/CarGarage/CarGarage/Views/Offers/MakeOffer.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT2ZmZXJzXE1ha2VPZmZlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -157,6 +161,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/nikia/source/CarGarage/CarGarage/Views/Shared/Components/MessagesBadge/Default.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcTWVzc2FnZXNCYWRnZVxEZWZhdWx0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/nikia/source/CarGarage/CarGarage/Views/Shared/Components/OffersBadge/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcT2ZmZXJzQmFkZ2VcRGVmYXVsdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/nikia/source/CarGarage/CarGarage/Views/Shared/Error.cshtml]

@@ -52,6 +52,9 @@ namespace CarGarage.Services.Core
                 .Include(p => p.Garage)
                 .AsQueryable();
 
+            // Exclude only sold parts from marketplace -> show Available and Pending
+            query = query.Where(p => p.Status != "Sold");
+
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 query = query.Where(p => p.Name.Contains(searchTerm));

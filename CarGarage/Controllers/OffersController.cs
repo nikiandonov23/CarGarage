@@ -12,12 +12,12 @@ namespace CarGarage.Controllers
     {
         private readonly IOffersService _offersService;
         private readonly IMessagesService _messagesService;
-        private readonly Microsoft.AspNetCore.SignalR.IHubContext<Notifications.NotificationsHub> _hubContext;
+        private readonly IHubContext<Notifications.NotificationsHub> _hubContext;
 
         private readonly IMarketplaceService _marketplaceService;
 
         public OffersController(IOffersService offersService, IMessagesService messagesService,
-            Microsoft.AspNetCore.SignalR.IHubContext<Notifications.NotificationsHub> hubContext,
+            IHubContext<Notifications.NotificationsHub> hubContext,
             IMarketplaceService marketplaceService)
         {
             _offersService = offersService;
@@ -31,6 +31,17 @@ namespace CarGarage.Controllers
         {
             var model = new OfferFormModel { PartId = partId };
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var offers = await _offersService.GetPendingOffersForOwnerAsync(userId);
+            return View(offers);
         }
 
         [HttpPost]
@@ -72,8 +83,102 @@ namespace CarGarage.Controllers
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
             await _offersService.AcceptOfferAsync(offerId, userId);
-            // redirect back to marketplace or offers list
-            return RedirectToAction("Index", "Marketplace");
+
+            // notify buyer
+            var offer = await _offersService.GetByIdAsync(offerId);
+            if (offer != null)
+            {
+                var buyerId = offer.SenderId;
+                var systemMsg = $"Your offer for '{offer.PartForSale?.Name}' was accepted.";
+                await _messagesService.AddMessageAsync(userId, buyerId, systemMsg, offer.PartForSale?.Id.ToString());
+                try
+                {
+                    var unread = await _messagesService.GetUnreadCountAsync(buyerId);
+                    await _hubContext.Clients.User(buyerId).SendAsync("UnreadCountUpdated", unread);
+                }
+                catch { }
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reject(int offerId)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            await _offersService.RejectOfferAsync(offerId, userId);
+
+            var offer = await _offersService.GetByIdAsync(offerId);
+            if (offer != null)
+            {
+                var buyerId = offer.SenderId;
+                var systemMsg = $"Your offer for '{offer.PartForSale?.Name}' was rejected.";
+                await _messagesService.AddMessageAsync(userId, buyerId, systemMsg, offer.PartForSale?.Id.ToString());
+                try
+                {
+                    var unread = await _messagesService.GetUnreadCountAsync(buyerId);
+                    await _hubContext.Clients.User(buyerId).SendAsync("UnreadCountUpdated", unread);
+                }
+                catch { }
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkPaid(int offerId)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            await _offersService.MarkOfferPaidAsync(offerId, userId);
+
+            var offer = await _offersService.GetByIdAsync(offerId);
+            if (offer != null)
+            {
+                var buyerId = offer.SenderId;
+                var systemMsg = $"The seller marked the offer for '{offer.PartForSale?.Name}' as paid. The listing was removed.";
+                await _messagesService.AddMessageAsync(userId, buyerId, systemMsg, offer.PartForSale?.Id.ToString());
+                try
+                {
+                    var unread = await _messagesService.GetUnreadCountAsync(buyerId);
+                    await _hubContext.Clients.User(buyerId).SendAsync("UnreadCountUpdated", unread);
+                }
+                catch { }
+            }
+
+            return RedirectToAction("Index");
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkNotPaid(int offerId)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            await _offersService.MarkOfferNotPaidAsync(offerId, userId);
+
+            var offer = await _offersService.GetByIdAsync(offerId);
+            if (offer != null)
+            {
+                var buyerId = offer.SenderId;
+                var systemMsg = $"The seller marked the offer for '{offer.PartForSale?.Name}' as not paid. The listing was returned to the marketplace.";
+                await _messagesService.AddMessageAsync(userId, buyerId, systemMsg, offer.PartForSale?.Id.ToString());
+                try
+                {
+                    var unread = await _messagesService.GetUnreadCountAsync(buyerId);
+                    await _hubContext.Clients.User(buyerId).SendAsync("UnreadCountUpdated", unread);
+                }
+                catch { }
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }

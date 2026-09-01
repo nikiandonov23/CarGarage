@@ -1,0 +1,6 @@
+@model int
+
+<a class="nav-link position-relative" asp-controller="Offers" asp-action="Index">
+    <i class="bi bi-tag fs-5"></i>
+    <span class="offers-unread-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning" style="display:@(Model>0?"inline-block":"none")">@Model</span>
+</a>

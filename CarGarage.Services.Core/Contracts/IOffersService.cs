@@ -22,5 +22,13 @@ namespace CarGarage.Services.Core.Contracts
         Task<IEnumerable<Offer>> GetOffersForPartAsync(
             int partForSaleId,
             string ownerId);
+
+        Task<IEnumerable<Offer>> GetPendingOffersForOwnerAsync(string ownerId);
+
+        Task<Offer?> GetByIdAsync(int offerId);
+
+        Task MarkOfferPaidAsync(int offerId, string ownerId);
+
+        Task MarkOfferNotPaidAsync(int offerId, string ownerId);
     }
 }

@@ -1,0 +1,74 @@
+```cshtml
+@model IEnumerable<CarGarage.DataModels.Offer>
+@using CarGarage.DataModels
+
+@{
+    ViewData["Title"] = "Offers";
+}
+
+<div class="container mt-5">
+    <h3>Offers for your parts</h3>
+
+    <div class="list-group mt-3">
+        @foreach (var o in Model)
+        {
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <div>
+                        <h5 class="mb-1">@o.PartForSale?.Name ?? "Part"</h5>
+                        <p class="mb-1">
+                            From: @o.SenderId — @o.Amount.ToString("N2") лв.
+                        </p>
+                        <p class="mb-1 small text-muted">@o.Message</p>
+                    </div>
+
+                    <div class="text-end">
+                        @if (o.Status == OfferStatus.Pending)
+                        {
+                            <form asp-action="Accept" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="offerId" value="@o.Id" />
+                                <button class="btn btn-sm btn-success">
+                                    Accept
+                                </button>
+                            </form>
+
+                            <form asp-action="Reject" method="post" class="d-inline ms-1">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="offerId" value="@o.Id" />
+                                <button class="btn btn-sm btn-danger">
+                                    Reject
+                                </button>
+                            </form>
+                        }
+                        else if (o.Status == OfferStatus.Accepted)
+                        {
+                            <span class="badge bg-success">Accepted</span>
+
+                            <form asp-action="MarkPaid" method="post" class="d-inline ms-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="offerId" value="@o.Id" />
+                                <button class="btn btn-sm btn-primary">
+                                    Mark Paid
+                                </button>
+                            </form>
+
+                            <form asp-action="MarkNotPaid" method="post" class="d-inline ms-1">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="offerId" value="@o.Id" />
+                                <button class="btn btn-sm btn-danger">
+                                    Mark Not Paid
+                                </button>
+                            </form>
+                        }
+                        else if (o.Status == OfferStatus.Rejected)
+                        {
+                            <span class="badge bg-danger">Rejected</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+```

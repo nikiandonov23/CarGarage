@@ -67,13 +67,56 @@ namespace CarGarage.Services.Core
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<CarGarage.DataModels.Offer>> GetOffersForPartAsync(int partForSaleId, string ownerId)
+        public async Task<IEnumerable<Offer>> GetOffersForPartAsync(int partForSaleId, string ownerId)
         {
             // only return offers if owner matches
             var part = await _context.PartsForSale.FirstOrDefaultAsync(p => p.Id == partForSaleId && p.OwnerId == ownerId);
-            if (part == null) return Enumerable.Empty<CarGarage.DataModels.Offer>();
+            if (part == null) return Enumerable.Empty<Offer>();
 
             return await _context.Offers.Where(o => o.PartForSaleId == partForSaleId).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Offer>> GetPendingOffersForOwnerAsync(string ownerId)
+        {
+            // show both pending and accepted offers so owner can mark paid after acceptance
+            return await _context.Offers
+                .Include(o => o.PartForSale)
+                .Where(o => (o.Status == OfferStatus.Pending || o.Status == OfferStatus.Accepted) && o.PartForSale != null && o.PartForSale.OwnerId == ownerId)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<Offer?> GetByIdAsync(int offerId)
+        {
+            return await _context.Offers.Include(o => o.PartForSale).FirstOrDefaultAsync(o => o.Id == offerId);
+        }
+
+        public async Task MarkOfferPaidAsync(int offerId, string ownerId)
+        {
+            var offer = await _context.Offers.Include(o => o.PartForSale).FirstOrDefaultAsync(o => o.Id == offerId);
+            if (offer == null) return;
+            if (offer.PartForSale == null || offer.PartForSale.OwnerId != ownerId) return;
+
+            // mark part as Sold and remove from marketplace view
+            offer.PartForSale.Status = "Sold";
+            offer.Status = OfferStatus.Accepted; // ensure accepted
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task MarkOfferNotPaidAsync(int offerId, string ownerId)
+        {
+            var offer = await _context.Offers.Include(o => o.PartForSale)
+                                             .FirstOrDefaultAsync(o => o.Id == offerId);
+            if (offer == null) return;
+            if (offer.PartForSale == null || offer.PartForSale.OwnerId != ownerId) return;
+
+            // revert listing back to available so it appears on marketplace again
+            offer.PartForSale.Status = "Available";
+
+            // keep offer status as Accepted or adjust if desired
+            offer.Status = OfferStatus.Accepted;
+
+            await _context.SaveChangesAsync();
         }
     }
 }
