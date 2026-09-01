@@ -147,6 +147,44 @@ namespace CarGarage.Data.Migrations
                     b.ToTable("Makes");
                 });
 
+            modelBuilder.Entity("CarGarage.DataModels.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("ConversationId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsPinned")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ReceiverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Messages");
+                });
+
             modelBuilder.Entity("CarGarage.DataModels.Model", b =>
                 {
                     b.Property<int>("Id")
@@ -173,6 +211,45 @@ namespace CarGarage.Data.Migrations
                     b.HasIndex("MakeId");
 
                     b.ToTable("Models");
+                });
+
+            modelBuilder.Entity("CarGarage.DataModels.Offer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("PartForSaleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PartForSaleId");
+
+                    b.ToTable("Offers");
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.Part", b =>
@@ -324,6 +401,61 @@ namespace CarGarage.Data.Migrations
                             Id = 16,
                             Name = "Аксесоари и Други"
                         });
+                });
+
+            modelBuilder.Entity("CarGarage.DataModels.PartForSale", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateAdded")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("GarageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("GarageId");
+
+                    b.ToTable("PartsForSale");
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.UserCars", b =>
@@ -718,6 +850,17 @@ namespace CarGarage.Data.Migrations
                     b.Navigation("Make");
                 });
 
+            modelBuilder.Entity("CarGarage.DataModels.Offer", b =>
+                {
+                    b.HasOne("CarGarage.DataModels.PartForSale", "PartForSale")
+                        .WithMany()
+                        .HasForeignKey("PartForSaleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PartForSale");
+                });
+
             modelBuilder.Entity("CarGarage.DataModels.Part", b =>
                 {
                     b.HasOne("CarGarage.DataModels.Car", "Car")
@@ -749,6 +892,25 @@ namespace CarGarage.Data.Migrations
                     b.Navigation("Garage");
 
                     b.Navigation("Invoice");
+                });
+
+            modelBuilder.Entity("CarGarage.DataModels.PartForSale", b =>
+                {
+                    b.HasOne("CarGarage.DataModels.PartCategory", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Garage", "Garage")
+                        .WithMany()
+                        .HasForeignKey("GarageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Garage");
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.UserCars", b =>

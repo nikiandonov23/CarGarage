@@ -20,9 +20,11 @@ namespace CarGarage.Data
 
         
 
-
         public DbSet<Part> Parts { get; set; } = null!;
         public DbSet<PartCategory> PartCategories { get; set; } = null!;
+        public DbSet<PartForSale> PartsForSale { get; set; } = null!;
+        public DbSet<Offer> Offers { get; set; } = null!;
+        public DbSet<Message> Messages { get; set; } = null!;
 
 
         //Клиенти и фирми
@@ -124,6 +126,26 @@ namespace CarGarage.Data
                 .WithMany(g => g.Parts)
                 .HasForeignKey(p => p.GarageId)
                 .OnDelete(DeleteBehavior.Cascade); // Ако сервизът се закрие, частите му изчезват от маркетплейса
+
+            // Релация за PartForSale (Marketplace)
+            modelBuilder.Entity<PartForSale>()
+                .HasOne(p => p.Garage)
+                .WithMany()
+                .HasForeignKey(p => p.GarageId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PartForSale>()
+                .HasOne(p => p.Category)
+                .WithMany()
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Offers relation
+            modelBuilder.Entity<CarGarage.DataModels.Offer>()
+                .HasOne(o => o.PartForSale)
+                .WithMany()
+                .HasForeignKey(o => o.PartForSaleId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Релация Garage към Customers
             modelBuilder.Entity<Customer>()

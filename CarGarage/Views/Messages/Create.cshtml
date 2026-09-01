@@ -1,0 +1,33 @@
+@model CarGarage.ViewModels.Messages.MessageFormModel
+
+@{
+    ViewData["Title"] = "Свържи се със продавача";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 p-3">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="PartId" />
+                    <input type="hidden" asp-for="ReceiverId" />
+
+                    <div class="mb-3">
+                        <label asp-for="Content" class="form-label">Съобщение</label>
+                        <textarea asp-for="Content" class="form-control" rows="6"></textarea>
+                        <span asp-validation-for="Content" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-primary">Изпрати</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

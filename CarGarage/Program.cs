@@ -16,6 +16,9 @@ namespace CarGarage.Web
             builder.Services.AddScoped<IMyCarsService, MyCarsService>();
             builder.Services.AddScoped<ISearchService, SearchService>();
             builder.Services.AddScoped<IPartsService, PartsService>();
+            builder.Services.AddScoped<IMarketplaceService, MarketplaceService>();
+            builder.Services.AddScoped<IOffersService, OffersService>();
+            builder.Services.AddScoped<IMessagesService, MessagesService>();
             builder.Services.AddScoped<IInvoicesService, InvoicesService>();
             builder.Services.AddScoped<ICustomersService, CustomersService>();
             builder.Services.AddScoped<IGarageService, GarageService>();
@@ -60,6 +63,7 @@ namespace CarGarage.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(

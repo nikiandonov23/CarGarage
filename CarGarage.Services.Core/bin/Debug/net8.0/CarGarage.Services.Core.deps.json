@@ -9,6 +9,7 @@
       "CarGarage.Services.Core/1.0.0": {
         "dependencies": {
           "CarGarage.Data": "1.0.0",
+          "CarGarage.DataModels": "1.0.0",
           "CarGarage.ViewModels": "1.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.23",
           "Microsoft.EntityFrameworkCore.Design": "8.0.23",

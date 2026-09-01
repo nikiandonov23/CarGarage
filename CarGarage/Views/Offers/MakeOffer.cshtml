@@ -1,0 +1,43 @@
+@model CarGarage.ViewModels.Marketplace.OfferFormModel
+
+@{
+    ViewData["Title"] = "Направи оферта";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 p-3">
+                <form asp-action="MakeOffer" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="PartId" />
+
+                    <div class="mb-3">
+                        <label asp-for="Amount" class="form-label">Сума (лв.)</label>
+                        <input asp-for="Amount" class="form-control" />
+                        <span asp-validation-for="Amount" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Message" class="form-label">Съобщение</label>
+                        <textarea asp-for="Message" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Message" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ExpiresAt" class="form-label">Валидност до (по желание)</label>
+                        <input asp-for="ExpiresAt" class="form-control" type="datetime-local" />
+                    </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-primary">Изпрати оферта</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

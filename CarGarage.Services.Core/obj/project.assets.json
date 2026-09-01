@@ -4232,6 +4232,7 @@
   "projectFileDependencyGroups": {
     "net8.0": [
       "CarGarage.Data >= 1.0.0",
+      "CarGarage.DataModels >= 1.0.0",
       "CarGarage.ViewModels >= 1.0.0",
       "Microsoft.EntityFrameworkCore >= 8.0.23",
       "Microsoft.EntityFrameworkCore.Design >= 8.0.23",
@@ -4273,6 +4274,9 @@
           "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {
+            "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj": {
+              "projectPath": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj"
+            },
             "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj": {
               "projectPath": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj"
             },

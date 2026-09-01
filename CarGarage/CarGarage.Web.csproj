@@ -27,4 +27,8 @@
     <ProjectReference Include="..\CarGarage.ViewModels\CarGarage.ViewModels.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
+
 </Project>

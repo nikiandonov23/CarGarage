@@ -537,10 +537,10 @@ C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\staticwebassets.build
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\staticwebassets.build.endpoints.json
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\swae.build.ex.cache
-C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\CarGarag.51467598.Up2Date
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\CarGarage.Web.dll
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\refint\CarGarage.Web.dll
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\CarGarage.Web.pdb
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\CarGarage.Web.genruntimeconfig.cache
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\ref\CarGarage.Web.dll
+C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

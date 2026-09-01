@@ -226,6 +226,9 @@
             "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
+              "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj": {
+                "projectPath": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.DataModels\\CarGarage.DataModels.csproj"
+              },
               "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj": {
                 "projectPath": "C:\\Users\\nikia\\source\\CarGarage\\CarGarage.Data\\CarGarage.Data.csproj"
               },
