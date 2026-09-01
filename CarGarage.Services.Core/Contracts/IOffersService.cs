@@ -15,6 +15,10 @@ namespace CarGarage.Services.Core.Contracts
             int offerId,
             string ownerId);
 
+        Task RejectOfferAsync(
+            int offerId,
+            string ownerId);
+
         Task<IEnumerable<Offer>> GetOffersForPartAsync(
             int partForSaleId,
             string ownerId);

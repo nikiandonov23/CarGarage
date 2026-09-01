@@ -57,9 +57,18 @@ namespace CarGarage.Controllers
             var senderId = GetUserId();
             if (string.IsNullOrEmpty(senderId)) return Unauthorized();
 
-            await _messagesService.AddMessageAsync(senderId, model.ReceiverId, model.Content, model.PartId?.ToString());
+            // Use provided ConversationId when available, otherwise use PartId as a fallback conversation key
+            var conversationKey = model.ConversationId ?? model.PartId?.ToString();
+            await _messagesService.AddMessageAsync(senderId, model.ReceiverId, model.Content, conversationKey);
 
-            return RedirectToAction("Details", "Marketplace", new { id = model.PartId });
+            // Redirect back to marketplace details when message is about a part
+            if (model.PartId.HasValue)
+            {
+                return RedirectToAction("Details", "Marketplace", new { id = model.PartId });
+            }
+
+            // Otherwise go back to inbox where the conversation will appear
+            return RedirectToAction("Index");
         }
 
         [HttpGet]
@@ -68,8 +77,31 @@ namespace CarGarage.Controllers
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            var inbox = await _messagesService.GetInboxAsync(userId);
-            return View(inbox);
+            var inbox = (await _messagesService.GetInboxAsync(userId)).ToList();
+
+            // group by conversation id or sender id
+            var groups = inbox.GroupBy(m => m.ConversationId ?? m.SenderId)
+                .Select(g => new CarGarage.ViewModels.Messages.ConversationSummaryViewModel
+                {
+                    ConversationId = g.Key,
+                    LatestMessageId = g.OrderByDescending(x => x.SentAt).First().Id,
+                    OtherUserId = g.First().SenderId,
+                    LastMessage = g.OrderByDescending(x => x.SentAt).First().Content,
+                    LastSentAt = g.OrderByDescending(x => x.SentAt).First().SentAt,
+                    UnreadCount = g.Count(x => !x.IsRead && x.ReceiverId == userId),
+                    IsPinned = g.Any(x => x.IsPinned)
+                })
+                .OrderByDescending(g => g.LastSentAt)
+                .ToList();
+
+            // resolve display names
+            foreach (var conv in groups)
+            {
+                var usr = await _userManager.FindByIdAsync(conv.OtherUserId);
+                conv.OtherUserName = usr?.UserName ?? conv.OtherUserId;
+            }
+
+            return View(groups);
         }
 
         [HttpGet]
@@ -87,26 +119,28 @@ namespace CarGarage.Controllers
         {
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            // fetch conversation messages (by conversation id or message id)
+            var conversation = await _messagesService.GetConversationAsync(id, userId);
+            if (conversation == null || !conversation.Any()) return NotFound();
 
-            var msg = await _messagesService.GetByIdAsync(id, userId);
-            if (msg == null) return NotFound();
-
-            if (msg.ReceiverId == userId && !msg.IsRead)
+            // mark unread messages in this conversation as read
+            foreach (var m in conversation.Where(x => x.ReceiverId == userId && !x.IsRead))
             {
-                await _messagesService.MarkAsReadAsync(id, userId);
-                // send updated unread count to the current user so badge refreshes
-                try
-                {
-                    var unread = await _messagesService.GetUnreadCountAsync(userId);
-                    await _hubContext.Clients.User(userId).SendAsync("UnreadCountUpdated", unread);
-                }
-                catch
-                {
-                    // ignore SignalR errors
-                }
+                await _messagesService.MarkAsReadAsync(m.Id, userId);
             }
 
-            return View(msg);
+            // send updated unread count to the current user so badge refreshes
+            try
+            {
+                var unread = await _messagesService.GetUnreadCountAsync(userId);
+                await _hubContext.Clients.User(userId).SendAsync("UnreadCountUpdated", unread);
+            }
+            catch
+            {
+                // ignore SignalR errors
+            }
+
+            return View("Conversation", conversation);
         }
 
    
@@ -120,6 +154,17 @@ namespace CarGarage.Controllers
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
             await _messagesService.DeleteAsync(id, userId);
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TogglePin(int id)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            await _messagesService.TogglePinAsync(id, userId);
             return RedirectToAction("Index");
         }
     }

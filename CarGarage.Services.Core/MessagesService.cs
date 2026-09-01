@@ -17,6 +17,27 @@ namespace CarGarage.Services.Core
             _context = context;
         }
 
+        public async Task<IEnumerable<CarGarage.DataModels.Message>> GetConversationAsync(int messageId, string userId)
+        {
+            var msg = await _context.Messages.FirstOrDefaultAsync(m => m.Id == messageId && (m.ReceiverId == userId || m.SenderId == userId));
+            if (msg == null) return Enumerable.Empty<CarGarage.DataModels.Message>();
+
+            if (!string.IsNullOrEmpty(msg.ConversationId))
+            {
+                return await _context.Messages
+                    .Where(m => m.ConversationId == msg.ConversationId && (m.ReceiverId == userId || m.SenderId == userId) && !m.IsDeleted)
+                    .OrderBy(m => m.SentAt)
+                    .ToListAsync();
+            }
+
+            // fallback: conversation between the two participants
+            var otherId = msg.SenderId == userId ? msg.ReceiverId : msg.SenderId;
+            return await _context.Messages
+                .Where(m => ((m.SenderId == userId && m.ReceiverId == otherId) || (m.SenderId == otherId && m.ReceiverId == userId)) && !m.IsDeleted)
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+        }
+
       
 
         public async Task AddMessageAsync(string senderId, string receiverId, string content, string? conversationId = null)

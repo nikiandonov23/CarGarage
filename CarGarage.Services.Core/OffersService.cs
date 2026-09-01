@@ -33,6 +33,20 @@ namespace CarGarage.Services.Core
             await _context.SaveChangesAsync();
         }
 
+        public async Task RejectOfferAsync(int offerId, string ownerId)
+        {
+            var offer = await _context.Offers
+                .Include(o => o.PartForSale)
+                .FirstOrDefaultAsync(o => o.Id == offerId);
+
+            if (offer == null) return;
+
+            if (offer.PartForSale == null || offer.PartForSale.OwnerId != ownerId) return;
+
+            offer.Status = OfferStatus.Rejected;
+            await _context.SaveChangesAsync();
+        }
+
         public async Task AcceptOfferAsync(int offerId, string ownerId)
         {
             var offer = await _context.Offers

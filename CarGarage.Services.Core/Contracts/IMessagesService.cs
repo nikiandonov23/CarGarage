@@ -40,6 +40,8 @@ namespace CarGarage.Services.Core.Contracts
         Task DeleteAsync(
             int id,
             string userId);
+
+        Task<IEnumerable<Message>> GetConversationAsync(int messageId, string userId);
     }
 }
 

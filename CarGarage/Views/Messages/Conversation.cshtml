@@ -1,0 +1,37 @@
+@model IEnumerable<CarGarage.DataModels.Message>
+
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Conversation";
+    var currentUserId = User.Identity?.IsAuthenticated == true ? User.FindFirstValue(ClaimTypes.NameIdentifier) : null;
+}
+
+<div class="container mt-5">
+    <h3>Conversation</h3>
+    <div class="list-group mt-3">
+        @foreach (var msg in Model.OrderBy(m => m.SentAt))
+        {
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <strong>@(msg.SenderId == currentUserId ? "You" : msg.SenderId)</strong>
+                    <small>@msg.SentAt.ToString("g")</small>
+                </div>
+                <p class="mb-1">@msg.Content</p>
+                @if (msg.SenderId == currentUserId || msg.ReceiverId == currentUserId)
+                {
+                    <form asp-action="Delete" method="post" class="mt-2 d-inline-block">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@msg.Id" />
+                        <button class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="mt-3">
+        @{ var other = Model.FirstOrDefault(m => m.SenderId != currentUserId)?.SenderId ?? Model.FirstOrDefault()?.SenderId; }
+        <a asp-action="Create" asp-route-receiverId="@other" asp-route-conversationId="@Model.FirstOrDefault()?.ConversationId" class="btn btn-primary">Reply</a>
+        <a asp-action="Index" class="btn btn-light">Back</a>
+    </div>
+</div>

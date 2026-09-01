@@ -1,4 +1,4 @@
-@model IEnumerable<CarGarage.DataModels.Message>
+@model IEnumerable<CarGarage.ViewModels.Messages.ConversationSummaryViewModel>
 
 @{
     ViewData["Title"] = "Inbox";
@@ -7,16 +7,27 @@
 <div class="container mt-5">
     <h3>Inbox</h3>
     <div class="list-group mt-3">
-        @foreach (var msg in Model)
+        @foreach (var conv in Model)
         {
-            <a asp-action="Details" asp-route-id="@msg.Id" class="list-group-item list-group-item-action">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">From: @msg.SenderId</h5>
-                    <small>@msg.SentAt.ToString("g")</small>
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between align-items-start">
+                    <div>
+                        <a asp-action="Details" asp-route-id="@conv.LatestMessageId" class="stretched-link text-decoration-none">
+                            <h5 class="mb-1">@conv.OtherUserName</h5>
+                        </a>
+                        <small class="text-muted">@conv.LastSentAt.ToString("g")</small>
+                        <p class="mb-1 text-truncate">@conv.LastMessage</p>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted d-block">Unread: @conv.UnreadCount</small>
+                        <form asp-action="TogglePin" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@conv.LatestMessageId" />
+                            <button type="submit" class="btn btn-sm @(conv.IsPinned ? "btn-warning" : "btn-outline-secondary")">@(conv.IsPinned ? "Unpin" : "Pin")</button>
+                        </form>
+                    </div>
                 </div>
-                <p class="mb-1 text-truncate">@msg.Content</p>
-                <small class="text-muted">Conversation: @msg.ConversationId</small>
-            </a>
+            </div>
         }
     </div>
 </div>
