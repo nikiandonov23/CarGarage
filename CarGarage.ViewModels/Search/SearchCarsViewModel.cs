@@ -17,5 +17,7 @@ namespace CarGarage.ViewModels.Search
         
         public IEnumerable<CreateCarMakeDropDownViewModel> Makes { get; set; } = new List<CreateCarMakeDropDownViewModel>();
         public IEnumerable<CreateCarModelDropDownViewModel> Models { get; set; } = new List<CreateCarModelDropDownViewModel>();
+
+       
     }
 }

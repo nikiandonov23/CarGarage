@@ -9,7 +9,6 @@ namespace CarGarage.Services.Core
 {
     public class SearchService(ApplicationDbContext context) : ISearchService
     {
-        // моделите за дропдайна майко
         public async Task<SearchCarsViewModel> GetSearchModelAsync()
         {
             var makes = await context.Makes
@@ -27,18 +26,16 @@ namespace CarGarage.Services.Core
             };
         }
 
-        public async Task<SearchCarsViewModel> GetSearchModelAsync(string? searchTerm, string? customerName, int? makeId, int? modelId, string? userId)
+        public async Task<SearchCarsViewModel> GetSearchModelAsync(string? searchTerm, string? customerName, int? makeId, int? modelId, string? userId = null)
         {
-            // Start from base model with makes
             var viewModel = await GetSearchModelAsync();
 
-            // set filter values
             viewModel.SearchTerm = searchTerm;
             viewModel.CustomerName = customerName;
             viewModel.MakeId = makeId;
             viewModel.ModelId = modelId;
 
-            // load models for selected make
+            // Зареждаме моделите, ако е избрана марка
             if (makeId.HasValue && makeId > 0)
             {
                 var models = await context.Models
@@ -55,25 +52,41 @@ namespace CarGarage.Services.Core
                 viewModel.Models = models;
             }
 
-            // search results
+            // Намираме резултатите само за твоя гараж
             viewModel.Results = (await SearchCarsAsync(searchTerm, customerName, makeId, modelId, userId)).ToList();
 
             return viewModel;
         }
 
-        // Backwards-compatible overload without userId
-        public async Task<SearchCarsViewModel> GetSearchModelAsync(string? searchTerm, string? customerName, int? makeId, int? modelId)
+        public async Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId, string? userId = null)
         {
-            return await GetSearchModelAsync(searchTerm, customerName, makeId, modelId, null);
-        }
-
-        
-        public async Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId, string? userId)
-        {
-            //лепя филтрите към осн. заявка дето зема вс коли 
             var query = context.Cars.AsNoTracking().AsQueryable();
 
-            // търсене по текст за вина или рег.номрра
+            // СТРОГА ФИЛТРАЦИЯ ПО ГАРАЖ ПРЕЗ КЛИЕНТА: Взимаме само колите, чийто клиент принадлежи към твоя гараж
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var garageId = await context.Garages
+                    .Where(g => g.OwnerId == userId)
+                    .Select(g => (int?)g.Id)
+                    .FirstOrDefaultAsync();
+
+                if (garageId.HasValue && garageId.Value > 0)
+                {
+                    query = query.Where(c => c.Customer != null && c.Customer.GarageId == garageId.Value);
+                }
+                else
+                {
+                    // Ако потребителят няма регистриран гараж, връщаме празен списък
+                    return Enumerable.Empty<CarViewModel>();
+                }
+            }
+            else
+            {
+                // Ако няма логнат потребител, не връщаме резултати
+                return Enumerable.Empty<CarViewModel>();
+            }
+
+            // Търсене по текст за рег. номер или VIN
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 var term = searchTerm.Trim().ToLower();
@@ -81,7 +94,7 @@ namespace CarGarage.Services.Core
                                          (c.Vin ?? string.Empty).ToLower().Contains(term));
             }
 
-            // пресявам ги по марката 
+            // Филтър по марка
             if (makeId.HasValue && makeId > 0)
             {
                 var makeName = await context.Makes
@@ -95,7 +108,7 @@ namespace CarGarage.Services.Core
                 }
             }
 
-            // пресявам ги по моделаа
+            // Филтър по модел
             if (modelId.HasValue && modelId > 0)
             {
                 var modelName = await context.Models
@@ -109,7 +122,7 @@ namespace CarGarage.Services.Core
                 }
             }
 
-            // търсене по име на клиент (физическо или юридическо лице)
+            // Търсене по име на клиент (физическо или юридическо лице)
             if (!string.IsNullOrWhiteSpace(customerName))
             {
                 var term = customerName.Trim().ToLower();
@@ -119,11 +132,6 @@ namespace CarGarage.Services.Core
                 ));
             }
 
-            // Ограничаваме резултатите до тези, които принадлежат на текущия потребител
-            if (!string.IsNullOrEmpty(userId))
-            {
-                query = query.Where(c => c.UserCars.Any(uc => uc.UserId == userId));
-            }
             return await query
                 .Select(c => new CarViewModel
                 {
@@ -138,12 +146,6 @@ namespace CarGarage.Services.Core
                     AddedDate = c.AddedDate
                 })
                 .ToListAsync();
-        }
-
-        // Backwards-compatible overload without userId
-        public async Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId)
-        {
-            return await SearchCarsAsync(searchTerm, customerName, makeId, modelId, null);
         }
     }
 }

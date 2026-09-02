@@ -5,16 +5,13 @@ namespace CarGarage.Services.Core.Contracts
 {
     public interface ISearchService
     {
-        // гласи марките за дропдауна
+        // Гласи марките за дропдауна (базов модел)
         Task<SearchCarsViewModel> GetSearchModelAsync();
 
-        Task<SearchCarsViewModel> GetSearchModelAsync(string? searchTerm, string? customerName, int? makeId, int? modelId, string? userId);
-        // Backwards-compatible overloads (no userId) for controllers that haven't been updated
-        Task<SearchCarsViewModel> GetSearchModelAsync(string? searchTerm, string? customerName, int? makeId, int? modelId);
+        // userId вече е задължителен параметър (премахната е въпросителната)
+        Task<SearchCarsViewModel> GetSearchModelAsync(string? searchTerm, string? customerName, int? makeId, int? modelId, string userId);
 
-        // филтърче
-        Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId, string? userId);
-
-        Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId);
+        // userId е задължителен и тук
+        Task<IEnumerable<CarViewModel>> SearchCarsAsync(string? searchTerm, string? customerName, int? makeId, int? modelId, string userId);
     }
 }
