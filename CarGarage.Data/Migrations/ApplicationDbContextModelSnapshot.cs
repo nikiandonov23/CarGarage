@@ -76,7 +76,7 @@ namespace CarGarage.Data.Migrations
                     b.HasIndex("Vin")
                         .IsUnique();
 
-                    b.ToTable("Cars");
+                    b.ToTable("Cars", (string)null);
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.Invoice", b =>
@@ -121,7 +121,7 @@ namespace CarGarage.Data.Migrations
 
                     b.HasIndex("GarageId");
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.Make", b =>
@@ -144,7 +144,7 @@ namespace CarGarage.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Makes");
+                    b.ToTable("Makes", (string)null);
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.Message", b =>
@@ -185,7 +185,7 @@ namespace CarGarage.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.Model", b =>
@@ -213,7 +213,7 @@ namespace CarGarage.Data.Migrations
 
                     b.HasIndex("MakeId");
 
-                    b.ToTable("Models");
+                    b.ToTable("Models", (string)null);
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.Offer", b =>
@@ -252,7 +252,7 @@ namespace CarGarage.Data.Migrations
 
                     b.HasIndex("PartForSaleId");
 
-                    b.ToTable("Offers");
+                    b.ToTable("Offers", (string)null);
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.Part", b =>
@@ -303,7 +303,7 @@ namespace CarGarage.Data.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("Parts");
+                    b.ToTable("Parts", (string)null);
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.PartCategory", b =>
@@ -321,7 +321,7 @@ namespace CarGarage.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PartCategories");
+                    b.ToTable("PartCategories", (string)null);
 
                     b.HasData(
                         new
@@ -458,7 +458,7 @@ namespace CarGarage.Data.Migrations
 
                     b.HasIndex("GarageId");
 
-                    b.ToTable("PartsForSale");
+                    b.ToTable("PartsForSale", (string)null);
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.UserCars", b =>
@@ -478,7 +478,7 @@ namespace CarGarage.Data.Migrations
 
                     b.HasIndex("CarId");
 
-                    b.ToTable("UserCars");
+                    b.ToTable("UserCars", (string)null);
                 });
 
             modelBuilder.Entity("Customer", b =>
@@ -566,7 +566,7 @@ namespace CarGarage.Data.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Garages");
+                    b.ToTable("Garages", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

@@ -154,7 +154,6 @@ namespace CarGarage.Controllers
             return RedirectToAction("Index");
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkNotPaid(int offerId)
@@ -180,5 +179,8 @@ namespace CarGarage.Controllers
 
             return RedirectToAction("Index");
         }
+
+
+
     }
 }

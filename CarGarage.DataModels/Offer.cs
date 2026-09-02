@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CarGarage.DataModels
 {
@@ -37,8 +32,9 @@ namespace CarGarage.DataModels
 
     public enum OfferStatus
     {
-        Pending = 0,
-        Accepted = 1,
-        Rejected = 2
+        Pending,
+        Accepted,
+        Rejected,
+        NotPaid
     }
 }

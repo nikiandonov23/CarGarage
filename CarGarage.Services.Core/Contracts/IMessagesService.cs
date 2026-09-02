@@ -4,7 +4,7 @@ namespace CarGarage.Services.Core.Contracts
 {
     public interface IMessagesService
     {
-        Task AddMessageAsync(
+        Task<Message> AddMessageAsync(
             string senderId,
             string receiverId,
             string content,
@@ -41,7 +41,8 @@ namespace CarGarage.Services.Core.Contracts
             int id,
             string userId);
 
-        Task<IEnumerable<Message>> GetConversationAsync(int messageId, string userId);
+        Task<IEnumerable<Message>> GetConversationAsync(
+            int messageId,
+            string userId);
     }
 }
-

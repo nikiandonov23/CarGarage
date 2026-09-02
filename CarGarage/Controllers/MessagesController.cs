@@ -1,9 +1,11 @@
+
 using CarGarage.Services.Core.Contracts;
 using CarGarage.ViewModels.Messages;
 using CarGarage.Web.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Identity;
 
 namespace CarGarage.Controllers
 {
@@ -13,32 +15,54 @@ namespace CarGarage.Controllers
         private readonly IMessagesService _messagesService;
         private readonly IMarketplaceService _marketplaceService;
         private readonly IHubContext<Notifications.NotificationsHub> _hubContext;
-        private readonly Microsoft.AspNetCore.Identity.UserManager<Microsoft.AspNetCore.Identity.IdentityUser> _userManager;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IGarageService _garageService;
 
-        public MessagesController(IMessagesService messagesService, IMarketplaceService marketplaceService,
+        public MessagesController(
+            IMessagesService messagesService,
+            IMarketplaceService marketplaceService,
             IHubContext<Notifications.NotificationsHub> hubContext,
-            Microsoft.AspNetCore.Identity.UserManager<Microsoft.AspNetCore.Identity.IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            IGarageService garageService)
         {
             _messagesService = messagesService;
             _marketplaceService = marketplaceService;
             _hubContext = hubContext;
             _userManager = userManager;
+            _garageService = garageService;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Create(int? partId, string? receiverId, string? conversationId)
+        public async Task<IActionResult> Create(
+            int? partId,
+            string? receiverId,
+            string? conversationId)
         {
             MessageFormModel model;
 
             if (!string.IsNullOrEmpty(receiverId))
             {
-                model = new MessageFormModel { PartId = partId, ReceiverId = receiverId, ConversationId = conversationId };
+                model = new MessageFormModel
+                {
+                    PartId = partId,
+                    ReceiverId = receiverId,
+                    ConversationId = conversationId
+                };
             }
             else if (partId.HasValue)
             {
-                var part = await _marketplaceService.GetByIdAsync(partId.Value);
-                if (part == null) return NotFound();
-                model = new MessageFormModel { PartId = partId, ReceiverId = part.OwnerId, ConversationId = conversationId };
+                var part = await _marketplaceService
+                    .GetByIdAsync(partId.Value);
+
+                if (part == null)
+                    return NotFound();
+
+                model = new MessageFormModel
+                {
+                    PartId = partId,
+                    ReceiverId = part.OwnerId,
+                    ConversationId = conversationId
+                };
             }
             else
             {
@@ -48,124 +72,373 @@ namespace CarGarage.Controllers
             return View(model);
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(MessageFormModel model)
+        public async Task<IActionResult> Create(
+            MessageFormModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
 
             var senderId = GetUserId();
-            if (string.IsNullOrEmpty(senderId)) return Unauthorized();
 
-            // Use provided ConversationId when available, otherwise use PartId as a fallback conversation key
-            var conversationKey = model.ConversationId ?? model.PartId?.ToString();
-            await _messagesService.AddMessageAsync(senderId, model.ReceiverId, model.Content, conversationKey);
+            if (string.IsNullOrEmpty(senderId))
+                return Unauthorized();
 
-            // Redirect back to marketplace details when message is about a part
-            if (model.PartId.HasValue)
+            // Ако вече сме в разговор,
+            // използваме съществуващия ConversationId.
+            //
+            // Ако това е нов разговор,
+            // създаваме нов уникален ConversationId.
+            var conversationKey =
+                model.ConversationId;
+
+            if (string.IsNullOrEmpty(conversationKey))
             {
-                return RedirectToAction("Details", "Marketplace", new { id = model.PartId });
+                conversationKey =
+                    Guid.NewGuid().ToString();
             }
 
-            // Otherwise go back to inbox where the conversation will appear
-            return RedirectToAction("Index");
+            // Създаваме съобщението
+            var sentMessage =
+                await _messagesService.AddMessageAsync(
+                    senderId,
+                    model.ReceiverId,
+                    model.Content,
+                    conversationKey);
+
+            // Взимаме името на сервиза на изпращача
+            var senderGarage =
+                await _garageService
+                    .GetGarageDetailsAsync(senderId);
+
+            var senderGarageName =
+                senderGarage?.Name
+                ?? "Сервиз";
+
+            // Изпращаме новото съобщение в реално време
+            try
+            {
+                await _hubContext.Clients
+                    .User(model.ReceiverId)
+                    .SendAsync(
+                        "NewMessage",
+                        new
+                        {
+                            id = sentMessage.Id,
+                            senderId = sentMessage.SenderId,
+                            receiverId = sentMessage.ReceiverId,
+                            content = sentMessage.Content,
+                            sentAt = sentMessage.SentAt,
+                            conversationId =
+                                sentMessage.ConversationId,
+
+                            senderGarageName =
+                                senderGarageName
+                        });
+
+                // Обновяваме unread badge
+                var unreadCount =
+                    await _messagesService
+                        .GetUnreadCountAsync(
+                            model.ReceiverId);
+
+                await _hubContext.Clients
+                    .User(model.ReceiverId)
+                    .SendAsync(
+                        "UnreadCountUpdated",
+                        unreadCount);
+            }
+            catch
+            {
+                // SignalR проблемът не трябва
+                // да проваля записването на съобщението.
+            }
+
+
+            // Ако сме в съществуващ разговор,
+            // оставаме в него.
+            //
+            // Вече имаме ConversationId,
+            // затова използваме него.
+            return RedirectToAction(
+                nameof(Details),
+                new
+                {
+                    id = sentMessage.Id
+                });
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
             var userId = GetUserId();
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            var inbox = (await _messagesService.GetInboxAsync(userId)).ToList();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-            // group by conversation id or sender id
-            var groups = inbox.GroupBy(m => m.ConversationId ?? m.SenderId)
-                .Select(g => new CarGarage.ViewModels.Messages.ConversationSummaryViewModel
+            // Вече получаваме както изпратените,
+            // така и получените съобщения.
+            var inbox =
+                (await _messagesService
+                    .GetInboxAsync(userId))
+                .ToList();
+
+            var groups = inbox
+                .GroupBy(m =>
+                    !string.IsNullOrEmpty(m.ConversationId)
+                        ? m.ConversationId
+                        : string.Compare(
+                            m.SenderId,
+                            m.ReceiverId) < 0
+                            ? $"{m.SenderId}_{m.ReceiverId}"
+                            : $"{m.ReceiverId}_{m.SenderId}")
+                .Select(g =>
                 {
-                    ConversationId = g.Key,
-                    LatestMessageId = g.OrderByDescending(x => x.SentAt).First().Id,
-                    OtherUserId = g.First().SenderId,
-                    LastMessage = g.OrderByDescending(x => x.SentAt).First().Content,
-                    LastSentAt = g.OrderByDescending(x => x.SentAt).First().SentAt,
-                    UnreadCount = g.Count(x => !x.IsRead && x.ReceiverId == userId),
-                    IsPinned = g.Any(x => x.IsPinned)
+                    var latest =
+                        g.OrderByDescending(x => x.SentAt)
+                         .First();
+
+                    var otherUserId =
+                        g.SelectMany(x =>
+                                new[]
+                                {
+                                    x.SenderId,
+                                    x.ReceiverId
+                                })
+                         .Where(x => x != userId)
+                         .Distinct()
+                         .First();
+
+                    return new ConversationSummaryViewModel
+                    {
+                        ConversationId = g.Key,
+
+                        LatestMessageId =
+                            latest.Id,
+
+                        OtherUserId =
+                            otherUserId,
+
+                        LastMessage =
+                            latest.Content,
+
+                        LastSentAt =
+                            latest.SentAt,
+
+                        UnreadCount =
+                            g.Count(x =>
+                                !x.IsRead &&
+                                x.ReceiverId == userId),
+
+                        IsPinned =
+                            g.Any(x => x.IsPinned)
+                    };
                 })
                 .OrderByDescending(g => g.LastSentAt)
                 .ToList();
 
-            // resolve display names
+
+            // Взимаме името на сервиза
+            // вместо Username.
             foreach (var conv in groups)
             {
-                var usr = await _userManager.FindByIdAsync(conv.OtherUserId);
-                conv.OtherUserName = usr?.UserName ?? conv.OtherUserId;
+                var garage =
+                    await _garageService
+                        .GetGarageDetailsAsync(
+                            conv.OtherUserId);
+
+                if (garage != null &&
+                    !string.IsNullOrWhiteSpace(
+                        garage.Name))
+                {
+                    conv.OtherUserName =
+                        garage.Name;
+                }
+                else
+                {
+                    // Fallback към Username
+                    var usr =
+                        await _userManager
+                            .FindByIdAsync(
+                                conv.OtherUserId);
+
+                    conv.OtherUserName =
+                        usr?.UserName ??
+                        conv.OtherUserId;
+                }
             }
 
             return View(groups);
         }
 
+
         [HttpGet]
         public async Task<IActionResult> Outbox()
         {
             var userId = GetUserId();
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            var outbox = await _messagesService.GetOutboxAsync(userId);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var outbox =
+                await _messagesService
+                    .GetOutboxAsync(userId);
+
             return View(outbox);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
             var userId = GetUserId();
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            // fetch conversation messages (by conversation id or message id)
-            var conversation = await _messagesService.GetConversationAsync(id, userId);
-            if (conversation == null || !conversation.Any()) return NotFound();
 
-            // mark unread messages in this conversation as read
-            foreach (var m in conversation.Where(x => x.ReceiverId == userId && !x.IsRead))
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var conversation =
+                await _messagesService
+                    .GetConversationAsync(
+                        id,
+                        userId);
+
+            if (conversation == null ||
+                !conversation.Any())
             {
-                await _messagesService.MarkAsReadAsync(m.Id, userId);
+                return NotFound();
             }
 
-            // send updated unread count to the current user so badge refreshes
+            var messages =
+                conversation
+                    .OrderBy(m => m.SentAt)
+                    .ToList();
+
+            // Намираме другия участник
+            var otherUserId =
+                messages
+                    .FirstOrDefault(
+                        m => m.SenderId != userId)
+                    ?.SenderId
+                ?? messages
+                    .FirstOrDefault()
+                    ?.ReceiverId;
+
+            // Взимаме името на неговия сервиз
+            string? otherGarageName = null;
+
+            if (!string.IsNullOrEmpty(otherUserId))
+            {
+                var garage =
+                    await _garageService
+                        .GetGarageDetailsAsync(
+                            otherUserId);
+
+                if (garage != null &&
+                    !string.IsNullOrWhiteSpace(
+                        garage.Name))
+                {
+                    otherGarageName =
+                        garage.Name;
+                }
+                else
+                {
+                    // Fallback към Username
+                    var usr =
+                        await _userManager
+                            .FindByIdAsync(
+                                otherUserId);
+
+                    otherGarageName =
+                        usr?.UserName ??
+                        otherUserId;
+                }
+            }
+
+            // Подаваме името към Conversation.cshtml
+            ViewBag.OtherGarageName =
+                otherGarageName;
+
+
+            // Маркираме получените съобщения
+            // като прочетени.
+            foreach (var message in conversation
+                .Where(x =>
+                    x.ReceiverId == userId &&
+                    !x.IsRead))
+            {
+                await _messagesService
+                    .MarkAsReadAsync(
+                        message.Id,
+                        userId);
+            }
+
+
             try
             {
-                var unread = await _messagesService.GetUnreadCountAsync(userId);
-                await _hubContext.Clients.User(userId).SendAsync("UnreadCountUpdated", unread);
+                var unread =
+                    await _messagesService
+                        .GetUnreadCountAsync(
+                            userId);
+
+                await _hubContext.Clients
+                    .User(userId)
+                    .SendAsync(
+                        "UnreadCountUpdated",
+                        unread);
             }
             catch
             {
-                // ignore SignalR errors
+                // Ignore SignalR errors
             }
 
-            return View("Conversation", conversation);
+
+            return View(
+                "Conversation",
+                conversation);
         }
 
-   
-        // Pin/unpin handled in UI via future endpoint; temporarily not exposed to avoid interface mismatch.
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(
+            int id)
         {
             var userId = GetUserId();
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            await _messagesService.DeleteAsync(id, userId);
-            return RedirectToAction("Index");
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            await _messagesService
+                .DeleteAsync(
+                    id,
+                    userId);
+
+            return RedirectToAction(
+                nameof(Index));
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> TogglePin(int id)
+        public async Task<IActionResult> TogglePin(
+            int id)
         {
             var userId = GetUserId();
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            await _messagesService.TogglePinAsync(id, userId);
-            return RedirectToAction("Index");
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            await _messagesService
+                .TogglePinAsync(
+                    id,
+                    userId);
+
+            return RedirectToAction(
+                nameof(Index));
         }
     }
 }
+

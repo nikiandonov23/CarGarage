@@ -1,50 +1,88 @@
+
 @model CarGarage.ViewModels.Marketplace.MarketplaceIndexViewModel
 @using System.Security.Claims
 
 @{
     ViewData["Title"] = "Marketplace";
-    var currentUserId = User.Identity?.IsAuthenticated == true ? User.FindFirstValue(ClaimTypes.NameIdentifier) : null;
+    var currentUserId = User.Identity?.IsAuthenticated == true
+        ? User.FindFirstValue(ClaimTypes.NameIdentifier)
+        : null;
 }
 
 <div class="container mt-5">
+
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary fw-bold">Маркетплейс - части за продажба</h2>
+        <h2 class="text-primary fw-bold">
+            Маркетплейс - части за продажба
+        </h2>
+
         <div>
             <a asp-action="Create" class="btn btn-primary shadow-sm">
-                <i class="bi bi-plus-circle me-1"></i>Добави обява
+                <i class="bi bi-plus-circle me-1"></i>
+                Добави обява
             </a>
         </div>
     </div>
 
+    <!-- Search -->
     <div class="card mb-4 shadow-sm border-0 p-3">
         <form method="get" class="row g-2 align-items-end">
+
             <div class="col-md-4">
-                <label class="form-label small text-muted">Име на част</label>
-                <input name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="напр. филтър, бутало..." />
+                <label class="form-label small text-muted">
+                    Име на част
+                </label>
+
+                <input name="searchTerm"
+                       value="@Model.SearchTerm"
+                       class="form-control"
+                       placeholder="напр. филтър, бутало..." />
             </div>
+
             <div class="col-md-3">
-                <label class="form-label small text-muted">Град</label>
-                <input name="city" value="@Model.City" class="form-control" placeholder="напр. София" />
+                <label class="form-label small text-muted">
+                    Град
+                </label>
+
+                <input name="city"
+                       value="@Model.City"
+                       class="form-control"
+                       placeholder="напр. София" />
             </div>
+
             <div class="col-md-3">
-                <label class="form-label small text-muted">Категория</label>
+                <label class="form-label small text-muted">
+                    Категория
+                </label>
+
                 <select name="categoryId" class="form-select">
                     <option value="">Всички</option>
-                    @foreach (var c in Model.Categories ?? Enumerable.Empty<CarGarage.ViewModels.Parts.PartCategoryViewModel>())
+
+                    @foreach (var c in Model.Categories
+                        ?? Enumerable.Empty<CarGarage.ViewModels.Parts.PartCategoryViewModel>())
                     {
-                        <option value="@c.Id" selected="@(Model.CategoryId == c.Id ? "selected" : null)">@c.Name</option>
+                        <option value="@c.Id"
+                                selected="@(Model.CategoryId == c.Id ? "selected" : null)">
+                            @c.Name
+                        </option>
                     }
                 </select>
             </div>
+
             <div class="col-md-2">
                 <div class="d-grid">
-                    <button class="btn btn-outline-primary">Търси</button>
+                    <button class="btn btn-outline-primary">
+                        Търси
+                    </button>
                 </div>
             </div>
+
         </form>
     </div>
 
+    <!-- Marketplace Results -->
     <div class="row">
+
         @if (!Model.Results.Any())
         {
             <div class="col-12">
@@ -58,42 +96,119 @@
             @foreach (var item in Model.Results)
             {
                 <div class="col-md-4 mb-4">
+
                     <div class="card shadow-sm h-100">
-                        <div class="position-absolute" style="right:10px;top:10px; z-index:5;">
-                            @if(item.Status == "Pending")
+
+                        <!-- Status -->
+                        <div class="position-absolute"
+                             style="right:10px; top:10px; z-index:5;">
+
+                            @if (item.Status == "Pending")
                             {
-                                <span class="badge bg-warning text-dark">Pending</span>
+                                <span class="badge bg-warning text-dark">
+                                    Pending
+                                </span>
                             }
-                            else if(item.Status == "Available")
+                            else if (item.Status == "Available")
                             {
-                                <span class="badge bg-success">Available</span>
+                                <span class="badge bg-success">
+                                    Available
+                                </span>
                             }
+
                         </div>
+
+                        <!-- Image -->
                         @if (!string.IsNullOrEmpty(item.ImageUrl))
                         {
-                            <img src="@item.ImageUrl" class="card-img-top" style="height:180px; object-fit:cover;" />
+                            <img src="@item.ImageUrl"
+                                 class="card-img-top"
+                                 style="height:180px; object-fit:cover;"
+                                 alt="@item.Name" />
                         }
+
                         <div class="card-body d-flex flex-column">
-                            <h5 class="card-title fw-bold">@item.Name</h5>
-                            <p class="card-text text-muted small mb-1">Категория: @item.CategoryName</p>
-                            <p class="card-text small mb-2">@item.GarageName @if(!string.IsNullOrEmpty(item.City)){<span class="text-muted">(@item.City)</span>}</p>
+
+                            <h5 class="card-title fw-bold">
+                                @item.Name
+                            </h5>
+
+                            <p class="card-text text-muted small mb-1">
+                                Категория: @item.CategoryName
+                            </p>
+
+                            <p class="card-text small mb-2">
+                                @item.GarageName
+
+                                @if (!string.IsNullOrEmpty(item.City))
+                                {
+                                    <span class="text-muted">
+                                        (@item.City)
+                                    </span>
+                                }
+                            </p>
+
                             <div class="mt-auto d-flex justify-content-between align-items-center">
-                                <div class="fw-bold text-dark fs-5">@item.Price.ToString("N2") лв.</div>
+
+                                <div class="fw-bold text-dark fs-5">
+                                    @item.Price.ToString("N2") лв.
+                                </div>
+
                                 <div class="btn-group">
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">View</a>
-                                    <a asp-controller="Messages" asp-action="Create" asp-route-partId="@item.Id" class="btn btn-sm btn-outline-success">Свържи се</a>
-                                    <a asp-controller="Offers" asp-action="MakeOffer" asp-route-partId="@item.Id" class="btn btn-sm btn-outline-info">Направи оферта</a>
-                                    @if (!string.IsNullOrEmpty(currentUserId) && item.OwnerId == currentUserId)
+
+                                    <!-- View -->
+                                    <a asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        View
+                                    </a>
+
+                                    <!-- Actions for other users only -->
+                                    @if (!string.IsNullOrEmpty(currentUserId)
+                                         && item.OwnerId != currentUserId)
                                     {
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Редактирай</a>
-                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Изтрий</a>
+                                        <a asp-controller="Messages"
+                                           asp-action="Create"
+                                           asp-route-partId="@item.Id"
+                                           class="btn btn-sm btn-outline-success">
+                                            Свържи се
+                                        </a>
+
+                                        <a asp-controller="Offers"
+                                           asp-action="MakeOffer"
+                                           asp-route-partId="@item.Id"
+                                           class="btn btn-sm btn-outline-info">
+                                            Направи оферта
+                                        </a>
                                     }
+
+                                    <!-- Actions for owner only -->
+                                    @if (!string.IsNullOrEmpty(currentUserId)
+                                         && item.OwnerId == currentUserId)
+                                    {
+                                        <a asp-action="Edit"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            Редактирай
+                                        </a>
+
+                                        <a asp-action="Delete"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-outline-danger">
+                                            Изтрий
+                                        </a>
+                                    }
+
                                 </div>
                             </div>
+
                         </div>
                     </div>
+
                 </div>
             }
         }
+
     </div>
 </div>
+

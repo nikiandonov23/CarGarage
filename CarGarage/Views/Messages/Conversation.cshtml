@@ -1,37 +1,387 @@
+
 @model IEnumerable<CarGarage.DataModels.Message>
 
 @using System.Security.Claims
+
 @{
     ViewData["Title"] = "Conversation";
-    var currentUserId = User.Identity?.IsAuthenticated == true ? User.FindFirstValue(ClaimTypes.NameIdentifier) : null;
+
+    var currentUserId =
+        User.Identity?.IsAuthenticated == true
+            ? User.FindFirstValue(
+                ClaimTypes.NameIdentifier)
+            : null;
+
+    var messages =
+        Model.OrderBy(m => m.SentAt).ToList();
+
+    var other =
+        messages
+            .FirstOrDefault(
+                m => m.SenderId != currentUserId)
+            ?.SenderId
+        ?? messages.FirstOrDefault()?.SenderId;
+
+    var conversationId =
+        messages.FirstOrDefault()?.ConversationId;
+
+    var otherGarageName =
+        ViewBag.OtherGarageName as string
+        ?? other
+        ?? "Сервиз";
 }
 
-<div class="container mt-5">
-    <h3>Conversation</h3>
-    <div class="list-group mt-3">
-        @foreach (var msg in Model.OrderBy(m => m.SentAt))
-        {
-            <div class="list-group-item">
-                <div class="d-flex w-100 justify-content-between">
-                    <strong>@(msg.SenderId == currentUserId ? "You" : msg.SenderId)</strong>
-                    <small>@msg.SentAt.ToString("g")</small>
+<div class="container mt-3 mb-3">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-7 col-xl-6">
+
+            <!-- HEADER -->
+            <div class="d-flex align-items-center mb-2">
+
+                <a asp-action="Index"
+                   class="btn btn-light rounded-circle me-2"
+                   style="width:38px;height:38px;"
+                   title="Back">
+
+                    <i class="bi bi-arrow-left"></i>
+
+                </a>
+
+                <div>
+
+                    <h5 class="fw-bold mb-0">
+                        @otherGarageName
+                    </h5>
+
+                    <small class="text-muted">
+                        Chat
+                    </small>
+
                 </div>
-                <p class="mb-1">@msg.Content</p>
-                @if (msg.SenderId == currentUserId || msg.ReceiverId == currentUserId)
-                {
-                    <form asp-action="Delete" method="post" class="mt-2 d-inline-block">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@msg.Id" />
-                        <button class="btn btn-sm btn-danger">Delete</button>
-                    </form>
-                }
+
             </div>
-        }
+
+
+            <!-- CHAT -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+                <!-- MESSAGES -->
+                <div id="messagesContainer"
+                     class="card-body px-3 py-3"
+                     style="
+                    height:calc(100vh - 220px);
+                    min-height:350px;
+                    overflow-y:auto;
+                    scroll-behavior:smooth;
+                    ">
+
+                    @if (!messages.Any())
+                    {
+                        <div id="emptyMessage"
+                             class="text-center text-muted py-4">
+
+                            <i class="bi bi-chat-dots fs-3"></i>
+
+                            <p class="mt-2 mb-0 small">
+                                Няма съобщения.
+                            </p>
+
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var msg in messages)
+                        {
+                            var isMine =
+                                msg.SenderId ==
+                                currentUserId;
+
+                            var senderName =
+                                isMine
+                                    ? "You"
+                                    : otherGarageName;
+
+                            <div class="d-flex mb-2
+                                @(isMine
+                                    ? "justify-content-end"
+                                    : "justify-content-start")">
+
+                                <div style="max-width:65%;">
+
+                                    <!-- SENDER NAME -->
+                                    <div class="small text-muted mb-1
+                                        @(isMine
+                                            ? "text-end"
+                                            : "")"
+                                         style="font-size:11px;">
+
+                                        @senderName
+
+                                    </div>
+
+
+                                    <!-- MESSAGE -->
+                                    <div class="px-3 py-2 rounded-4
+                                        @(isMine
+                                            ? "bg-primary text-white"
+                                            : "bg-light text-dark")"
+                                         style="font-size:14px;">
+
+                                        <div style="white-space:pre-wrap;">
+                                            @msg.Content
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- DATE -->
+                                    <div class="text-muted mt-1
+                                        @(isMine
+                                            ? "text-end"
+                                            : "")"
+                                         style="font-size:10px;">
+
+                                        @msg.SentAt.ToString("g")
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        }
+                    }
+
+                </div>
+
+
+                <!-- INPUT -->
+                @if (!string.IsNullOrEmpty(other))
+                {
+                    <div class="border-top bg-white p-2">
+
+                        <form asp-action="Create"
+                              method="post"
+                              class="d-flex align-items-center gap-2">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="ReceiverId"
+                                   value="@other" />
+
+                            <input type="hidden"
+                                   name="ConversationId"
+                                   value="@conversationId" />
+
+                            <input type="hidden"
+                                   name="PartId"
+                                   value="" />
+
+                            <input type="text"
+                                   name="Content"
+                                   class="form-control rounded-pill"
+                                   placeholder="Напиши съобщение..."
+                                   autocomplete="off"
+                                   maxlength="2000"
+                                   required />
+
+                            <button type="submit"
+                                    class="btn btn-primary rounded-circle flex-shrink-0"
+                                    style="width:40px;height:40px;"
+                                    title="Изпрати">
+
+                                <i class="bi bi-send-fill"></i>
+
+                            </button>
+
+                        </form>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
     </div>
 
-    <div class="mt-3">
-        @{ var other = Model.FirstOrDefault(m => m.SenderId != currentUserId)?.SenderId ?? Model.FirstOrDefault()?.SenderId; }
-        <a asp-action="Create" asp-route-receiverId="@other" asp-route-conversationId="@Model.FirstOrDefault()?.ConversationId" class="btn btn-primary">Reply</a>
-        <a asp-action="Index" class="btn btn-light">Back</a>
-    </div>
 </div>
+
+
+@section Scripts {
+
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                const container =
+                    document.getElementById(
+                        "messagesContainer");
+
+                if (!container) {
+                    return;
+                }
+
+
+                // Отиваме на последните съобщения
+                container.scrollTop =
+                    container.scrollHeight;
+
+
+                // SignalR connection
+                const connection =
+                    new signalR.HubConnectionBuilder()
+                        .withUrl('/notificationsHub')
+                        .withAutomaticReconnect()
+                        .build();
+
+
+                connection.on(
+                    'NewMessage',
+                    function (message) {
+
+                        // Този разговор ли е?
+                        const currentConversationId =
+                            '@conversationId';
+
+                        if (
+                            message.conversationId !==
+                            currentConversationId
+                        ) {
+                            return;
+                        }
+
+
+                        // Ако съобщението е от нас,
+                        // не го добавяме втори път.
+                        if (
+                            message.senderId ===
+                            '@currentUserId'
+                        ) {
+                            return;
+                        }
+
+
+                        // Премахваме "Няма съобщения"
+                        const emptyMessage =
+                            document.getElementById(
+                                "emptyMessage");
+
+                        if (emptyMessage) {
+                            emptyMessage.remove();
+                        }
+
+
+                        // Име на сервиза
+                        const senderName =
+                            message.senderGarageName
+                            || "Сервиз";
+
+
+                        // Message wrapper
+                        const wrapper =
+                            document.createElement("div");
+
+                        wrapper.className =
+                            "d-flex mb-2 justify-content-start";
+
+
+                        // Message content
+                        wrapper.innerHTML = `
+                                    <div style="max-width:65%;">
+
+                                        <div class="small text-muted mb-1"
+                                             style="font-size:11px;">
+                                            ${escapeHtml(senderName)}
+                                        </div>
+
+                                        <div class="px-3 py-2 rounded-4 bg-light text-dark"
+                                             style="font-size:14px;">
+
+                                            <div style="white-space:pre-wrap;">
+                                                ${escapeHtml(message.content)}
+                                            </div>
+
+                                        </div>
+
+                                        <div class="text-muted mt-1"
+                                             style="font-size:10px;">
+                                            ${formatDate(message.sentAt)}
+                                        </div>
+
+                                    </div>
+                                `;
+
+
+                        container.appendChild(wrapper);
+
+
+                        // Автоматично скролваме надолу
+                        container.scrollTo({
+                            top: container.scrollHeight,
+                            behavior: "smooth"
+                        });
+
+                    });
+
+
+                // HTML защита
+                function escapeHtml(value) {
+
+                    if (value == null) {
+                        return "";
+                    }
+
+                    const div =
+                        document.createElement("div");
+
+                    div.textContent = value;
+
+                    return div.innerHTML;
+                }
+
+
+                // Форматиране на дата
+                function formatDate(value) {
+
+                    if (!value) {
+                        return "";
+                    }
+
+                    const date =
+                        new Date(value);
+
+                    return date.toLocaleString(
+                        "bg-BG",
+                        {
+                            dateStyle: "short",
+                            timeStyle: "short"
+                        });
+                }
+
+
+                connection
+                    .start()
+                    .then(() => {
+
+                        console.log(
+                            "Conversation SignalR connected.");
+
+                    })
+                    .catch(err => {
+
+                        console.error(
+                            "SignalR error:",
+                            err);
+
+                    });
+
+            });
+
+    </script>
+}
+

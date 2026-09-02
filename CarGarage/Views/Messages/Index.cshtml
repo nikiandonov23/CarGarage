@@ -1,33 +1,183 @@
+```cshtml
 @model IEnumerable<CarGarage.ViewModels.Messages.ConversationSummaryViewModel>
 
 @{
     ViewData["Title"] = "Inbox";
 }
 
-<div class="container mt-5">
-    <h3>Inbox</h3>
-    <div class="list-group mt-3">
-        @foreach (var conv in Model)
-        {
-            <div class="list-group-item">
-                <div class="d-flex w-100 justify-content-between align-items-start">
-                    <div>
-                        <a asp-action="Details" asp-route-id="@conv.LatestMessageId" class="stretched-link text-decoration-none">
-                            <h5 class="mb-1">@conv.OtherUserName</h5>
-                        </a>
-                        <small class="text-muted">@conv.LastSentAt.ToString("g")</small>
-                        <p class="mb-1 text-truncate">@conv.LastMessage</p>
-                    </div>
-                    <div class="text-end">
-                        <small class="text-muted d-block">Unread: @conv.UnreadCount</small>
-                        <form asp-action="TogglePin" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@conv.LatestMessageId" />
-                            <button type="submit" class="btn btn-sm @(conv.IsPinned ? "btn-warning" : "btn-outline-secondary")">@(conv.IsPinned ? "Unpin" : "Pin")</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+<style>
+    .conversation-item {
+        transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+        .conversation-item:hover {
+            background-color: #f8f9fa !important;
+            box-shadow: 0 5px 16px rgba(0, 0, 0, 0.10);
+            transform: translateY(-1px) scale(1.015);
+            position: relative;
+            z-index: 1;
         }
+
+        .conversation-item.unread:hover {
+            background-color: #e7f1ff !important;
+            box-shadow: 0 5px 16px rgba(13, 110, 253, 0.18);
+        }
+</style>
+
+<div class="container mt-5 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Messages</h2>
+            <p class="text-muted mb-0">Your conversations</p>
+        </div>
     </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+        <div class="list-group list-group-flush">
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+
+                    <div class="mb-3">
+                        <i class="bi bi-chat-dots fs-1 text-muted"></i>
+                    </div>
+
+                    <h5 class="fw-semibold">
+                        No messages yet
+                    </h5>
+
+                    <p class="text-muted mb-0">
+                        Your conversations will appear here.
+                    </p>
+
+                </div>
+            }
+            else
+            {
+                @foreach (var conv in Model)
+                {
+                    var isUnread = conv.UnreadCount > 0;
+
+                    <div class="list-group-item
+                        conversation-item
+                        border-0
+                        border-bottom
+                        px-4
+                        py-3
+                        @(isUnread
+                            ? "unread bg-primary bg-opacity-10"
+                            : "bg-white")"
+                         style="@(isUnread
+                                                    ? "border-left: 4px solid #0d6efd !important;"
+                                                    : "border-left: 4px solid transparent !important;")">
+
+                        <div class="d-flex align-items-center gap-3">
+
+                            <!-- Avatar -->
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0
+                                @(isUnread
+                                    ? "bg-primary text-white"
+                                    : "bg-light text-secondary")"
+                                 style="width: 48px; height: 48px;">
+
+                                <i class="bi bi-person-fill fs-5"></i>
+
+                            </div>
+
+
+                            <!-- Conversation -->
+                            <div class="flex-grow-1 min-width-0">
+
+                                <a asp-action="Details"
+                                   asp-route-id="@conv.LatestMessageId"
+                                   class="text-decoration-none text-dark">
+
+                                    <div class="d-flex justify-content-between align-items-center">
+
+                                        <h6 class="mb-1
+                                            @(isUnread
+                                                ? "fw-bold"
+                                                : "fw-semibold")">
+
+                                            @conv.OtherUserName
+
+                                            @if (isUnread)
+                                            {
+                                                <span class="badge bg-primary rounded-pill ms-2">
+                                                    @conv.UnreadCount
+                                                </span>
+                                            }
+
+                                        </h6>
+
+
+                                        <small class="text-muted ms-3 flex-shrink-0">
+                                            @conv.LastSentAt.ToString("g")
+                                        </small>
+
+                                    </div>
+
+
+                                    <p class="mb-0 text-truncate
+                                        @(isUnread
+                                           ? "fw-semibold text-dark"
+                                           : "text-muted")"
+                                       style="max-width: 90%;">
+
+                                        @conv.LastMessage
+
+                                    </p>
+
+                                </a>
+
+                            </div>
+
+
+                            <!-- Actions -->
+                            <div class="d-flex align-items-center gap-2">
+
+                                <form asp-action="TogglePin"
+                                      method="post"
+                                      class="m-0">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="id"
+                                           value="@conv.LatestMessageId" />
+
+                                    <button type="submit"
+                                            class="btn btn-sm rounded-circle
+                                        @(conv.IsPinned
+                                            ? "btn-warning"
+                                            : "btn-light")"
+                                            style="width: 36px; height: 36px;"
+                                            title="@(conv.IsPinned
+                                                                                        ? "Unpin"
+                                                                                        : "Pin")">
+
+                                        <i class="bi @(conv.IsPinned
+                                                                                    ? "bi-pin-fill"
+                                                                                    : "bi-pin")"></i>
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                }
+            }
+
+        </div>
+
+    </div>
+
 </div>
+```

@@ -79,9 +79,13 @@ namespace CarGarage.Services.Core
         public async Task<IEnumerable<Offer>> GetPendingOffersForOwnerAsync(string ownerId)
         {
             // show both pending and accepted offers so owner can mark paid after acceptance
+            // exclude offers for parts that were already sold
             return await _context.Offers
                 .Include(o => o.PartForSale)
-                .Where(o => (o.Status == OfferStatus.Pending || o.Status == OfferStatus.Accepted) && o.PartForSale != null && o.PartForSale.OwnerId == ownerId)
+                .Where(o => (o.Status == OfferStatus.Pending || o.Status == OfferStatus.Accepted)
+                            && o.PartForSale != null
+                            && o.PartForSale.OwnerId == ownerId
+                            && o.PartForSale.Status != "Sold")
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
         }
@@ -114,7 +118,7 @@ namespace CarGarage.Services.Core
             offer.PartForSale.Status = "Available";
 
             // keep offer status as Accepted or adjust if desired
-            offer.Status = OfferStatus.Accepted;
+            offer.Status = OfferStatus.NotPaid;
 
             await _context.SaveChangesAsync();
         }
