@@ -4,6 +4,20 @@
     ViewData["Title"] = "Клиенти";
 }
 
+<!-- Добавяме CSS за ефектите при минаване с мишката и курсора -->
+<style>
+    .clickable-row {
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+    }
+
+        .clickable-row:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important; /* Леко потъмняване на фона */
+            transform: scale(1.01); /* Леко уголемяване */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Лека сянка за дълбочина */
+        }
+</style>
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="fas fa-users"></i> Управление на клиенти</h2>
@@ -39,7 +53,8 @@
             <tbody>
                 @foreach (var customer in Model.Customers)
                 {
-                    <tr>
+                    <!-- Добавен е клас clickable-row и data-url, който взима линка към Details -->
+                    <tr class="clickable-row" data-url="@Url.Action("Details", "Customers", new { id = customer.Id })">
                         <td>
                             <span class="badge @(customer.CustomerType == "Физическо лице" ? "bg-info text-dark" : "bg-warning text-dark")">
                                 @customer.CustomerType
@@ -66,3 +81,21 @@
         </table>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Пренасочване при клик върху реда на таблицата (освен ако не е натиснат бутон)
+            $('.clickable-row').click(function(e) {
+                // Ако потребителят е кликнал директно върху бутоните в колоната "Действия", не правим нищо тук
+                if ($(e.target).closest('a, button, .btn-group').length) {
+                    return;
+                }
+                var url = $(this).data('url');
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+        });
+    </script>
+}
