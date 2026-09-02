@@ -1,4 +1,3 @@
-
 @model CarGarage.ViewModels.Marketplace.PartForSaleViewModel
 
 @{
@@ -12,10 +11,17 @@
             <div class="card border-0 shadow-sm">
                 @if (!string.IsNullOrEmpty(Model.ImageUrl))
                 {
-                    <img src="@Model.ImageUrl"
-                         class="img-fluid"
-                         style="max-height:500px; object-fit:cover;"
-                         alt="@Model.Name" />
+                    <!-- Кликаема снимка с лупичка и lightbox ефект -->
+                    <a href="@Model.ImageUrl"
+                       class="image-zoom-container glightbox d-block"
+                       data-gallery="part-images"
+                       title="@Model.Name">
+
+                        <img src="@Model.ImageUrl"
+                             class="img-fluid w-100"
+                             style="max-height:500px; object-fit:cover;"
+                             alt="@Model.Name" />
+                    </a>
                 }
             </div>
         </div>
@@ -32,7 +38,7 @@
                 @Model.Price.ToString("N2") лв.
             </p>
 
-            <p class="mb-3">
+            <p class="mb-3" style="white-space: pre-line;">
                 @Model.Description
             </p>
 
@@ -121,4 +127,3 @@
         </div>
     </div>
 </div>
-
