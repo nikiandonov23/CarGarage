@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace CarGarage.Web.Controllers
 {
-    [Authorize] // <--- Само логнати потребители имат достъп до всичко в този контролер
+    [Authorize] // <--- Само логнати потребители имат достъп до всичко в този контролер //test
     [Route("Search")]
     public class SearchController(ISearchService searchService) : BaseController
     {
