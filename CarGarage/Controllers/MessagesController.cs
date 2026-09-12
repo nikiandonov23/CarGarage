@@ -1,4 +1,3 @@
-
 using CarGarage.Services.Core.Contracts;
 using CarGarage.ViewModels.Messages;
 using CarGarage.Web.Controllers;
@@ -72,7 +71,6 @@ namespace CarGarage.Controllers
             return View(model);
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
@@ -86,21 +84,13 @@ namespace CarGarage.Controllers
             if (string.IsNullOrEmpty(senderId))
                 return Unauthorized();
 
-            // Ако вече сме в разговор,
-            // използваме съществуващия ConversationId.
-            //
-            // Ако това е нов разговор,
-            // създаваме нов уникален ConversationId.
-            var conversationKey =
-                model.ConversationId;
+            var conversationKey = model.ConversationId;
 
             if (string.IsNullOrEmpty(conversationKey))
             {
-                conversationKey =
-                    Guid.NewGuid().ToString();
+                conversationKey = Guid.NewGuid().ToString();
             }
 
-            // Създаваме съобщението
             var sentMessage =
                 await _messagesService.AddMessageAsync(
                     senderId,
@@ -108,7 +98,6 @@ namespace CarGarage.Controllers
                     model.Content,
                     conversationKey);
 
-            // Взимаме името на сервиза на изпращача
             var senderGarage =
                 await _garageService
                     .GetGarageDetailsAsync(senderId);
@@ -117,7 +106,6 @@ namespace CarGarage.Controllers
                 senderGarage?.Name
                 ?? "Сервиз";
 
-            // Изпращаме новото съобщение в реално време
             try
             {
                 await _hubContext.Clients
@@ -131,14 +119,10 @@ namespace CarGarage.Controllers
                             receiverId = sentMessage.ReceiverId,
                             content = sentMessage.Content,
                             sentAt = sentMessage.SentAt,
-                            conversationId =
-                                sentMessage.ConversationId,
-
-                            senderGarageName =
-                                senderGarageName
+                            conversationId = sentMessage.ConversationId,
+                            senderGarageName = senderGarageName
                         });
 
-                // Обновяваме unread badge
                 var unreadCount =
                     await _messagesService
                         .GetUnreadCountAsync(
@@ -152,16 +136,9 @@ namespace CarGarage.Controllers
             }
             catch
             {
-                // SignalR проблемът не трябва
-                // да проваля записването на съобщението.
+                // SignalR error suppression
             }
 
-
-            // Ако сме в съществуващ разговор,
-            // оставаме в него.
-            //
-            // Вече имаме ConversationId,
-            // затова използваме него.
             return RedirectToAction(
                 nameof(Details),
                 new
@@ -169,7 +146,6 @@ namespace CarGarage.Controllers
                     id = sentMessage.Id
                 });
         }
-
 
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -179,8 +155,6 @@ namespace CarGarage.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            // Вече получаваме както изпратените,
-            // така и получените съобщения.
             var inbox =
                 (await _messagesService
                     .GetInboxAsync(userId))
@@ -215,24 +189,14 @@ namespace CarGarage.Controllers
                     return new ConversationSummaryViewModel
                     {
                         ConversationId = g.Key,
-
-                        LatestMessageId =
-                            latest.Id,
-
-                        OtherUserId =
-                            otherUserId,
-
-                        LastMessage =
-                            latest.Content,
-
-                        LastSentAt =
-                            latest.SentAt,
-
+                        LatestMessageId = latest.Id,
+                        OtherUserId = otherUserId,
+                        LastMessage = latest.Content,
+                        LastSentAt = latest.SentAt,
                         UnreadCount =
                             g.Count(x =>
                                 !x.IsRead &&
                                 x.ReceiverId == userId),
-
                         IsPinned =
                             g.Any(x => x.IsPinned)
                     };
@@ -240,9 +204,6 @@ namespace CarGarage.Controllers
                 .OrderByDescending(g => g.LastSentAt)
                 .ToList();
 
-
-            // Взимаме името на сервиза
-            // вместо Username.
             foreach (var conv in groups)
             {
                 var garage =
@@ -254,12 +215,10 @@ namespace CarGarage.Controllers
                     !string.IsNullOrWhiteSpace(
                         garage.Name))
                 {
-                    conv.OtherUserName =
-                        garage.Name;
+                    conv.OtherUserName = garage.Name;
                 }
                 else
                 {
-                    // Fallback към Username
                     var usr =
                         await _userManager
                             .FindByIdAsync(
@@ -273,7 +232,6 @@ namespace CarGarage.Controllers
 
             return View(groups);
         }
-
 
         [HttpGet]
         public async Task<IActionResult> Outbox()
@@ -289,7 +247,6 @@ namespace CarGarage.Controllers
 
             return View(outbox);
         }
-
 
         [HttpGet]
         public async Task<IActionResult> Details(int id)
@@ -316,7 +273,6 @@ namespace CarGarage.Controllers
                     .OrderBy(m => m.SentAt)
                     .ToList();
 
-            // Намираме другия участник
             var otherUserId =
                 messages
                     .FirstOrDefault(
@@ -326,7 +282,6 @@ namespace CarGarage.Controllers
                     .FirstOrDefault()
                     ?.ReceiverId;
 
-            // Взимаме името на неговия сервиз
             string? otherGarageName = null;
 
             if (!string.IsNullOrEmpty(otherUserId))
@@ -340,12 +295,10 @@ namespace CarGarage.Controllers
                     !string.IsNullOrWhiteSpace(
                         garage.Name))
                 {
-                    otherGarageName =
-                        garage.Name;
+                    otherGarageName = garage.Name;
                 }
                 else
                 {
-                    // Fallback към Username
                     var usr =
                         await _userManager
                             .FindByIdAsync(
@@ -357,13 +310,8 @@ namespace CarGarage.Controllers
                 }
             }
 
-            // Подаваме името към Conversation.cshtml
-            ViewBag.OtherGarageName =
-                otherGarageName;
+            ViewBag.OtherGarageName = otherGarageName;
 
-
-            // Маркираме получените съобщения
-            // като прочетени.
             foreach (var message in conversation
                 .Where(x =>
                     x.ReceiverId == userId &&
@@ -374,7 +322,6 @@ namespace CarGarage.Controllers
                         message.Id,
                         userId);
             }
-
 
             try
             {
@@ -394,17 +341,33 @@ namespace CarGarage.Controllers
                 // Ignore SignalR errors
             }
 
-
             return View(
                 "Conversation",
                 conversation);
         }
 
+        // --- ДОБАВЕН GET МЕТОД ЗА ИЗТРИВАНЕ (ЗАРЕЖДА ВЮТО) ---
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var userId = GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            // Можете да заредите съобщението или детайлите, за да ги визуализирате във вюто
+            var conversation = await _messagesService.GetConversationAsync(id, userId);
+            var message = conversation?.OrderByDescending(m => m.SentAt).FirstOrDefault();
+
+            if (message == null)
+                return NotFound();
+
+            return View(message);
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(
-            int id)
+        public async Task<IActionResult> Delete(int id, IFormCollection collection)
         {
             var userId = GetUserId();
 
@@ -419,7 +382,6 @@ namespace CarGarage.Controllers
             return RedirectToAction(
                 nameof(Index));
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -441,4 +403,3 @@ namespace CarGarage.Controllers
         }
     }
 }
-

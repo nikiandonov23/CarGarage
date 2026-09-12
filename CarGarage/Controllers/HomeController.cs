@@ -6,17 +6,9 @@ using System.Diagnostics;
 
 namespace CarGarage.Controllers
 {
-
     [AllowAnonymous]
-    public class HomeController : BaseController
+    public class HomeController(ILogger<HomeController> logger) : BaseController
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
-
         public IActionResult Index()
         {
             return View();

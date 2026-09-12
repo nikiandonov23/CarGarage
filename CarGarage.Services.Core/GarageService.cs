@@ -2,13 +2,10 @@
 using CarGarage.ViewModels.Garage;
 using Microsoft.EntityFrameworkCore;
 
-public class GarageService : IGarageService
+public class GarageService(ApplicationDbContext context) : IGarageService
 {
-    private readonly ApplicationDbContext _context;
-    public GarageService(ApplicationDbContext context) => _context = context;
-
     public async Task<bool> HasGarageAsync(string userId)
-        => await _context.Garages.AnyAsync(g => g.OwnerId == userId);
+        => await context.Garages.AnyAsync(g => g.OwnerId == userId);
 
     public async Task CreateGarageAsync(GarageViewModel model, string userId)
     {
@@ -23,13 +20,13 @@ public class GarageService : IGarageService
             Longitude = model.Longitude,
             OwnerId = userId
         };
-        await _context.Garages.AddAsync(garage);
-        await _context.SaveChangesAsync();
+        await context.Garages.AddAsync(garage);
+        await context.SaveChangesAsync();
     }
 
     public async Task<GarageViewModel?> GetGarageDetailsAsync(string userId)
     {
-        return await _context.Garages
+        return await context.Garages
             .Where(g => g.OwnerId == userId)
                 .Select(g => new GarageViewModel
                 {
@@ -47,7 +44,7 @@ public class GarageService : IGarageService
 
     public async Task UpdateGarageAsync(GarageViewModel model, string userId)
     {
-        var garage = await _context.Garages.FirstOrDefaultAsync(g => g.OwnerId == userId);
+        var garage = await context.Garages.FirstOrDefaultAsync(g => g.OwnerId == userId);
 
         if (garage != null)
         {
@@ -60,7 +57,7 @@ public class GarageService : IGarageService
             garage.Longitude = model.Longitude;
             garage.OwnerName = model.OwnerName;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
     }
 }

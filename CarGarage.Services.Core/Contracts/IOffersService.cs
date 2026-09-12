@@ -1,4 +1,5 @@
 ﻿using CarGarage.DataModels;
+using CarGarage.ViewModels.Marketplace;
 
 namespace CarGarage.Services.Core.Contracts
 {
@@ -19,11 +20,11 @@ namespace CarGarage.Services.Core.Contracts
             int offerId,
             string ownerId);
 
-        Task<IEnumerable<Offer>> GetOffersForPartAsync(
+        Task<IEnumerable<OfferListItemViewModel>> GetOffersForPartAsync(
             int partForSaleId,
             string ownerId);
 
-        Task<IEnumerable<Offer>> GetPendingOffersForOwnerAsync(string ownerId);
+        Task<IEnumerable<OfferListItemViewModel>> GetPendingOffersForOwnerAsync(string ownerId);
 
         Task<Offer?> GetByIdAsync(int offerId);
 

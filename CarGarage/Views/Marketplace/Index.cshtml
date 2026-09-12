@@ -167,8 +167,16 @@
                                            asp-action="Create"
                                            asp-route-partId="@item.Id"
                                            class="btn btn-sm btn-outline-success">
-                                            Свържи се
+                                            Изпрати съобщение
                                         </a>
+
+                                        @if (!string.IsNullOrWhiteSpace(item.Phone))
+                                        {
+                                            <a href="tel:@item.Phone"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Обади се
+                                            </a>
+                                        }
 
                                         <a asp-controller="Offers"
                                            asp-action="MakeOffer"

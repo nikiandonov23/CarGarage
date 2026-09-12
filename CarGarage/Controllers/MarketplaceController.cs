@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CarGarage.Controllers
 {
-    public class MarketplaceController(IMarketplaceService marketplaceService) : BaseController
+    public class MarketplaceController(
+        IMarketplaceService marketplaceService,
+        IGarageService garageService) : BaseController
     {
         [AllowAnonymous]
         public async Task<IActionResult> Index(string? searchTerm, string? city, int? categoryId)
@@ -30,11 +32,16 @@ namespace CarGarage.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Create()
         {
+            var userId = GetUserId();
+            var garage = await garageService.GetGarageDetailsAsync(userId!);
+
             var model = new PartForSaleFormModel
             {
-                Categories = await marketplaceService.GetCategoriesAsync()
+                Categories = await marketplaceService.GetCategoriesAsync(),
+                Phone = garage?.PhoneNumber
             };
 
             return View(model);

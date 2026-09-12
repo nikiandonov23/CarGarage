@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,15 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarGarage.Services.Core
 {
-    public class MessagesService : IMessagesService
+    public class MessagesService(ApplicationDbContext context) : IMessagesService
     {
-        private readonly ApplicationDbContext _context;
-
-        public MessagesService(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<Message> AddMessageAsync(
             string senderId,
             string receiverId,
@@ -34,8 +28,8 @@ namespace CarGarage.Services.Core
                 IsDeleted = false
             };
 
-            await _context.Messages.AddAsync(msg);
-            await _context.SaveChangesAsync();
+            await context.Messages.AddAsync(msg);
+            await context.SaveChangesAsync();
 
             return msg;
         }
@@ -44,7 +38,7 @@ namespace CarGarage.Services.Core
             int messageId,
             string userId)
         {
-            var msg = await _context.Messages
+            var msg = await context.Messages
                 .FirstOrDefaultAsync(m =>
                     m.Id == messageId &&
                     (m.ReceiverId == userId ||
@@ -56,7 +50,7 @@ namespace CarGarage.Services.Core
 
             if (!string.IsNullOrEmpty(msg.ConversationId))
             {
-                return await _context.Messages
+                return await context.Messages
                     .Where(m =>
                         m.ConversationId == msg.ConversationId &&
                         (m.ReceiverId == userId ||
@@ -71,7 +65,7 @@ namespace CarGarage.Services.Core
                     ? msg.ReceiverId
                     : msg.SenderId;
 
-            return await _context.Messages
+            return await context.Messages
                 .Where(m =>
                     (
                         (m.SenderId == userId &&
@@ -88,14 +82,7 @@ namespace CarGarage.Services.Core
         public async Task<IEnumerable<Message>> GetInboxAsync(
             string userId)
         {
-            // ВАЖНО:
-            // Връщаме както получените,
-            // така и изпратените съобщения.
-            //
-            // Така разговорът се вижда веднага,
-            // дори другият потребител още да не е отговорил.
-
-            return await _context.Messages
+            return await context.Messages
                 .Where(m =>
                     (m.ReceiverId == userId ||
                      m.SenderId == userId) &&
@@ -107,7 +94,7 @@ namespace CarGarage.Services.Core
         public async Task<IEnumerable<Message>> GetOutboxAsync(
             string userId)
         {
-            return await _context.Messages
+            return await context.Messages
                 .Where(m =>
                     m.SenderId == userId &&
                     !m.IsDeleted)
@@ -118,7 +105,7 @@ namespace CarGarage.Services.Core
         public async Task<int> GetUnreadCountAsync(
             string userId)
         {
-            return await _context.Messages
+            return await context.Messages
                 .CountAsync(m =>
                     m.ReceiverId == userId &&
                     !m.IsRead &&
@@ -129,7 +116,7 @@ namespace CarGarage.Services.Core
             int id,
             string userId)
         {
-            return await _context.Messages
+            return await context.Messages
                 .FirstOrDefaultAsync(m =>
                     m.Id == id &&
                     (m.ReceiverId == userId ||
@@ -141,7 +128,7 @@ namespace CarGarage.Services.Core
             int id,
             string userId)
         {
-            var msg = await _context.Messages
+            var msg = await context.Messages
                 .FirstOrDefaultAsync(m =>
                     m.Id == id &&
                     m.ReceiverId == userId &&
@@ -152,32 +139,56 @@ namespace CarGarage.Services.Core
 
             msg.IsRead = true;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(
-            int id,
-            string userId)
+        public async Task DeleteAsync(int id, string userId)
         {
-            var msg = await _context.Messages
+            var msg = await context.Messages
                 .FirstOrDefaultAsync(m =>
                     m.Id == id &&
-                    (m.ReceiverId == userId ||
-                     m.SenderId == userId));
+                    (m.ReceiverId == userId || m.SenderId == userId));
 
             if (msg == null)
                 return;
 
-            msg.IsDeleted = true;
+            if (!string.IsNullOrEmpty(msg.ConversationId))
+            {
+                var conversationMessages = await context.Messages
+                    .Where(m =>
+                        m.ConversationId == msg.ConversationId &&
+                        (m.ReceiverId == userId || m.SenderId == userId))
+                    .ToListAsync();
 
-            await _context.SaveChangesAsync();
+                foreach (var message in conversationMessages)
+                {
+                    message.IsDeleted = true;
+                }
+            }
+            else
+            {
+                var otherId = msg.SenderId == userId ? msg.ReceiverId : msg.SenderId;
+
+                var directMessages = await context.Messages
+                    .Where(m =>
+                        ((m.SenderId == userId && m.ReceiverId == otherId) ||
+                         (m.SenderId == otherId && m.ReceiverId == userId)))
+                    .ToListAsync();
+
+                foreach (var message in directMessages)
+                {
+                    message.IsDeleted = true;
+                }
+            }
+
+            await context.SaveChangesAsync();
         }
 
         public async Task TogglePinAsync(
             int id,
             string userId)
         {
-            var msg = await _context.Messages
+            var msg = await context.Messages
                 .FirstOrDefaultAsync(m =>
                     m.Id == id &&
                     (m.ReceiverId == userId ||
@@ -188,7 +199,7 @@ namespace CarGarage.Services.Core
 
             msg.IsPinned = !msg.IsPinned;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<Message>> SearchInboxAsync(
@@ -197,7 +208,7 @@ namespace CarGarage.Services.Core
             int page = 1,
             int pageSize = 20)
         {
-            var q = _context.Messages
+            var q = context.Messages
                 .Where(m =>
                     (m.ReceiverId == userId ||
                      m.SenderId == userId) &&

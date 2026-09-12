@@ -37,7 +37,8 @@
 
                         <div class="mb-3">
                             <label asp-for="Phone" class="form-label fw-bold small text-muted text-uppercase">Телефон за контакт</label>
-                            <input asp-for="Phone" class="form-control" />
+                            <input asp-for="Phone" class="form-control" readonly />
+                            <small class="text-muted">Попълнено автоматично от данните на вашия сервиз</small>
                             <span asp-validation-for="Phone" class="text-danger small"></span>
                         </div>
 
