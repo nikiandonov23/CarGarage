@@ -71,7 +71,7 @@ namespace CarGarage.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Annul(int id)
+        public async Task<IActionResult> Annul(int id, string? returnUrl)
         {
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
@@ -83,13 +83,14 @@ namespace CarGarage.Web.Controllers
                 return NotFound();
             }
 
+            ViewBag.ReturnUrl = returnUrl;
             return View(model);
         }
 
         [HttpPost]
         [ActionName("Annul")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AnnulConfirmed(int id)
+        public async Task<IActionResult> AnnulConfirmed(int id, string? returnUrl)
         {
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
@@ -99,6 +100,11 @@ namespace CarGarage.Web.Controllers
             if (!result)
             {
                 return NotFound();
+            }
+
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect(returnUrl);
             }
 
             return RedirectToAction(nameof(Details), new { id = id });

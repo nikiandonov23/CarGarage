@@ -44,7 +44,7 @@
                                             </div>
                                         </td>
                                         <td>@Model.AvailableParts[i].Description</td>
-                                        <td class="text-end fw-bold">@Model.AvailableParts[i].TotalPrice.ToString("N2") лв.</td>
+                                        <td class="text-end fw-bold">@Model.AvailableParts[i].TotalPrice.ToString("N2") €</td>
                                     </tr>
                                 }
                             }
@@ -74,9 +74,9 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label asp-for="LaborPricePerHour" class="form-label fw-bold">Цена на час (лв.)</label>
+                        <label asp-for="LaborPricePerHour" class="form-label fw-bold">Цена на час (€)</label>
                         <div class="input-group">
-                            <span class="input-group-text">лв.</span>
+                            <span class="input-group-text">€</span>
                             <input asp-for="LaborPricePerHour" class="form-control" type="number" step="0.01" />
                         </div>
                         <span asp-validation-for="LaborPricePerHour" class="text-danger small"></span>

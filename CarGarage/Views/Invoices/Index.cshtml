@@ -41,7 +41,7 @@
                                     <td>@invoice.IssuedDate.ToString("dd.MM.yyyy")</td>
                                     <td>@invoice.CarInfo</td>
                                     <td class="text-end fw-bold @(invoice.IsCancelled ? "text-decoration-line-through text-danger" : "text-success")">
-                                        @invoice.GrandTotal.ToString("N2") лв.
+                                        @invoice.GrandTotal.ToString("N2") €
                                     </td>
                                     <td class="text-center">
                                         @if (invoice.IsCancelled)
@@ -59,7 +59,7 @@
                                         </a>
                                         @if (!invoice.IsCancelled)
                                         {
-                                            <a asp-action="Annul" asp-route-id="@invoice.Id" class="btn btn-sm btn-outline-danger shadow-sm px-3 ms-1">
+                                            <a asp-action="Annul" asp-route-id="@invoice.Id" asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString" class="btn btn-sm btn-outline-danger shadow-sm px-3 ms-1">
                                                 <i class="bi bi-x-circle me-1"></i> Анулирай
                                             </a>
                                         }
