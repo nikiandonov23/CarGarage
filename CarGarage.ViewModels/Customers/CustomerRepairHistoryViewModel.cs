@@ -15,6 +15,7 @@ namespace CarGarage.ViewModels.Customers
         public string? Description { get; set; }
         public decimal TotalAmount { get; set; }
         public int InvoiceId { get; set; } 
+        public bool IsCancelled { get; set; }
 
     }
 }

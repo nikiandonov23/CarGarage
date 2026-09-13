@@ -9,6 +9,7 @@ namespace CarGarage.ViewModels.Invoices
 
         public string InvoiceNumber { get; set; } = null!;
         public DateTime IssuedDate { get; set; }
+        public bool IsCancelled { get; set; }
 
 
 

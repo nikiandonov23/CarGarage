@@ -25,6 +25,7 @@
                             <th>Дата</th>
                             <th>Автомобил</th>
                             <th class="text-end">Сума с ДДС</th>
+                            <th class="text-center">Статус</th>
                             <th class="text-center">Действия</th>
                         </tr>
                     </thead>
@@ -33,18 +34,28 @@
                         {
                             foreach (var invoice in Model)
                             {
-                                <tr>
+                                <tr class="@(invoice.IsCancelled ? "bg-light text-muted opacity-75" : "")">
                                     <td class="ps-4">
-                                        <span class="fw-bold text-primary">@invoice.InvoiceNumber</span>
+                                        <span class="fw-bold @(invoice.IsCancelled ? "text-secondary" : "text-primary")">@invoice.InvoiceNumber</span>
                                     </td>
                                     <td>@invoice.IssuedDate.ToString("dd.MM.yyyy")</td>
                                     <td>@invoice.CarInfo</td>
-                                    <td class="text-end fw-bold text-success">
+                                    <td class="text-end fw-bold @(invoice.IsCancelled ? "text-decoration-line-through text-danger" : "text-success")">
                                         @invoice.GrandTotal.ToString("N2") лв.
                                     </td>
                                     <td class="text-center">
-                                        <a asp-action="Details" asp-route-id="@invoice.Id" class="btn btn-sm btn-info text-white shadow-sm px-3">
-                                            <i class="bi bi-eye me-1"></i> Преглед и Принтиране
+                                        @if (invoice.IsCancelled)
+                                        {
+                                            <span class="badge bg-danger px-2 py-1"><i class="bi bi-x-circle me-1"></i> Анулирана</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success px-2 py-1"><i class="bi bi-check-circle me-1"></i> Активна</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-action="Details" asp-route-id="@invoice.Id" class="btn btn-sm @(invoice.IsCancelled ? "btn-secondary" : "btn-info text-white") shadow-sm px-3">
+                                            <i class="bi bi-eye me-1"></i> Преглед
                                         </a>
                                     </td>
                                 </tr>
@@ -53,7 +64,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
+                                <td colspan="6" class="text-center py-5 text-muted">
                                     <i class="bi bi-file-earmark-x d-block display-4 mb-3"></i>
                                     Все още нямате издадени фактури.
                                 </td>

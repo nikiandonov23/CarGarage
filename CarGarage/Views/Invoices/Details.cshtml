@@ -66,6 +66,13 @@
 <!-- А4 Лист -->
 <div class="a4-page">
 
+    @if (Model.IsCancelled)
+    {
+        <div class="alert alert-danger text-center fw-bold fs-4 mb-4 text-uppercase d-block" style="border: 3px dashed #dc3545; background-color: #fdf2f2; color: #dc3545;">
+            <i class="bi bi-x-octagon-fill me-2"></i> АНУЛИРАН ДОКУМЕНТ (VOIDED)
+        </div>
+    }
+
     <!-- Шапка на фактурата -->
     <div class="row align-items-center mb-4">
         <div class="col-6">
@@ -251,6 +258,14 @@
     <button onclick="window.print()" class="btn btn-primary btn-lg shadow-sm me-2 px-4">
         <i class="bi bi-printer me-2"></i> Принтирай / Запази като PDF
     </button>
+    @if (!Model.IsCancelled)
+    {
+        <form asp-action="Annul" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Сигурни ли сте, че желаете да анулирате тази фактура? Действието е необратимо!');">
+            <button type="submit" class="btn btn-danger btn-lg px-4 me-2 shadow-sm">
+                <i class="bi bi-x-circle me-1"></i> Анулирай
+            </button>
+        </form>
+    }
     <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
         <i class="bi bi-arrow-left me-1"></i> Назад
     </a>

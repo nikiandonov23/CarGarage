@@ -54,13 +54,26 @@
                                     <div class="btn-group shadow-sm">
                                         @if (item.InvoiceId != null)
                                         {
-                                            <a asp-controller="Invoices"
-                                               asp-action="Details"
-                                               asp-route-id="@item.InvoiceId"
-                                               target="_blank"
-                                               class="btn btn-sm btn-outline-info">
-                                                <i class="bi bi-file-earmark-pdf"></i> Фактура
-                                            </a>
+                                            @if (item.IsInvoiceCancelled)
+                                            {
+                                                <a asp-controller="Invoices"
+                                                   asp-action="Details"
+                                                   asp-route-id="@item.InvoiceId"
+                                                   target="_blank"
+                                                   class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-file-earmark-x"></i> Фактура (Анулирана)
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-controller="Invoices"
+                                                   asp-action="Details"
+                                                   asp-route-id="@item.InvoiceId"
+                                                   target="_blank"
+                                                   class="btn btn-sm btn-outline-info">
+                                                    <i class="bi bi-file-earmark-pdf"></i> Фактура
+                                                </a>
+                                            }
                                         }
                                         else
                                         {

@@ -194,6 +194,7 @@ namespace CarGarage.Services.Core
                 Id = invoiceId,
                 InvoiceNumber = inv.InvoiceNumber,
                 IssuedDate = inv.IssuedDate,
+                IsCancelled = inv.IsCancelled,
 
                 // --- МАПВАНЕ НА ПЛАЩАНЕТО ---
                 PaymentMethod = inv.PaymentMethod,
@@ -247,11 +248,28 @@ namespace CarGarage.Services.Core
                 Id = i.Id,
                 InvoiceNumber = i.InvoiceNumber,
                 IssuedDate = i.IssuedDate,
+                IsCancelled = i.IsCancelled,
                 PaymentMethod = i.PaymentMethod,
                 PaymentMethodText = GetPaymentMethodDisplayName(i.PaymentMethod),
                 CarInfo = i.Car.Make + " " + i.Car.Model + " (" + i.Car.RegistrationNumber + ")",
                 GrandTotal = i.Parts.Sum(p => p.TotalPrice) + (decimal)i.LaborHours * i.LaborPricePerHour
             });
+        }
+
+        public async Task<bool> AnnulInvoiceAsync(int invoiceId, string userId)
+        {
+            var invoice = await context.Invoices
+                .Include(i => i.Garage)
+                .FirstOrDefaultAsync(i => i.Id == invoiceId && i.Garage != null && i.Garage.OwnerId == userId);
+
+            if (invoice == null)
+            {
+                return false;
+            }
+
+            invoice.IsCancelled = true;
+            await context.SaveChangesAsync();
+            return true;
         }
 
         // Помощен метод за превод на български според енума

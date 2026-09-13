@@ -44,6 +44,8 @@ namespace CarGarage.DataModels
         
         public string? Notes { get; set; }
 
+        public bool IsCancelled { get; set; } = false;
+
 
 
         // В Invoice.cs

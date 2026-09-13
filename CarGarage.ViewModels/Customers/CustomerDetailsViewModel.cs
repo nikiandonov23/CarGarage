@@ -23,7 +23,7 @@ namespace CarGarage.ViewModels.Customers
         // История на ремонтите (Фактури + Части)
         public List<CustomerRepairHistoryViewModel> RepairHistory { get; set; } = new();
 
-        // Обща статистика
-        public decimal TotalSpent => RepairHistory.Sum(h => h.TotalAmount);
+        // Обща статистика (без анулираните фактури)
+        public decimal TotalSpent => RepairHistory.Where(h => !h.IsCancelled).Sum(h => h.TotalAmount);
     }
 }

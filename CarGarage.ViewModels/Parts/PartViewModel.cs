@@ -18,5 +18,6 @@ namespace CarGarage.ViewModels.Parts
         public string CarInfo { get; set; } = null!; // Марка plus Модел за фактурата
 
         public int? InvoiceId { get; set; }
+        public bool IsInvoiceCancelled { get; set; }
     }
 }

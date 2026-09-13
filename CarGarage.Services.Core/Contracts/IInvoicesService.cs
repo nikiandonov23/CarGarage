@@ -11,5 +11,7 @@ namespace CarGarage.Services.Core.Contracts
         Task<InvoiceFullViewModel> GetInvoiceDetailsAsync(int invoiceId, string userId);
 
         Task<IEnumerable<InvoiceFullViewModel>> GetAllUserInvoicesAsync(string userId);
+
+        Task<bool> AnnulInvoiceAsync(int invoiceId, string userId);
     }
 }

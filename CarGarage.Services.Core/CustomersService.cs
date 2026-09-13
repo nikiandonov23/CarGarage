@@ -87,7 +87,8 @@ namespace CarGarage.Services.Core
                         Date = inv.IssuedDate,
                         InvoiceNumber = inv.InvoiceNumber,
                         Description = inv.Notes,
-                        TotalAmount = inv.TotalLaborPrice + inv.Parts.Sum(p => p.TotalPrice)
+                        TotalAmount = inv.TotalLaborPrice + inv.Parts.Sum(p => p.TotalPrice),
+                        IsCancelled = inv.IsCancelled
                     }))
                     .OrderByDescending(r => r.Date)
                     .ToList()

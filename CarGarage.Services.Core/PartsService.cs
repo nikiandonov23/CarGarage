@@ -23,6 +23,7 @@ namespace CarGarage.Services.Core
                     TotalPrice = p.Quantity * p.UnitPrice,
                     DateAdded = DateTime.Now,
                     InvoiceId = p.InvoiceId,
+                    IsInvoiceCancelled = p.Invoice != null && p.Invoice.IsCancelled
                 }).ToListAsync();
         }
 
@@ -41,6 +42,7 @@ namespace CarGarage.Services.Core
                     CarInfo = p.Car.Make + " " + p.Car.Model + " [" + p.Car.RegistrationNumber + "]",
                     DateAdded = DateTime.Now,
                     InvoiceId = p.InvoiceId,
+                    IsInvoiceCancelled = p.Invoice != null && p.Invoice.IsCancelled
                 }).FirstOrDefaultAsync();
         }
 

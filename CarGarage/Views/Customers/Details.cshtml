@@ -75,15 +75,19 @@
                                     <tbody>
                                         @foreach (var repair in Model.RepairHistory)
                                         {
-                                            <tr>
+                                            <tr class="@(repair.IsCancelled ? "bg-light text-muted opacity-75" : "")">
                                                 <td>@repair.Date.ToString("dd.MM.yyyy")</td>
                                                 <td>@repair.CarModel <br /> <small class="text-muted">@repair.RegistrationNumber</small></td>
                                                 <td>
                                                     <a asp-controller="Customers" asp-action="PrintInvoice" asp-route-id="@repair.InvoiceId" target="_blank" class="text-decoration-none fw-bold">
                                                         <i class="bi bi-printer me-1"></i> @repair.InvoiceNumber
                                                     </a>
+                                                    @if (repair.IsCancelled)
+                                                    {
+                                                        <span class="badge bg-danger small ms-1" style="font-size: 0.75rem;">Анулирана</span>
+                                                    }
                                                 </td>
-                                                <td class="text-end fw-bold text-success">@repair.TotalAmount.ToString("F2") лв.</td>
+                                                <td class="text-end fw-bold @(repair.IsCancelled ? "text-decoration-line-through text-danger" : "text-success")">@repair.TotalAmount.ToString("F2") лв.</td>
                                             </tr>
                                         }
                                     </tbody>
