@@ -18,7 +18,7 @@ namespace CarGarage.Services.Core
             var car = await context.Cars
                 .Include(c => c.Customer)
                     .ThenInclude(cust => cust.Garage)
-                .FirstOrDefaultAsync(c => c.Id == carId && (
+                .FirstOrDefaultAsync(c => c.Id == carId && !c.IsDeleted && (
                     (c.Customer != null && c.Customer.Garage != null && c.Customer.Garage.OwnerId == userId)
                     || c.UserCars.Any(uc => uc.UserId == userId)
                 ));
@@ -49,7 +49,7 @@ namespace CarGarage.Services.Core
         public async Task<int> CreateInvoiceAsync(InvoiceFormModel model, string userId)
         {
             var carData = await context.Cars
-                .Where(c => c.Id == model.CarId && (
+                .Where(c => c.Id == model.CarId && !c.IsDeleted && (
                     (c.Customer != null && c.Customer.Garage != null && c.Customer.Garage.OwnerId == userId)
                     || c.UserCars.Any(uc => uc.UserId == userId)
                 ))
@@ -152,7 +152,8 @@ namespace CarGarage.Services.Core
             decimal subTotalParts = inv.Parts.Sum(p => p.TotalPrice);
             decimal subTotalLabor = (decimal)inv.LaborHours * inv.LaborPricePerHour;
             decimal totalBeforeTax = subTotalParts + subTotalLabor;
-            decimal taxAmount = totalBeforeTax * (inv.TaxPercentage / 100);
+            bool isVat = inv.Garage?.IsVatRegistered ?? false;
+            decimal taxAmount = isVat ? (totalBeforeTax * (inv.TaxPercentage / 100)) : 0m;
 
             string? clientName = null;
             string? clientIdNumber = null;
@@ -230,7 +231,11 @@ namespace CarGarage.Services.Core
                 GarageOwnerName = inv.Garage?.OwnerName,
                 GarageCity = inv.Garage?.City ?? "-",
                 GarageAddress = inv.Garage?.Address ?? "-",
-                GaragePhoneNumber = inv.Garage?.PhoneNumber
+                GaragePhoneNumber = inv.Garage?.PhoneNumber,
+                GarageIsVatRegistered = isVat,
+                GarageIBAN = inv.Garage?.IBAN,
+                GarageBIC = inv.Garage?.BIC,
+                GarageBankName = inv.Garage?.BankName
             };
         }
 
@@ -240,19 +245,27 @@ namespace CarGarage.Services.Core
                 .Where(i => i.Garage != null && i.Garage.OwnerId == userId)
                 .Include(i => i.Car)
                 .Include(i => i.Parts)
+                .Include(i => i.Garage)
                 .OrderByDescending(i => i.IssuedDate)
                 .ToListAsync();
 
-            return invoices.Select(i => new InvoiceFullViewModel
-            {
-                Id = i.Id,
-                InvoiceNumber = i.InvoiceNumber,
-                IssuedDate = i.IssuedDate,
-                IsCancelled = i.IsCancelled,
-                PaymentMethod = i.PaymentMethod,
-                PaymentMethodText = GetPaymentMethodDisplayName(i.PaymentMethod),
-                CarInfo = i.Car.Make + " " + i.Car.Model + " (" + i.Car.RegistrationNumber + ")",
-                GrandTotal = i.Parts.Sum(p => p.TotalPrice) + (decimal)i.LaborHours * i.LaborPricePerHour
+            return invoices.Select(i => {
+                decimal subTotalParts = i.Parts.Sum(p => p.TotalPrice);
+                decimal subTotalLabor = (decimal)i.LaborHours * i.LaborPricePerHour;
+                decimal totalBeforeTax = subTotalParts + subTotalLabor;
+                bool isVat = i.Garage?.IsVatRegistered ?? false;
+                decimal taxAmount = isVat ? (totalBeforeTax * (i.TaxPercentage / 100)) : 0m;
+                return new InvoiceFullViewModel
+                {
+                    Id = i.Id,
+                    InvoiceNumber = i.InvoiceNumber,
+                    IssuedDate = i.IssuedDate,
+                    IsCancelled = i.IsCancelled,
+                    PaymentMethod = i.PaymentMethod,
+                    PaymentMethodText = GetPaymentMethodDisplayName(i.PaymentMethod),
+                    CarInfo = i.Car.Make + " " + i.Car.Model + " (" + i.Car.RegistrationNumber + ")",
+                    GrandTotal = totalBeforeTax + taxAmount
+                };
             });
         }
 

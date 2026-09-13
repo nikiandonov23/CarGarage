@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarGarage.Services.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ddc4420b3a4a066f9faf89ed0c4cee77a9ebbdf7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+798932a09e1eb290a319bce615217e3c1f08f13e")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarGarage.Services.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarGarage.Services.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

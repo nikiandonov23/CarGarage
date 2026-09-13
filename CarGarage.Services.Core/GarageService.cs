@@ -18,7 +18,11 @@ public class GarageService(ApplicationDbContext context) : IGarageService
             PhoneNumber = model.PhoneNumber, // Добавено
             Latitude = model.Latitude,
             Longitude = model.Longitude,
-            OwnerId = userId
+            OwnerId = userId,
+            IsVatRegistered = model.IsVatRegistered,
+            IBAN = model.IBAN,
+            BIC = model.BIC,
+            BankName = model.BankName
         };
         await context.Garages.AddAsync(garage);
         await context.SaveChangesAsync();
@@ -37,7 +41,11 @@ public class GarageService(ApplicationDbContext context) : IGarageService
                     Address = g.Address!,
                     PhoneNumber = g.PhoneNumber,
                     Latitude = g.Latitude,
-                    Longitude = g.Longitude
+                    Longitude = g.Longitude,
+                    IsVatRegistered = g.IsVatRegistered,
+                    IBAN = g.IBAN,
+                    BIC = g.BIC,
+                    BankName = g.BankName
                 })
             .FirstOrDefaultAsync();
     }
@@ -56,6 +64,10 @@ public class GarageService(ApplicationDbContext context) : IGarageService
             garage.Latitude = model.Latitude;
             garage.Longitude = model.Longitude;
             garage.OwnerName = model.OwnerName;
+            garage.IsVatRegistered = model.IsVatRegistered;
+            garage.IBAN = model.IBAN;
+            garage.BIC = model.BIC;
+            garage.BankName = model.BankName;
 
             await context.SaveChangesAsync();
         }

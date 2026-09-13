@@ -20,7 +20,7 @@
                             <li><strong>Рег. номер:</strong> @(Model.RegistrationNumber ?? "Няма")</li>
                         </ul>
                     </div>
-                    <p class="text-muted small">Внимание: Това действие ще изтрие и цялата история на ремонтите и разходите.</p>
+                    <p class="text-muted small">Внимание: Това действие ще изтрие автомобила, цялата история на частите към него, но не принадлежащите му фактури</p>
                 </div>
                 <div class="card-footer d-flex justify-content-between bg-white">
                     <a href="@(ViewData["ReturnUrl"] ?? Url.Action("Index", "MyCars"))" class="btn btn-outline-secondary">

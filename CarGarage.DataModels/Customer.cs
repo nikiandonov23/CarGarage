@@ -29,4 +29,6 @@ public abstract class Customer
 
     [ForeignKey(nameof(GarageId))]
     public virtual Garage? Garage { get; set; }
+
+    public bool IsDeleted { get; set; } = false;
 }

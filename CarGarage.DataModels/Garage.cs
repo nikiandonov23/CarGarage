@@ -18,6 +18,17 @@ public class Garage
 
     public string? OwnerName { get; set; }
 
+    public bool IsVatRegistered { get; set; } = false;
+
+    [StringLength(34)]
+    public string? IBAN { get; set; }
+
+    [StringLength(11)]
+    public string? BIC { get; set; }
+
+    [StringLength(200)]
+    public string? BankName { get; set; }
+
     [Required]
     public string? City { get; set; }
 

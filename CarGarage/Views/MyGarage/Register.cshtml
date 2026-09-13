@@ -39,6 +39,42 @@
                                 <span asp-validation-for="Bulstat" class="text-danger small"></span>
                             </div>
 
+                            @* Регистриран по ЗДДС *@
+                            <div class="col-md-6">
+                                <label asp-for="IsVatRegistered" class="form-label fw-bold">Регистриран по ЗДДС (да/не)</label>
+                                <select asp-for="IsVatRegistered" class="form-select">
+                                    <option value="true">Да</option>
+                                    <option value="false" selected>Не</option>
+                                </select>
+                                <span asp-validation-for="IsVatRegistered" class="text-danger small"></span>
+                            </div>
+
+                            <hr class="my-2 opacity-25">
+                            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-bank me-2 text-primary"></i>Банкови детайли</h5>
+
+                            @* Име на банка *@
+                            <div class="col-md-4">
+                                <label asp-for="BankName" class="form-label fw-bold">Име на банка</label>
+                                <input asp-for="BankName" class="form-control" placeholder="Име на банка" />
+                                <span asp-validation-for="BankName" class="text-danger small"></span>
+                            </div>
+
+                            @* IBAN *@
+                            <div class="col-md-4">
+                                <label asp-for="IBAN" class="form-label fw-bold">IBAN</label>
+                                <input asp-for="IBAN" class="form-control" placeholder="BG..." />
+                                <span asp-validation-for="IBAN" class="text-danger small"></span>
+                            </div>
+
+                            @* BIC *@
+                            <div class="col-md-4">
+                                <label asp-for="BIC" class="form-label fw-bold">BIC код</label>
+                                <input asp-for="BIC" class="form-control" placeholder="BIC" />
+                                <span asp-validation-for="BIC" class="text-danger small"></span>
+                            </div>
+
+                            <hr class="my-2 opacity-25">
+
                             @* Телефон *@
                             <div class="col-md-6">
                                 <label asp-for="PhoneNumber" class="form-label fw-bold">Телефон за връзка</label>

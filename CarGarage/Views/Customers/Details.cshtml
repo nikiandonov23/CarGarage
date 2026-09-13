@@ -55,10 +55,9 @@
                         </div>
 
                         <div class="d-flex justify-content-end mt-3">
-                            <form asp-controller="Customers" asp-action="Delete" method="post" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете този клиент и всички негови автомобили и части?');">
-                                <input type="hidden" name="id" value="@Model.Id" />
-                                <button type="submit" class="btn btn-danger">Изтрий клиент</button>
-                            </form>
+                            <a asp-controller="Customers" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i>Изтрий клиент
+                            </a>
                         </div>
 
                         <div class="tab-pane fade" id="history">

@@ -59,10 +59,12 @@ namespace CarGarage.DataModels
 
 
         // Връзка към клиента - много коли към един клиент
-        
+
         public int? CustomerId { get; set; }
 
         [ForeignKey(nameof(CustomerId))]
         public virtual Customer? Customer { get; set; } = null!;
+
+        public bool IsDeleted { get; set; } = false;
     }
 }

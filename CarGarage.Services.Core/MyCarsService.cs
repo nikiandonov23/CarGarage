@@ -11,7 +11,7 @@ namespace CarGarage.Services.Core
         public async Task<IndexMyCarsViewModel> GetAllUserCarsAsync(string userId)
         {
             var cars = await context.UserCars
-                .Where(uc => uc.UserId == userId)
+                .Where(uc => uc.UserId == userId && !uc.Car.IsDeleted)
                 .Select(uc => new CarViewModel
                 {
                     Id = uc.Car.Id,
@@ -37,7 +37,7 @@ namespace CarGarage.Services.Core
 
             // 2. Взимаме само клиентите, които принадлежат на този гараж
             var customers = await context.Set<Customer>()
-                .Where(c => c.GarageId == garageId)
+                .Where(c => c.GarageId == garageId && !c.IsDeleted)
                 .Select(c => new CreateCarCustomerDropDownViewModel
                 {
                     Id = c.Id,
@@ -202,6 +202,7 @@ namespace CarGarage.Services.Core
         public async Task<bool> DeleteCarForUserAsync(int carId, string userId)
         {
             var userCar = await context.UserCars
+                .Include(uc => uc.Car)
                 .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.CarId == carId);
 
             if (userCar == null) return false;
@@ -209,7 +210,10 @@ namespace CarGarage.Services.Core
             context.UserCars.Remove(userCar);
 
             var car = await context.Cars.FindAsync(carId);
-            if (car != null) context.Cars.Remove(car);
+            if (car != null)
+            {
+                car.IsDeleted = true;
+            }
 
             await context.SaveChangesAsync();
             return true;
@@ -218,7 +222,7 @@ namespace CarGarage.Services.Core
         public async Task<CreateCarViewModel?> GetCarForEditAsync(int carId, string userId)
         {
             var car = await context.UserCars
-                .Where(uc => uc.UserId == userId && uc.CarId == carId)
+                .Where(uc => uc.UserId == userId && uc.CarId == carId && !uc.Car.IsDeleted)
                 .Select(uc => uc.Car)
                 .FirstOrDefaultAsync();
 
@@ -228,7 +232,7 @@ namespace CarGarage.Services.Core
             int garageId = userGarage?.Id ?? 0;
 
             var customers = await context.Set<Customer>()
-                .Where(c => c.GarageId == garageId)
+                .Where(c => c.GarageId == garageId && !c.IsDeleted)
                 .Select(c => new CreateCarCustomerDropDownViewModel
                 {
                     Id = c.Id,
@@ -273,7 +277,7 @@ namespace CarGarage.Services.Core
         public async Task<bool> UpdateCarAsync(CreateCarViewModel model, string userId)
         {
             var car = await context.UserCars
-                .Where(uc => uc.UserId == userId && uc.CarId == model.Id)
+                .Where(uc => uc.UserId == userId && uc.CarId == model.Id && !uc.Car.IsDeleted)
                 .Select(uc => uc.Car)
                 .FirstOrDefaultAsync();
 

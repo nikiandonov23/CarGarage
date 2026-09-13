@@ -101,9 +101,22 @@ namespace CarGarage.Web.Controllers
         }
 
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpGet]
         public async Task<IActionResult> Delete(int id)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var model = await customersService.GetCustomerDetailsAsync(id, userId);
+            if (model == null) return NotFound();
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId)) return Unauthorized();

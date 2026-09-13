@@ -27,5 +27,18 @@ namespace CarGarage.ViewModels.Garage
 
         [Display(Name = "Име на собственик")]
         public string? OwnerName { get; set; } // Добавяме това поле
+
+        [Required(ErrorMessage = "Регистрацията по ЗДДС е задължителна")]
+        [Display(Name = "Регистриран по ЗДДС")]
+        public bool IsVatRegistered { get; set; }
+
+        [Display(Name = "IBAN")]
+        public string? IBAN { get; set; }
+
+        [Display(Name = "BIC")]
+        public string? BIC { get; set; }
+
+        [Display(Name = "Име на банка")]
+        public string? BankName { get; set; }
     }
 }

@@ -12,7 +12,7 @@ namespace CarGarage.Services.Core
         {
             // Филтрираме клиентите, така че потребителят да вижда само тези от неговия гараж
             var query = context.Customers
-                .Where(c => c.Garage != null && c.Garage.OwnerId == userId)
+                .Where(c => c.Garage != null && c.Garage.OwnerId == userId && !c.IsDeleted)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
@@ -33,7 +33,7 @@ namespace CarGarage.Services.Core
                     Email = c.Email,
                     PhoneNumber = c.PhoneNumber,
                     City = c.City,
-                    CarsCount = c.Cars.Count,
+                    CarsCount = c.Cars.Count(car => !car.IsDeleted),
                     DisplayName = c is IndividualCustomer
                         ? ((IndividualCustomer)c).FirstName + " " + ((IndividualCustomer)c).LastName
                         : ((LegalEntityCustomer)c).CompanyName,
@@ -51,7 +51,7 @@ namespace CarGarage.Services.Core
                 .Include(c => c.Cars)
                     .ThenInclude(car => car.Invoices)
                         .ThenInclude(inv => inv.Parts)
-                .FirstOrDefaultAsync(c => c.Id == id && c.Garage != null && c.Garage.OwnerId == userId);
+                .FirstOrDefaultAsync(c => c.Id == id && c.Garage != null && c.Garage.OwnerId == userId && !c.IsDeleted);
 
             if (customer == null) return null;
 
@@ -68,7 +68,7 @@ namespace CarGarage.Services.Core
                 CustomerType = customer is IndividualCustomer ? "Физическо лице" : "Юридическо лице",
                 UniqueNumber = customer is IndividualCustomer ? ((IndividualCustomer)customer).Egn : ((LegalEntityCustomer)customer).VatNumber,
 
-                Cars = customer.Cars.Select(car => new CustomerCarViewModel
+                Cars = customer.Cars.Where(car => !car.IsDeleted).Select(car => new CustomerCarViewModel
                 {
                     Id = car.Id,
                     Make = car.Make,
@@ -78,7 +78,7 @@ namespace CarGarage.Services.Core
                     InvoicesCount = car.Invoices.Count
                 }).ToList(),
 
-                RepairHistory = customer.Cars
+                RepairHistory = customer.Cars.Where(car => !car.IsDeleted)
                     .SelectMany(car => car.Invoices.Select(inv => new CustomerRepairHistoryViewModel
                     {
                         InvoiceId = inv.Id,
@@ -98,7 +98,7 @@ namespace CarGarage.Services.Core
         public async Task<CustomerFormViewModel?> GetCustomerForEditAsync(int id, string userId)
         {
             var c = await context.Customers
-                .FirstOrDefaultAsync(x => x.Id == id && x.Garage != null && x.Garage.OwnerId == userId);
+                .FirstOrDefaultAsync(x => x.Id == id && x.Garage != null && x.Garage.OwnerId == userId && !x.IsDeleted);
 
             if (c == null) return null;
 
@@ -195,31 +195,15 @@ namespace CarGarage.Services.Core
             // Ensure the customer belongs to the garage of the current user
             var customer = await context.Customers
                 .Include(c => c.Cars)
-                    .ThenInclude(car => car.Invoices)
-                        .ThenInclude(inv => inv.Parts)
-                .FirstOrDefaultAsync(c => c.Id == id && c.Garage != null && c.Garage.OwnerId == userId);
+                .FirstOrDefaultAsync(c => c.Id == id && c.Garage != null && c.Garage.OwnerId == userId && !c.IsDeleted);
 
             if (customer == null) throw new UnauthorizedAccessException("Нямате достъп до този клиент или клиентът не съществува.");
 
-            // Remove related parts, invoices and cars explicitly to ensure cascade behavior is predictable
-            foreach (var car in customer.Cars.ToList())
+            customer.IsDeleted = true;
+            foreach (var car in customer.Cars)
             {
-                foreach (var invoice in car.Invoices.ToList())
-                {
-                    // Remove parts
-                    foreach (var part in invoice.Parts.ToList())
-                    {
-                        context.Parts.Remove(part);
-                    }
-
-                    context.Invoices.Remove(invoice);
-                }
-
-                context.Cars.Remove(car);
+                car.IsDeleted = true;
             }
-
-            // Finally remove the customer
-            context.Customers.Remove(customer);
 
             await context.SaveChangesAsync();
         }

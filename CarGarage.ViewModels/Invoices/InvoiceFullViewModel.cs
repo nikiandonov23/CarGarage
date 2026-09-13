@@ -51,5 +51,9 @@ namespace CarGarage.ViewModels.Invoices
         public string GarageCity { get; set; } = null!;
         public string GarageAddress { get; set; } = null!;
         public string? GaragePhoneNumber { get; set; }
+        public bool GarageIsVatRegistered { get; set; }
+        public string? GarageIBAN { get; set; }
+        public string? GarageBIC { get; set; }
+        public string? GarageBankName { get; set; }
     }
 }

@@ -13,7 +13,7 @@
             <p class="mb-0 opacity-75">Автомобил: @Model.CarInfo</p>
         </div>
         <div class="card-body p-4">
-            <form asp-action="Create" method="post">
+            <form asp-action="Create" asp-route-returnUrl="@ViewBag.ReturnUrl" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="CarId" />
                 <input type="hidden" asp-for="CarInfo" />
