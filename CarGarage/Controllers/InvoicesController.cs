@@ -70,9 +70,26 @@ namespace CarGarage.Web.Controllers
                 return RedirectToAction(nameof(Index)); return View(model);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpGet]
         public async Task<IActionResult> Annul(int id)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var model = await invoicesService.GetInvoiceDetailsAsync(id, userId);
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ActionName("Annul")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AnnulConfirmed(int id)
         {
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))

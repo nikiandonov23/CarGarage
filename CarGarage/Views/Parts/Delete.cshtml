@@ -1,7 +1,7 @@
 ﻿@model CarGarage.ViewModels.Parts.PartDeleteViewModel
 
 @{
-    ViewData["Title"] = "Изтриване на част";
+    ViewData["Title"] = "Анулиране на част";
 }
 
 <div class="container mt-5">
@@ -10,11 +10,11 @@
             <div class="card border-0 shadow-lg">
                 <div class="card-header bg-danger text-white text-center p-4">
                     <i class="bi bi-exclamation-octagon fs-1 mb-2"></i>
-                    <h3 class="fw-bold mb-0">Потвърдете изтриването</h3>
+                    <h3 class="fw-bold mb-0">Потвърдете анулирането</h3>
                 </div>
                 <div class="card-body p-4">
                     <div class="alert alert-warning text-center mb-4">
-                        Сигурни ли сте, че искате да премахнете този запис от историята? Тази операция е необратима.
+                        Сигурни ли сте, че искате да анулирате този запис от историята? Тази операция е необратима.
                     </div>
 
                     <div class="list-group list-group-flush mb-4">
@@ -39,7 +39,7 @@
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-danger btn-lg shadow-sm">
-                                <i class="bi bi-trash3 me-1"></i> Да, изтрий записа
+                                <i class="bi bi-x-circle me-1"></i> Да, анулирай записа
                             </button>
                             <a asp-action="Index" asp-route-carId="@Model.CarId" class="btn btn-outline-secondary">
                                 Отказ

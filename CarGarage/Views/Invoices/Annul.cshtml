@@ -1,0 +1,61 @@
+@model CarGarage.ViewModels.Invoices.InvoiceFullViewModel
+
+@{
+    ViewData["Title"] = "Анулиране на фактура";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-danger text-white text-center p-4">
+                    <i class="bi bi-exclamation-octagon fs-1 mb-2"></i>
+                    <h3 class="fw-bold mb-0">Потвърдете анулирането</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning text-center mb-4">
+                        <strong>Внимание!</strong> Сигурни ли сте, че желаете да анулирате тази фактура? <br />
+                        Тази операция е необратима и документът ще получи статус <strong>Анулирана</strong>.
+                    </div>
+
+                    <div class="list-group list-group-flush mb-4 border rounded shadow-sm">
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                            <span class="text-muted small fw-bold text-uppercase">Фактура №</span>
+                            <span class="fw-bold text-primary">@Model.InvoiceNumber</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                            <span class="text-muted small fw-bold text-uppercase">Дата на издаване</span>
+                            <span>@Model.IssuedDate.ToString("dd.MM.yyyy г.")</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                            <span class="text-muted small fw-bold text-uppercase">Клиент</span>
+                            <span class="fw-bold">@(Model.ClientName ?? "Непосочен")</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                            <span class="text-muted small fw-bold text-uppercase">Автомобил</span>
+                            <span>@Model.CarInfo</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                            <span class="text-muted small fw-bold text-uppercase">Обща сума с ДДС</span>
+                            <span class="text-danger fw-bold fs-5">@Model.GrandTotal.ToString("N2") лв.</span>
+                        </div>
+                    </div>
+
+                    <form asp-action="Annul" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg shadow-sm">
+                                <i class="bi bi-x-circle me-1"></i> Да, анулирай фактурата
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                Отказ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

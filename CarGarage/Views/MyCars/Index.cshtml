@@ -1,24 +1,33 @@
 ﻿@model CarGarage.ViewModels.Cars.IndexMyCarsViewModel
 
 @{
-    ViewData["Title"] = "Моите автомобили";
+    ViewData["Title"] = ViewBag.SingleCarView == true ? "Картон на автомобил" : "Моите автомобили";
 }
 
 <div class="container my-5">
-    
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="display-5 fw-bold text-primary mb-0">Моите автомобили</h1>
+            <h1 class="display-5 fw-bold text-primary mb-0">@(ViewBag.SingleCarView == true ? "Картон на автомобил" : "Моите автомобили")</h1>
         </div>
 
         <div class="d-flex gap-2">
-            <a asp-controller="MyGarage" asp-action="Index" class="btn btn-outline-secondary btn-lg shadow-sm">
-                <i class="bi bi-house-door me-2"></i>Моят Гараж
-            </a>
+            @if (ViewBag.SingleCarView == true)
+            {
+                <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg shadow-sm">
+                    <i class="bi bi-arrow-left me-2"></i>Назад
+                </a>
+            }
+            else
+            {
+                <a asp-controller="MyGarage" asp-action="Index" class="btn btn-outline-secondary btn-lg shadow-sm">
+                    <i class="bi bi-house-door me-2"></i>Моят Гараж
+                </a>
 
-            <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">
-                <i class="bi bi-plus-circle me-2"></i>Добави автомобил
-            </a>
+                <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">
+                    <i class="bi bi-plus-circle me-2"></i>Добави автомобил
+                </a>
+            }
         </div>
     </div>
 

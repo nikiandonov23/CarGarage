@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 [Authorize]
 public class MyCarsController(IMyCarsService carsService) : BaseController
 {
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int? carId)
     {
         var userId = GetUserId();
         if (string.IsNullOrEmpty(userId))
@@ -15,6 +15,14 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
 
 
         var model = await carsService.GetAllUserCarsAsync(userId);
+
+        if (carId.HasValue)
+        {
+            model.Cars = model.Cars.Where(c => c.Id == carId.Value).ToList();
+            ViewBag.SingleCarView = true;
+            ViewBag.CarId = carId.Value;
+        }
+
         return View(model);
     }
 
