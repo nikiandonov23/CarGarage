@@ -142,6 +142,7 @@ namespace CarGarage.Services.Core
         {
             var inv = await context.Invoices
                 .Include(i => i.Car)
+                    .ThenInclude(c => c.Customer)
                 .Include(i => i.Parts)
                 .Include(i => i.Garage)
                 .FirstOrDefaultAsync(i => i.Id == invoiceId && i.Garage != null && i.Garage.OwnerId == userId);
@@ -152,6 +153,41 @@ namespace CarGarage.Services.Core
             decimal subTotalLabor = (decimal)inv.LaborHours * inv.LaborPricePerHour;
             decimal totalBeforeTax = subTotalParts + subTotalLabor;
             decimal taxAmount = totalBeforeTax * (inv.TaxPercentage / 100);
+
+            string? clientName = null;
+            string? clientIdNumber = null;
+            string? clientAddress = null;
+            string? clientType = null;
+            string? clientVatNumber = null;
+            string? clientMOL = null;
+            string? clientEmail = null;
+            string? clientPhone = null;
+
+            if (inv.Car.Customer != null)
+            {
+                var cust = inv.Car.Customer;
+                clientAddress = $"гр. {cust.City}, {cust.Address}";
+                clientEmail = cust.Email;
+                clientPhone = cust.PhoneNumber;
+
+                if (cust is IndividualCustomer ind)
+                {
+                    clientName = $"{ind.FirstName} {ind.LastName}";
+                    clientIdNumber = ind.Egn;
+                    clientType = "Физическо лице";
+                }
+                else if (cust is LegalEntityCustomer org)
+                {
+                    clientName = org.CompanyName;
+                    clientIdNumber = org.VatNumber;
+                    clientType = "Юридическо лице";
+                    clientMOL = org.ResponsiblePerson;
+                    if (org.IsVatRegistered)
+                    {
+                        clientVatNumber = org.VatNumber.StartsWith("BG") ? org.VatNumber : "BG" + org.VatNumber;
+                    }
+                }
+            }
 
             return new InvoiceFullViewModel
             {
@@ -166,6 +202,17 @@ namespace CarGarage.Services.Core
                 CarInfo = $"{inv.Car.Make} {inv.Car.Model}",
                 Vin = inv.Car.Vin,
                 RegNumber = inv.Car.RegistrationNumber,
+
+                // --- МАПВАНЕ НА КЛИЕНТ ДАННИ ---
+                ClientName = clientName,
+                ClientIdNumber = clientIdNumber,
+                ClientAddress = clientAddress,
+                ClientType = clientType,
+                ClientVatNumber = clientVatNumber,
+                ClientMOL = clientMOL,
+                ClientEmail = clientEmail,
+                ClientPhone = clientPhone,
+
                 Parts = inv.Parts.Select(p => new InvoicePartViewModel
                 {
                     Name = p.Description,

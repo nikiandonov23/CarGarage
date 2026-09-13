@@ -32,6 +32,17 @@ namespace CarGarage.ViewModels.Invoices
 
 
 
+        // --- ПОЛУЧАТЕЛ (КЛИЕНТ) ДАННИ ---
+        public string? ClientName { get; set; }
+        public string? ClientIdNumber { get; set; } // ЕГН за физ. лица / ЕИК за фирми
+        public string? ClientAddress { get; set; }   // Град + Адрес
+        public string? ClientType { get; set; }      // "Физическо лице" или "Юридическо лице"
+        public string? ClientVatNumber { get; set; } // ИН по ЗДДС (ако е фирма и е рег. по ЗДДС)
+        public string? ClientMOL { get; set; }       // МОЛ (за фирми)
+        public string? ClientEmail { get; set; }
+        public string? ClientPhone { get; set; }
+
+
         // --- ДОБАВЕНИ СВОЙСТВА ЗА СЕРВИЗА (GARAGE) ---
         public string GarageName { get; set; } = null!;
         public string GarageBulstat { get; set; } = null!;

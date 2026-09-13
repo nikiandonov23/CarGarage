@@ -51,14 +51,14 @@
             width: 100% !important;
             min-height: auto !important;
             margin: 0 !important;
-            padding: 0 !important;
+            padding: 10mm 15mm !important;
             box-shadow: none !important;
             border: none !important;
         }
 
         @@page {
             size: A4 portrait;
-            margin: 12mm;
+            margin: 0mm; /* Премахва автоматичните хедъри и фуутъри с URL от браузъра */
         }
     }
 </style>
@@ -86,9 +86,46 @@
         <div class="col-6">
             <div class="party-box">
                 <h6 class="fw-bold border-bottom pb-2 mb-2 text-uppercase text-primary">Получател (Клиент)</h6>
-                <div><strong>Автомобил:</strong> @Model.CarInfo</div>
-                <div><strong>Рег. номер:</strong> @Model.RegNumber</div>
-                <div><strong>VIN (Шаси):</strong> @Model.Vin</div>
+                @if (!string.IsNullOrEmpty(Model.ClientName))
+                {
+                    <div class="fw-bold fs-6 text-dark mb-1">@Model.ClientName</div>
+                    @if (Model.ClientType == "Юридическо лице")
+                    {
+                        <div><strong>ЕИК / Булстат:</strong> @Model.ClientIdNumber</div>
+                        @if (!string.IsNullOrEmpty(Model.ClientVatNumber))
+                        {
+                            <div><strong>ИН по ЗДДС:</strong> @Model.ClientVatNumber</div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.ClientMOL))
+                        {
+                            <div><strong>МОЛ:</strong> @Model.ClientMOL</div>
+                        }
+                    }
+                    else
+                    {
+                        <div><strong>ЕГН:</strong> @Model.ClientIdNumber</div>
+                    }
+                    <div><strong>Град / Адрес:</strong> @Model.ClientAddress</div>
+                    @if (!string.IsNullOrEmpty(Model.ClientEmail))
+                    {
+                        <div><strong>Е-поща:</strong> @Model.ClientEmail</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ClientPhone))
+                    {
+                        <div><strong>Тел.:</strong> @Model.ClientPhone</div>
+                    }
+                    <div class="mt-2 pt-2 border-top">
+                        <span class="text-muted small"><strong>Автомобил:</strong> @Model.CarInfo (Рег. № @Model.RegNumber)</span><br />
+                        <span class="text-muted small"><strong>VIN:</strong> @Model.Vin</span>
+                    </div>
+                }
+                else
+                {
+                    <div><strong>Клиент (Физическо лице):</strong> Липсва информация</div>
+                    <div><strong>Автомобил:</strong> @Model.CarInfo</div>
+                    <div><strong>Рег. номер:</strong> @Model.RegNumber</div>
+                    <div><strong>VIN (Шаси):</strong> @Model.Vin</div>
+                }
                 <div class="mt-2 pt-2 border-top text-muted small">
                     <em>Забележка: Документът е издаден за обслужване на посоченото МПС.</em>
                 </div>
@@ -101,6 +138,10 @@
                 <h6 class="fw-bold border-bottom pb-2 mb-2 text-uppercase text-primary">Доставчик (Издател)</h6>
                 <div class="fw-bold fs-6 text-dark">@Model.GarageName</div>
                 <div><strong>ЕИК / Булстат:</strong> @Model.GarageBulstat</div>
+                @if (!string.IsNullOrEmpty(Model.GarageBulstat) && Model.GarageBulstat != "-")
+                {
+                    <div><strong>ИН по ЗДДС:</strong> BG@(Model.GarageBulstat)</div>
+                }
                 <div><strong>Град / Адрес:</strong> гр. @Model.GarageCity, @Model.GarageAddress</div>
                 @if (!string.IsNullOrEmpty(Model.GarageOwnerName))
                 {
@@ -113,7 +154,6 @@
             </div>
         </div>
 
-      
     </div>
 
     <!-- Таблица с услуги и части -->
@@ -190,15 +230,15 @@
     </div>
 
     <!-- Подписи и подножие -->
-    <div class="row mt-5 pt-4 border-top">
+    <div class="row mt-4 pt-2 border-top" style="page-break-inside: avoid;">
         <div class="col-6">
-            <div class="mb-4">
+            <div class="mb-2">
                 <strong>Съставил (Подпис):</strong> ......................................
             </div>
             <div class="small text-muted">(@(Model.GarageOwnerName ?? "Оторизирано лице"))</div>
         </div>
         <div class="col-6 text-end">
-            <div class="mb-4">
+            <div class="mb-2">
                 <strong>Получил (Подпис):</strong> ......................................
             </div>
             <div class="small text-muted">(Клиент / Представител)</div>
