@@ -10,9 +10,106 @@
             <h2 class="fw-bold text-dark"><i class="bi bi-receipt-cutoff me-2 text-primary"></i>Архив на фактури</h2>
             <p class="text-muted mb-0">Преглед на всички издадени документи</p>
         </div>
-        <a asp-controller="MyCars" asp-action="Index" class="btn btn-primary btn-lg shadow-sm">
-            <i class="bi bi-plus-lg me-2"></i>Нова фактура
-        </a>
+        <div class="d-flex gap-2">
+            <a asp-action="Report" class="btn btn-outline-success btn-lg shadow-sm">
+                <i class="bi bi-graph-up-arrow me-2"></i>Генерирай справка
+            </a>
+            <a asp-controller="MyCars" asp-action="Index" class="btn btn-primary btn-lg shadow-sm">
+                <i class="bi bi-plus-lg me-2"></i>Нова фактура
+            </a>
+        </div>
+    </div>
+
+    <!-- Панел за филтри и търсене -->
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body p-3">
+            <form method="get" asp-action="Index">
+                <!-- Скрити параметри за поддържане на текущото сортиране при филтриране -->
+                <input type="hidden" name="sortBy" value="@ViewBag.SortBy" />
+                <input type="hidden" name="isAsc" value="@(ViewBag.IsAsc != null ? ViewBag.IsAsc.ToString().ToLower() : "")" />
+
+                <div class="row g-3">
+                    <!-- Филтър по статус -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold text-muted small mb-1">Статус</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">Всички</option>
+                            @if (ViewBag.CurrentStatus == "active")
+                            {
+                                <option value="active" selected>Активни</option>
+                                <option value="cancelled">Анулирани</option>
+                            }
+                            else if (ViewBag.CurrentStatus == "cancelled")
+                            {
+                                <option value="active">Активни</option>
+                                <option value="cancelled" selected>Анулирани</option>
+                            }
+                            else
+                            {
+                                <option value="active">Активни</option>
+                                <option value="cancelled">Анулирани</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Филтър по начин на плащане -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold text-muted small mb-1">Начин на плащане</label>
+                        <select name="paymentMethod" class="form-select form-select-sm">
+                            <option value="">Всички</option>
+                            @foreach (var method in Enum.GetValues(typeof(CarGarage.DataModels.Enums.PaymentMethod)).Cast<CarGarage.DataModels.Enums.PaymentMethod>())
+                            {
+                                var isSelected = ViewBag.CurrentPaymentMethod != null && (CarGarage.DataModels.Enums.PaymentMethod)ViewBag.CurrentPaymentMethod == method;
+                                if (isSelected)
+                                {
+                                    <option value="@method" selected>@GetBulgarianPaymentMethodName(method)</option>
+                                }
+                                else
+                                {
+                                    <option value="@method">@GetBulgarianPaymentMethodName(method)</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Търсене по клиент -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold text-muted small mb-1">Клиент (Име или ЕГН/ЕИК)</label>
+                        <input type="text" name="clientSearch" class="form-control form-control-sm" placeholder="Въведете име или ЕГН..." value="@ViewBag.CurrentClientSearch" />
+                    </div>
+
+                    <!-- Търсене по кола -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold text-muted small mb-1">Автомобил (Рег. №, VIN, модел)</label>
+                        <input type="text" name="carSearch" class="form-control form-control-sm" placeholder="Въведете номер..." value="@ViewBag.CurrentCarSearch" />
+                    </div>
+
+                    <!-- От дата -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold text-muted small mb-1">От дата</label>
+                        <input type="date" name="startDate" class="form-control form-control-sm" value="@(ViewBag.CurrentStartDate != null ? ((DateTime)ViewBag.CurrentStartDate).ToString("yyyy-MM-dd") : "")" />
+                    </div>
+
+                    <!-- До дата -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold text-muted small mb-1">До дата</label>
+                        <input type="date" name="endDate" class="form-control form-control-sm" value="@(ViewBag.CurrentEndDate != null ? ((DateTime)ViewBag.CurrentEndDate).ToString("yyyy-MM-dd") : "")" />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-3 gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm px-4 shadow-sm">
+                        <i class="bi bi-search me-1"></i>Търси
+                    </button>
+                    @if (!string.IsNullOrEmpty(ViewBag.CurrentStatus) || ViewBag.CurrentPaymentMethod != null || !string.IsNullOrEmpty(ViewBag.CurrentClientSearch) || !string.IsNullOrEmpty(ViewBag.CurrentCarSearch) || ViewBag.CurrentStartDate != null || ViewBag.CurrentEndDate != null)
+                    {
+                        <a asp-action="Index" class="btn btn-outline-danger btn-sm px-4 shadow-sm">
+                            <i class="bi bi-x-circle me-1"></i>Изчисти
+                        </a>
+                    }
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="card shadow-sm border-0">
@@ -21,10 +118,63 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4">Номер</th>
-                            <th>Дата</th>
-                            <th>Автомобил</th>
-                            <th class="text-end">Сума с ДДС</th>
+                            <th class="ps-4">
+                                <a asp-action="Index" 
+                                   asp-route-status="@ViewBag.CurrentStatus" 
+                                   asp-route-paymentMethod="@ViewBag.CurrentPaymentMethod" 
+                                   asp-route-clientSearch="@ViewBag.CurrentClientSearch" 
+                                   asp-route-carSearch="@ViewBag.CurrentCarSearch" 
+                                   asp-route-startDate="@(ViewBag.CurrentStartDate != null ? ((DateTime)ViewBag.CurrentStartDate).ToString("yyyy-MM-dd") : null)" 
+                                   asp-route-endDate="@(ViewBag.CurrentEndDate != null ? ((DateTime)ViewBag.CurrentEndDate).ToString("yyyy-MM-dd") : null)" 
+                                   asp-route-sortBy="Number" 
+                                   asp-route-isAsc="@(ViewBag.SortBy == "Number" && ViewBag.IsAsc == true ? "false" : "true")" 
+                                   class="text-decoration-none text-dark">
+                                    Номер <i class="bi @(ViewBag.SortBy == "Number" ? (ViewBag.IsAsc == true ? "bi-caret-up-fill" : "bi-caret-down-fill") : "bi-arrow-down-up text-muted small") ms-1"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-action="Index" 
+                                   asp-route-status="@ViewBag.CurrentStatus" 
+                                   asp-route-paymentMethod="@ViewBag.CurrentPaymentMethod" 
+                                   asp-route-clientSearch="@ViewBag.CurrentClientSearch" 
+                                   asp-route-carSearch="@ViewBag.CurrentCarSearch" 
+                                   asp-route-startDate="@(ViewBag.CurrentStartDate != null ? ((DateTime)ViewBag.CurrentStartDate).ToString("yyyy-MM-dd") : null)" 
+                                   asp-route-endDate="@(ViewBag.CurrentEndDate != null ? ((DateTime)ViewBag.CurrentEndDate).ToString("yyyy-MM-dd") : null)" 
+                                   asp-route-sortBy="Date" 
+                                   asp-route-isAsc="@(ViewBag.SortBy == "Date" && ViewBag.IsAsc == true ? "false" : "true")" 
+                                   class="text-decoration-none text-dark">
+                                    Дата <i class="bi @(ViewBag.SortBy == "Date" ? (ViewBag.IsAsc == true ? "bi-caret-up-fill" : "bi-caret-down-fill") : "bi-arrow-down-up text-muted small") ms-1"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-action="Index" 
+                                   asp-route-status="@ViewBag.CurrentStatus" 
+                                   asp-route-paymentMethod="@ViewBag.CurrentPaymentMethod" 
+                                   asp-route-clientSearch="@ViewBag.CurrentClientSearch" 
+                                   asp-route-carSearch="@ViewBag.CurrentCarSearch" 
+                                   asp-route-startDate="@(ViewBag.CurrentStartDate != null ? ((DateTime)ViewBag.CurrentStartDate).ToString("yyyy-MM-dd") : null)" 
+                                   asp-route-endDate="@(ViewBag.CurrentEndDate != null ? ((DateTime)ViewBag.CurrentEndDate).ToString("yyyy-MM-dd") : null)" 
+                                   asp-route-sortBy="Car" 
+                                   asp-route-isAsc="@(ViewBag.SortBy == "Car" && ViewBag.IsAsc == true ? "false" : "true")" 
+                                   class="text-decoration-none text-dark">
+                                    Автомобил <i class="bi @(ViewBag.SortBy == "Car" ? (ViewBag.IsAsc == true ? "bi-caret-up-fill" : "bi-caret-down-fill") : "bi-arrow-down-up text-muted small") ms-1"></i>
+                                </a>
+                            </th>
+                            <th>Начин на плащане</th>
+                            <th class="text-end" style="min-width: 130px;">
+                                <a asp-action="Index" 
+                                   asp-route-status="@ViewBag.CurrentStatus" 
+                                   asp-route-paymentMethod="@ViewBag.CurrentPaymentMethod" 
+                                   asp-route-clientSearch="@ViewBag.CurrentClientSearch" 
+                                   asp-route-carSearch="@ViewBag.CurrentCarSearch" 
+                                   asp-route-startDate="@(ViewBag.CurrentStartDate != null ? ((DateTime)ViewBag.CurrentStartDate).ToString("yyyy-MM-dd") : null)" 
+                                   asp-route-endDate="@(ViewBag.CurrentEndDate != null ? ((DateTime)ViewBag.CurrentEndDate).ToString("yyyy-MM-dd") : null)" 
+                                   asp-route-sortBy="Total" 
+                                   asp-route-isAsc="@(ViewBag.SortBy == "Total" && ViewBag.IsAsc == true ? "false" : "true")" 
+                                   class="text-decoration-none text-dark d-inline-block w-100 text-end">
+                                    Сума с ДДС <i class="bi @(ViewBag.SortBy == "Total" ? (ViewBag.IsAsc == true ? "bi-caret-up-fill" : "bi-caret-down-fill") : "bi-arrow-down-up text-muted small") ms-1"></i>
+                                </a>
+                            </th>
                             <th class="text-center">Статус</th>
                             <th class="text-center">Действия</th>
                         </tr>
@@ -40,6 +190,11 @@
                                     </td>
                                     <td>@invoice.IssuedDate.ToString("dd.MM.yyyy")</td>
                                     <td>@invoice.CarInfo</td>
+                                    <td>
+                                        <span class="badge bg-white text-dark border">
+                                            <i class="bi @GetPaymentMethodIcon(invoice.PaymentMethod) me-1 text-secondary"></i> @invoice.PaymentMethodText
+                                        </span>
+                                    </td>
                                     <td class="text-end fw-bold @(invoice.IsCancelled ? "text-decoration-line-through text-danger" : "text-success")">
                                         @invoice.GrandTotal.ToString("N2") €
                                     </td>
@@ -70,9 +225,9 @@
                         else
                         {
                             <tr>
-                                <td colspan="6" class="text-center py-5 text-muted">
+                                <td colspan="7" class="text-center py-5 text-muted">
                                     <i class="bi bi-file-earmark-x d-block display-4 mb-3"></i>
-                                    Все още нямате издадени фактури.
+                                    Не бяха намерени фактури по зададените критерии.
                                 </td>
                             </tr>
                         }
@@ -82,3 +237,27 @@
         </div>
     </div>
 </div>
+
+@functions {
+    string GetBulgarianPaymentMethodName(CarGarage.DataModels.Enums.PaymentMethod method)
+    {
+        return method switch
+        {
+            CarGarage.DataModels.Enums.PaymentMethod.Cash => "В брой",
+            CarGarage.DataModels.Enums.PaymentMethod.Card => "С карта",
+            CarGarage.DataModels.Enums.PaymentMethod.BankTransfer => "По банков път",
+            _ => method.ToString()
+        };
+    }
+
+    string GetPaymentMethodIcon(CarGarage.DataModels.Enums.PaymentMethod method)
+    {
+        return method switch
+        {
+            CarGarage.DataModels.Enums.PaymentMethod.Cash => "bi-cash-coin",
+            CarGarage.DataModels.Enums.PaymentMethod.Card => "bi-credit-card",
+            CarGarage.DataModels.Enums.PaymentMethod.BankTransfer => "bi-bank",
+            _ => "bi-wallet2"
+        };
+    }
+}

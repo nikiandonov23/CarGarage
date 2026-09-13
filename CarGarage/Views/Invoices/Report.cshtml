@@ -1,0 +1,197 @@
+@model CarGarage.ViewModels.Invoices.InvoiceReportViewModel
+
+@{
+    ViewData["Title"] = "Финансова справка";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <div>
+            <h2 class="fw-bold text-dark"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Справка за приходи</h2>
+            <p class="text-muted mb-0">Генериране на финансова справка по период</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Назад към фактури
+        </a>
+    </div>
+
+    <!-- Форма за избор на период -->
+    <div class="card shadow-sm border-0 mb-4 bg-light no-print">
+        <div class="card-body p-4">
+            <form method="get" asp-action="Report">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="startDate" class="form-label fw-bold text-muted small mb-1">От дата</label>
+                        <input type="date" id="startDate" name="startDate" class="form-control" 
+                               value="@(Model.StartDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="endDate" class="form-label fw-bold text-muted small mb-1">До дата</label>
+                        <input type="date" id="endDate" name="endDate" class="form-control" 
+                               value="@(Model.EndDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="col-md-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-gear-fill me-1"></i>Генерирай
+                        </button>
+                        <a asp-action="Report" class="btn btn-outline-danger">
+                            <i class="bi bi-eraser-fill"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.IsGenerated)
+    {
+        <!-- Секция за печат -->
+        <div id="print-area" class="card shadow border-0 p-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                    <div>
+                        <h3 class="fw-bold text-dark mb-0">СПРАВКА ЗА ПРИХОДИ</h3>
+                        <p class="text-secondary mb-0">
+                            Период: 
+                            <strong class="text-dark">
+                                @(Model.StartDate?.ToString("dd.MM.yyyy") ?? "началото")
+                            </strong> 
+                            - 
+                            <strong class="text-dark">
+                                @(Model.EndDate?.ToString("dd.MM.yyyy") ?? "сега")
+                            </strong>
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <p class="text-muted mb-0 small">Дата на генериране: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")</p>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <!-- В брой -->
+                    <div class="col-md-4">
+                        <div class="card border border-light h-100 shadow-sm">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-light rounded-circle d-inline-flex p-3 mb-3 text-success">
+                                    <i class="bi bi-cash-coin fs-2"></i>
+                                </div>
+                                <h6 class="text-muted fw-bold text-uppercase mb-2">В брой</h6>
+                                <h3 class="fw-bold text-dark mb-0">@Model.CashRevenue.ToString("N2") €</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- С карта -->
+                    <div class="col-md-4">
+                        <div class="card border border-light h-100 shadow-sm">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-light rounded-circle d-inline-flex p-3 mb-3 text-info">
+                                    <i class="bi bi-credit-card fs-2"></i>
+                                </div>
+                                <h6 class="text-muted fw-bold text-uppercase mb-2">С карта</h6>
+                                <h3 class="fw-bold text-dark mb-0">@Model.CardRevenue.ToString("N2") €</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- По банков път -->
+                    <div class="col-md-4">
+                        <div class="card border border-light h-100 shadow-sm">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-light rounded-circle d-inline-flex p-3 mb-3 text-warning">
+                                    <i class="bi bi-bank fs-2"></i>
+                                </div>
+                                <h6 class="text-muted fw-bold text-uppercase mb-2">По банков път</h6>
+                                <h3 class="fw-bold text-dark mb-0">@Model.BankTransferRevenue.ToString("N2") €</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Общ приход -->
+                <div class="bg-primary bg-gradient text-white rounded p-4 shadow-sm mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0 fw-bold"><i class="bi bi-wallet2 me-2"></i>ОБЩ ПРИХОД ЗА ПЕРИОДА</h4>
+                            <p class="mb-0 text-white-50 small">Сума от всички успешно приключени и платени документи за периода</p>
+                        </div>
+                        <div class="text-end">
+                            <h2 class="fw-bold mb-0">@Model.TotalRevenue.ToString("N2") €</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Бутон за принтиране -->
+                <div class="d-flex justify-content-end gap-2 mt-4 no-print">
+                    <button type="button" class="btn btn-success btn-lg px-4 shadow-sm" onclick="window.print()">
+                        <i class="bi bi-printer me-2"></i>Принтирай / Запази като PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 text-muted no-print">
+            <i class="bi bi-calendar-range d-block display-4 mb-3"></i>
+            Моля, изберете начална и крайна дата, след което натиснете бутона <strong>Генерирай</strong>.
+        </div>
+    }
+</div>
+
+<style>
+    @@media print {
+        /* Скрива ненужните елементи по време на печат */
+        .no-print, 
+        .navbar, 
+        footer, 
+        #sidebar,
+        header,
+        .btn {
+            display: none !important;
+        }
+
+        /* Заема пълния контейнер */
+        body {
+            background-color: white !important;
+            color: black !important;
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+        }
+
+        .card-body {
+            padding: 0 !important;
+        }
+
+        /* Изчистване на сивия фон за колоните с приходите за по-добър печат */
+        .card.shadow-sm, .card.shadow {
+            border: 1px solid #dee2e6 !important;
+            margin-bottom: 15px !important;
+        }
+
+        .bg-primary {
+            background-color: #0d6efd !important;
+            color: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .text-white-50 {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+    }
+</style>

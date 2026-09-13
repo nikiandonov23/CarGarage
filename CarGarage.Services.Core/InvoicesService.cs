@@ -239,17 +239,87 @@ namespace CarGarage.Services.Core
             };
         }
 
-        public async Task<IEnumerable<InvoiceFullViewModel>> GetAllUserInvoicesAsync(string userId)
+        public async Task<IEnumerable<InvoiceFullViewModel>> GetAllUserInvoicesAsync(
+            string userId,
+            string? status = null,
+            PaymentMethod? paymentMethod = null,
+            string? clientSearch = null,
+            string? carSearch = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string? sortBy = null,
+            bool? isAsc = null)
         {
-            var invoices = await context.Invoices
+            var query = context.Invoices
                 .Where(i => i.Garage != null && i.Garage.OwnerId == userId)
+                .AsQueryable();
+
+            // 1. Филтър по статус: Активни / Анулирани
+            if (!string.IsNullOrEmpty(status))
+            {
+                if (status.Equals("active", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(i => !i.IsCancelled);
+                }
+                else if (status.Equals("cancelled", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(i => i.IsCancelled);
+                }
+            }
+
+            // 2. Филтър по начин на плащане
+            if (paymentMethod.HasValue)
+            {
+                query = query.Where(i => i.PaymentMethod == paymentMethod.Value);
+            }
+
+            // 3. Търсене по клиент (име на клиент или ЕИК/ЕГН)
+            if (!string.IsNullOrEmpty(clientSearch))
+            {
+                clientSearch = clientSearch.Trim().ToLower();
+                query = query.Where(i => i.Car.Customer != null && (
+                    (i.Car.Customer is IndividualCustomer && 
+                     ((((IndividualCustomer)i.Car.Customer).FirstName ?? string.Empty).ToLower().Contains(clientSearch) ||
+                      (((IndividualCustomer)i.Car.Customer).LastName ?? string.Empty).ToLower().Contains(clientSearch) ||
+                      ((((IndividualCustomer)i.Car.Customer).FirstName ?? string.Empty) + " " + (((IndividualCustomer)i.Car.Customer).LastName ?? string.Empty)).ToLower().Contains(clientSearch) ||
+                      (((IndividualCustomer)i.Car.Customer).Egn ?? string.Empty).Contains(clientSearch))) ||
+                    (i.Car.Customer is LegalEntityCustomer && 
+                     ((((LegalEntityCustomer)i.Car.Customer).CompanyName ?? string.Empty).ToLower().Contains(clientSearch) ||
+                      (((LegalEntityCustomer)i.Car.Customer).VatNumber ?? string.Empty).Contains(clientSearch)))
+                ));
+            }
+
+            // 4. Търсене по автомобил / Регистрационен номер / VIN
+            if (!string.IsNullOrEmpty(carSearch))
+            {
+                carSearch = carSearch.Trim().ToLower();
+                query = query.Where(i => 
+                    (i.Car.RegistrationNumber ?? string.Empty).ToLower().Contains(carSearch) ||
+                    (i.Car.Vin ?? string.Empty).ToLower().Contains(carSearch) ||
+                    (i.Car.Make ?? string.Empty).ToLower().Contains(carSearch) ||
+                    (i.Car.Model ?? string.Empty).ToLower().Contains(carSearch) ||
+                    ((i.Car.Make ?? string.Empty) + " " + (i.Car.Model ?? string.Empty)).ToLower().Contains(carSearch)
+                );
+            }
+
+            // 5. Филтър по период: startDate и endDate
+            if (startDate.HasValue)
+            {
+                query = query.Where(i => i.IssuedDate >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(i => i.IssuedDate <= endOfDay);
+            }
+
+            var invoices = await query
                 .Include(i => i.Car)
                 .Include(i => i.Parts)
                 .Include(i => i.Garage)
-                .OrderByDescending(i => i.IssuedDate)
                 .ToListAsync();
 
-            return invoices.Select(i => {
+            var results = invoices.Select(i => {
                 decimal subTotalParts = i.Parts.Sum(p => p.TotalPrice);
                 decimal subTotalLabor = (decimal)i.LaborHours * i.LaborPricePerHour;
                 decimal totalBeforeTax = subTotalParts + subTotalLabor;
@@ -266,7 +336,82 @@ namespace CarGarage.Services.Core
                     CarInfo = i.Car.Make + " " + i.Car.Model + " (" + i.Car.RegistrationNumber + ")",
                     GrandTotal = totalBeforeTax + taxAmount
                 };
-            });
+            }).ToList();
+
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                bool ascending = isAsc ?? true;
+                results = sortBy.ToLower() switch
+                {
+                    "number" => ascending ? results.OrderBy(r => r.InvoiceNumber).ToList() : results.OrderByDescending(r => r.InvoiceNumber).ToList(),
+                    "date" => ascending ? results.OrderBy(r => r.IssuedDate).ToList() : results.OrderByDescending(r => r.IssuedDate).ToList(),
+                    "car" => ascending ? results.OrderBy(r => r.CarInfo, StringComparer.OrdinalIgnoreCase).ToList() : results.OrderByDescending(r => r.CarInfo, StringComparer.OrdinalIgnoreCase).ToList(),
+                    "total" => ascending ? results.OrderBy(r => r.GrandTotal).ToList() : results.OrderByDescending(r => r.GrandTotal).ToList(),
+                    _ => results.OrderByDescending(r => r.IssuedDate).ToList()
+                };
+            }
+            else
+            {
+                results = results.OrderByDescending(r => r.IssuedDate).ToList();
+            }
+
+            return results;
+        }
+
+        public async Task<InvoiceReportViewModel> GetRevenueReportAsync(string userId, DateTime? startDate, DateTime? endDate)
+        {
+            var query = context.Invoices
+                .Where(i => i.Garage != null && i.Garage.OwnerId == userId && !i.IsCancelled)
+                .AsQueryable();
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(i => i.IssuedDate >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(i => i.IssuedDate <= endOfDay);
+            }
+
+            var invoices = await query
+                .Include(i => i.Parts)
+                .Include(i => i.Garage)
+                .ToListAsync();
+
+            var report = new InvoiceReportViewModel
+            {
+                StartDate = startDate,
+                EndDate = endDate,
+                IsGenerated = startDate.HasValue || endDate.HasValue
+            };
+
+            foreach (var invoice in invoices)
+            {
+                decimal subTotalParts = invoice.Parts.Sum(p => p.TotalPrice);
+                decimal subTotalLabor = (decimal)invoice.LaborHours * invoice.LaborPricePerHour;
+                decimal totalBeforeTax = subTotalParts + subTotalLabor;
+                bool isVat = invoice.Garage?.IsVatRegistered ?? false;
+                decimal taxAmount = isVat ? (totalBeforeTax * (invoice.TaxPercentage / 100)) : 0m;
+                decimal grandTotal = totalBeforeTax + taxAmount;
+
+                switch (invoice.PaymentMethod)
+                {
+                    case PaymentMethod.Cash:
+                        report.CashRevenue += grandTotal;
+                        break;
+                    case PaymentMethod.Card:
+                        report.CardRevenue += grandTotal;
+                        break;
+                    case PaymentMethod.BankTransfer:
+                        report.BankTransferRevenue += grandTotal;
+                        break;
+                }
+            }
+
+            report.TotalRevenue = report.CashRevenue + report.CardRevenue + report.BankTransferRevenue;
+
+            return report;
         }
 
         public async Task<bool> AnnulInvoiceAsync(int invoiceId, string userId)

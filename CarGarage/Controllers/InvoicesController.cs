@@ -1,4 +1,5 @@
-﻿using CarGarage.Services.Core.Contracts;
+﻿using CarGarage.DataModels.Enums;
+using CarGarage.Services.Core.Contracts;
 using CarGarage.ViewModels.Invoices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,15 @@ namespace CarGarage.Web.Controllers
     public class InvoicesController(IInvoicesService invoicesService) : BaseController
     {
         [HttpGet] 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? status = null, 
+            PaymentMethod? paymentMethod = null, 
+            string? clientSearch = null, 
+            string? carSearch = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string? sortBy = null,
+            bool? isAsc = null)
         {
 
             var userId = GetUserId(); 
@@ -17,7 +26,17 @@ namespace CarGarage.Web.Controllers
                 return Unauthorized();
 
 
-            var model = await invoicesService.GetAllUserInvoicesAsync(userId);
+            var model = await invoicesService.GetAllUserInvoicesAsync(userId, status, paymentMethod, clientSearch, carSearch, startDate, endDate, sortBy, isAsc);
+
+            ViewBag.CurrentStatus = status;
+            ViewBag.CurrentPaymentMethod = paymentMethod;
+            ViewBag.CurrentClientSearch = clientSearch;
+            ViewBag.CurrentCarSearch = carSearch;
+            ViewBag.CurrentStartDate = startDate;
+            ViewBag.CurrentEndDate = endDate;
+            ViewBag.SortBy = sortBy;
+            ViewBag.IsAsc = isAsc;
+
             return View(model);
         }
 
@@ -108,6 +127,17 @@ namespace CarGarage.Web.Controllers
             }
 
             return RedirectToAction(nameof(Details), new { id = id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Report(DateTime? startDate, DateTime? endDate)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var reportModel = await invoicesService.GetRevenueReportAsync(userId, startDate, endDate);
+            return View(reportModel);
         }
     }
 }

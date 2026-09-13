@@ -1,4 +1,5 @@
-﻿using CarGarage.ViewModels.Invoices;
+﻿using CarGarage.DataModels.Enums;
+using CarGarage.ViewModels.Invoices;
 
 namespace CarGarage.Services.Core.Contracts
 {
@@ -10,8 +11,19 @@ namespace CarGarage.Services.Core.Contracts
 
         Task<InvoiceFullViewModel> GetInvoiceDetailsAsync(int invoiceId, string userId);
 
-        Task<IEnumerable<InvoiceFullViewModel>> GetAllUserInvoicesAsync(string userId);
+        Task<IEnumerable<InvoiceFullViewModel>> GetAllUserInvoicesAsync(
+            string userId, 
+            string? status = null, 
+            PaymentMethod? paymentMethod = null, 
+            string? clientSearch = null, 
+            string? carSearch = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string? sortBy = null,
+            bool? isAsc = null);
 
         Task<bool> AnnulInvoiceAsync(int invoiceId, string userId);
+
+        Task<InvoiceReportViewModel> GetRevenueReportAsync(string userId, DateTime? startDate, DateTime? endDate);
     }
 }

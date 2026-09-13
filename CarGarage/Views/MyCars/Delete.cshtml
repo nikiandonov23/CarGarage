@@ -1,36 +1,59 @@
 ﻿@model CarGarage.ViewModels.Cars.CarViewModel
 
 @{
-    ViewData["Title"] = "Изтриване на автомобил";
+    ViewData["Title"] = "Потвърждение за изтриване на автомобил";
+    var relatedParts = ViewData["RelatedParts"] as IEnumerable<CarGarage.ViewModels.Parts.PartViewModel>;
 }
 
 <div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow border-danger">
-                <div class="card-header bg-danger text-white">
-                    <h4 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Потвърждение за изтриване</h4>
+        <div class="col-lg-6">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-danger text-white py-4 rounded-top-4">
+                    <h3 class="text-center mb-0 fw-bold">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Потвърждение за изтриване
+                    </h3>
                 </div>
-                <div class="card-body">
-                    <p class="lead">Сигурни ли сте, че искате да премахнете този автомобил от вашия гараж?</p>
-                    <div class="alert alert-light border">
-                        <ul class="list-unstyled mb-0">
-                            <li><strong>Марка и модел:</strong> @Model.Make @Model.Model</li>
-                            <li><strong>Година:</strong> @Model.ModelYear</li>
-                            <li><strong>Рег. номер:</strong> @(Model.RegistrationNumber ?? "Няма")</li>
-                        </ul>
+                <div class="card-body p-5">
+                    <h4 class="text-center text-dark fw-bold mb-4">Сигурни ли сте, че искате да премахнете този автомобил от вашия гараж?</h4>
+
+                    <div class="p-4 bg-light rounded-3 border border-danger border-opacity-25 mb-4">
+                        <div class="mb-2"><strong>Марка и модел:</strong> @Model.Make @Model.Model</div>
+                        <div class="mb-2"><strong>Година:</strong> @Model.ModelYear</div>
+                        <div class="mb-2"><strong>Рег. номер:</strong> @(Model.RegistrationNumber ?? "Няма")</div>
+
+                        @if (relatedParts != null && relatedParts.Any())
+                        {
+                            <div class="mt-3 pt-3 border-top text-danger">
+                                <strong>Свързани части (@relatedParts.Count()), които също ще бъдат премахнати:</strong>
+                                <ul class="mb-0 mt-1 ps-3">
+                                    @foreach (var part in relatedParts)
+                                    {
+                                        <li>@part.Description (@part.CategoryName) – @part.TotalPrice.ToString("N2") €</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
                     </div>
-                    <p class="text-muted small">Внимание: Това действие ще изтрие автомобила, цялата история на частите към него, но не принадлежащите му фактури</p>
-                </div>
-                <div class="card-footer d-flex justify-content-between bg-white">
-                    <a href="@(ViewData["ReturnUrl"] ?? Url.Action("Index", "MyCars"))" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-1"></i> Отказ
-                    </a>
+
+                    <div class="alert alert-warning d-flex align-items-start mb-4" role="alert">
+                        <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                        <div>
+                            <strong>Бележка:</strong> Изтриването на този автомобил ще премахне автомобила и цялата история на свързаните части към него.
+                            Всички издавани досега <strong>фактури ще останат напълно запазени</strong> в историята на фактурите!
+                        </div>
+                    </div>
+
                     <form asp-action="Delete" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
                         <input type="hidden" asp-for="Id" />
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-trash me-1"></i> Потвърждавам изтриването
-                        </button>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg fw-bold shadow-sm">
+                                <i class="bi bi-trash-fill me-2"></i>Да, изтрий автомобила и свързаните части
+                            </button>
+                            <a href="@(ViewData["ReturnUrl"] ?? Url.Action("Index", "MyCars"))" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle me-2"></i>Отказ
+                            </a>
+                        </div>
                     </form>
                 </div>
             </div>
