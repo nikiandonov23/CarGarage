@@ -34,6 +34,29 @@ public class MyGarageController : BaseController
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
+        ModelState.Remove("Latitude");
+        ModelState.Remove("Longitude");
+
+        string? latStr = Request.Form["Latitude"];
+        string? lngStr = Request.Form["Longitude"];
+
+        if (!string.IsNullOrEmpty(latStr) && decimal.TryParse(latStr.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal latVal))
+        {
+            model.Latitude = latVal;
+        }
+        else
+        {
+            model.Latitude = null;
+        }
+
+        if (!string.IsNullOrEmpty(lngStr) && decimal.TryParse(lngStr.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal lngVal))
+        {
+            model.Longitude = lngVal;
+        }
+        else
+        {
+            model.Longitude = null;
+        }
 
         if (!ModelState.IsValid) return View(model);
 
@@ -64,7 +87,29 @@ public class MyGarageController : BaseController
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
+        ModelState.Remove("Latitude");
+        ModelState.Remove("Longitude");
 
+        string? latStr = Request.Form["Latitude"];
+        string? lngStr = Request.Form["Longitude"];
+
+        if (!string.IsNullOrEmpty(latStr) && decimal.TryParse(latStr.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal latVal))
+        {
+            model.Latitude = latVal;
+        }
+        else
+        {
+            model.Latitude = null;
+        }
+
+        if (!string.IsNullOrEmpty(lngStr) && decimal.TryParse(lngStr.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal lngVal))
+        {
+            model.Longitude = lngVal;
+        }
+        else
+        {
+            model.Longitude = null;
+        }
 
         if (!ModelState.IsValid) return View(model);
 

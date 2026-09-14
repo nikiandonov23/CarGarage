@@ -23,9 +23,26 @@
         </div>
     </div>
 
+    @if (!string.IsNullOrEmpty(Model.OwnerId))
+    {
+        var filteredGarageName = Model.Results.FirstOrDefault(p => p.OwnerId == Model.OwnerId)?.GarageName ?? "избрания сервиз";
+        <div class="alert alert-info d-flex justify-content-between align-items-center mb-4 shadow-sm border-0 rounded-3">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-funnel-fill text-info fs-4 me-3"></i>
+                <div>
+                    Показване на обяви само за сервиз: <strong>@filteredGarageName</strong>
+                </div>
+            </div>
+            <a asp-action="Index" class="btn btn-sm btn-outline-info">
+                <i class="bi bi-x-circle me-1"></i>Изчисти филтъра
+            </a>
+        </div>
+    }
+
     <!-- Search -->
     <div class="card mb-4 shadow-sm border-0 p-3">
         <form method="get" class="row g-2 align-items-end">
+            <input type="hidden" name="ownerId" value="@Model.OwnerId" />
 
             <div class="col-md-4">
                 <label class="form-label small text-muted">

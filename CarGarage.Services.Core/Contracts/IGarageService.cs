@@ -6,4 +6,5 @@ public interface IGarageService
     Task<GarageViewModel?> GetGarageDetailsAsync(string userId);
     Task CreateGarageAsync(GarageViewModel model, string userId);
     Task UpdateGarageAsync(GarageViewModel model, string userId);
+    Task<IEnumerable<GarageMapViewModel>> GetAllGaragesForMapAsync();
 }

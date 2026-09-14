@@ -11,10 +11,10 @@ namespace CarGarage.Controllers
         IGarageService garageService) : BaseController
     {
         [AllowAnonymous]
-        public async Task<IActionResult> Index(string? searchTerm, string? city, int? categoryId)
+        public async Task<IActionResult> Index(string? searchTerm, string? city, int? categoryId, string? ownerId)
         {
             var userId = GetUserId();
-            var model = await marketplaceService.GetMarketplaceAsync(searchTerm, city, categoryId, userId);
+            var model = await marketplaceService.GetMarketplaceAsync(searchTerm, city, categoryId, userId, ownerId);
             return View(model);
         }
 

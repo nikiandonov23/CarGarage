@@ -72,4 +72,23 @@ public class GarageService(ApplicationDbContext context) : IGarageService
             await context.SaveChangesAsync();
         }
     }
+
+    public async Task<IEnumerable<GarageMapViewModel>> GetAllGaragesForMapAsync()
+    {
+        return await context.Garages
+            .Where(g => g.Latitude != null && g.Longitude != null)
+            .Select(g => new GarageMapViewModel
+            {
+                Id = g.Id,
+                Name = g.Name ?? "Без име",
+                City = g.City ?? "",
+                Address = g.Address ?? "",
+                PhoneNumber = g.PhoneNumber ?? "",
+                Latitude = g.Latitude,
+                Longitude = g.Longitude,
+                OwnerId = g.OwnerId ?? "",
+                OwnerName = g.OwnerName ?? ""
+            })
+            .ToListAsync();
+    }
 }

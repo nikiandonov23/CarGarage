@@ -45,7 +45,7 @@ namespace CarGarage.Services.Core
             }
         }
 
-        public async Task<MarketplaceIndexViewModel> GetMarketplaceAsync(string? searchTerm, string? city, int? categoryId, string? userId)
+        public async Task<MarketplaceIndexViewModel> GetMarketplaceAsync(string? searchTerm, string? city, int? categoryId, string? userId, string? ownerId = null)
         {
             var query = context.Set<PartForSale>()
                 .Include(p => p.Category)
@@ -54,6 +54,11 @@ namespace CarGarage.Services.Core
 
             // Exclude only sold parts from marketplace -> show Available and Pending
             query = query.Where(p => p.Status != "Sold");
+
+            if (!string.IsNullOrWhiteSpace(ownerId))
+            {
+                query = query.Where(p => p.OwnerId == ownerId);
+            }
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -95,7 +100,8 @@ namespace CarGarage.Services.Core
                 SearchTerm = searchTerm,
                 City = city,
                 CategoryId = categoryId,
-                Categories = categories
+                Categories = categories,
+                OwnerId = ownerId
             };
         }
 

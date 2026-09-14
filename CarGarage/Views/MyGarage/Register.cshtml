@@ -19,7 +19,7 @@
                     </p>
 
                     <form asp-action="Register" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
                         <div class="row g-3">
                             @* Име на сервиза *@
@@ -92,11 +92,26 @@
                             @* Адрес *@
                             <div class="col-md-6">
                                 <label asp-for="Address" class="form-label fw-bold">Точен адрес</label>
-                                <input asp-for="Address" class="form-control" placeholder="ул. Примерна №10" />
+                                <div class="input-group">
+                                    <input asp-for="Address" class="form-control" placeholder="ул. Примерна №10" />
+                                    <button type="button" id="btn-geocode" class="btn btn-outline-primary">
+                                        <i class="bi bi-search me-1"></i>Намери
+                                    </button>
+                                </div>
                                 <span asp-validation-for="Address" class="text-danger small"></span>
                             </div>
 
-                            @* Гео данни (скрити за момента) *@
+                            @* Избор на локация на картата *@
+                            <div class="col-md-12 mt-3">
+                                <label class="form-label fw-bold">Изберете локация на картата (кликнете, за да поставите габърче)</label>
+                                <div id="select-map" class="shadow-sm rounded-3 border" style="height: 350px;"></div>
+                                <div class="row mt-2 small text-muted">
+                                    <div class="col-6">Ширина: <span id="lbl-lat">--</span></div>
+                                    <div class="col-6">Дължина: <span id="lbl-lng">--</span></div>
+                                </div>
+                            </div>
+
+                            @* Гео данни *@
                             <input type="hidden" asp-for="Latitude" />
                             <input type="hidden" asp-for="Longitude" />
                         </div>
@@ -116,6 +131,109 @@
     </div>
 </div>
 
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+}
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Центриране на картата върху България
+            var defaultLat = 42.7339;
+            var defaultLng = 25.4858;
+            var map = L.map('select-map').setView([defaultLat, defaultLng], 7);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            var marker;
+
+            // Проверяваме дали има вече избрани координати
+            var latVal = parseFloat(document.getElementById("Latitude").value);
+            var lngVal = parseFloat(document.getElementById("Longitude").value);
+
+            if (!isNaN(latVal) && !isNaN(lngVal) && latVal !== 0 && lngVal !== 0) {
+                var initialLatLng = [latVal, lngVal];
+                marker = L.marker(initialLatLng, { draggable: true }).addTo(map);
+                map.setView(initialLatLng, 13);
+                updateCoords(latVal, lngVal);
+            }
+
+            function updateCoords(lat, lng) {
+                document.getElementById("Latitude").value = lat.toFixed(6);
+                document.getElementById("Longitude").value = lng.toFixed(6);
+                document.getElementById("lbl-lat").textContent = lat.toFixed(6);
+                document.getElementById("lbl-lng").textContent = lng.toFixed(6);
+            }
+
+            function onMapClick(e) {
+                var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+
+                if (marker) {
+                    marker.setLatLng(e.latlng);
+                } else {
+                    marker = L.marker(e.latlng, { draggable: true }).addTo(map);
+                    marker.on('dragend', function (event) {
+                        var m = event.target;
+                        var position = m.getLatLng();
+                        updateCoords(position.lat, position.lng);
+                    });
+                }
+                updateCoords(lat, lng);
+            }
+
+            map.on('click', onMapClick);
+
+            // Клик събитие за Намери бутона
+            document.getElementById("btn-geocode").addEventListener("click", function () {
+                var city = document.getElementById("City").value.trim();
+                var address = document.getElementById("Address").value.trim();
+
+                if (!city || !address) {
+                    alert("Моля, попълнете град и адрес преди търсене.");
+                    return;
+                }
+
+                var queryUrl = "https://nominatim.openstreetmap.org/search?format=json&q=" + encodeURIComponent(address + ", " + city + ", България") + "&limit=1";
+
+                fetch(queryUrl, {
+                    headers: {
+                        'User-Agent': 'CarGarageApp/1.0'
+                    }
+                })
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (data && data.length > 0) {
+                        var lat = parseFloat(data[0].lat);
+                        var lon = parseFloat(data[0].lon);
+
+                        map.setView([lat, lon], 15);
+
+                        if (marker) {
+                            marker.setLatLng([lat, lon]);
+                        } else {
+                            marker = L.marker([lat, lon], { draggable: true }).addTo(map);
+                            marker.on('dragend', function (event) {
+                                var m = event.target;
+                                var position = m.getLatLng();
+                                updateCoords(position.lat, position.lng);
+                            });
+                        }
+                        updateCoords(lat, lon);
+                    } else {
+                        alert("Адресът не бе намерен автоматично на картата. Моля, задайте го ръчно чрез цъкване.");
+                    }
+                })
+                .catch(function (error) {
+                    console.error("Geocoding error:", error);
+                    alert("Грешка при комуникация със сървъра за търсене. Моля, посочете локацията на картата ръчно.");
+                });
+            });
+        });
+    </script>
 }
