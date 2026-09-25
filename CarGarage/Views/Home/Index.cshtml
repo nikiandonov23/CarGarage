@@ -39,22 +39,22 @@
 
             
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm border-success">
+                <div class="card h-100 shadow-sm border-warning">
                     <div class="card-body text-center">
-                        <i class="bi bi-car-front-fill display-1 text-success mb-3"></i>
-                        <h5 class="card-title fw-bold">Моят гараж</h5>
+                        <i class="bi bi-house-gear-fill display-1 text-warning mb-3"></i>
+                        <h5 class="card-title fw-bold">Моят сервиз</h5>
                         <p class="card-text text-muted">
-                            Добавяй и управлявай своите автомобили, ремонти и резервни части.
+                            Добавяй и управлявай своите автомобили, ремонти, фактури и склад.
                         </p>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <a asp-controller="MyGarage" asp-action="Index" class="btn btn-outline-success stretched-link">
-                                Към моя гараж
+                            <a asp-controller="MyGarage" asp-action="Index" class="btn btn-outline-warning stretched-link">
+                                Към моя сервиз
                             </a>
                         }
                         else
                         {
-                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-success stretched-link">
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-warning stretched-link">
                                 Влез, за да добавиш
                             </a>
                         }

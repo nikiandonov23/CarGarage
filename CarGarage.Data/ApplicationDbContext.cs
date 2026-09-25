@@ -36,6 +36,10 @@ namespace CarGarage.Data
         //собствен сервиз
         public DbSet<Garage> Garages { get; set; } = null!;
 
+        public DbSet<ForumPost> ForumPosts { get; set; } = null!;
+        public DbSet<ForumComment> ForumComments { get; set; } = null!;
+        public DbSet<ForumPostLike> ForumPostLikes { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -152,6 +156,40 @@ namespace CarGarage.Data
                 .HasOne(c => c.Garage)
                 .WithMany(g => g.Customers)
                 .HasForeignKey(c => c.GarageId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Forum configs
+            modelBuilder.Entity<ForumPostLike>()
+                .HasKey(fpl => new { fpl.PostId, fpl.UserId });
+
+            modelBuilder.Entity<ForumPostLike>()
+                .HasOne(fpl => fpl.Post)
+                .WithMany(fp => fp.Likes)
+                .HasForeignKey(fpl => fpl.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ForumPostLike>()
+                .HasOne(fpl => fpl.User)
+                .WithMany()
+                .HasForeignKey(fpl => fpl.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ForumComment>()
+                .HasOne(fc => fc.Post)
+                .WithMany(fp => fp.Comments)
+                .HasForeignKey(fc => fc.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ForumComment>()
+                .HasOne(fc => fc.User)
+                .WithMany()
+                .HasForeignKey(fc => fc.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ForumPost>()
+                .HasOne(fp => fp.User)
+                .WithMany()
+                .HasForeignKey(fp => fp.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

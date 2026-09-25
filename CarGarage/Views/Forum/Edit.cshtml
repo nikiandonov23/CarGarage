@@ -1,0 +1,75 @@
+@model CarGarage.ViewModels.Forum.ForumPostFormModel
+
+@{
+    ViewData["Title"] = "Редактиране на въпрос";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <!-- Navigation -->
+            <div class="mb-4">
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary rounded-pill px-3 py-1 bg-white text-decoration-none">
+                    <i class="bi bi-arrow-left me-2"></i>Отказ и връщане
+                </a>
+            </div>
+
+            <!-- Edit card -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-pencil-fill fs-3"></i>
+                        </div>
+                        <h2 class="fw-bold text-dark">Редактиране на тема</h2>
+                        <p class="text-muted">Променете заглавието, съдържанието или добавете/опреснете снимката на вашата публикация.</p>
+                    </div>
+
+                    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Title -->
+                        <div class="form-floating mb-3">
+                            <input asp-for="Title" class="form-control border-light-subtle rounded-3 bg-light" placeholder="Заглавие на темата" />
+                            <label asp-for="Title" class="text-muted">Заглавие на темата</label>
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Image Url -->
+                        <div class="mb-3">
+                            <label asp-for="ImageUrl" class="form-label text-muted small fw-bold">URL Адрес на снимка (опционално)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-light-subtle rounded-start-3">
+                                    <i class="bi bi-link-45deg"></i>
+                                </span>
+                                <input asp-for="ImageUrl" class="form-control border-light-subtle rounded-end-3 bg-light" placeholder="https://image-storage.com/.../some-file.jpg" />
+                            </div>
+                            <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                            <div class="form-text text-muted">Позволява прикачване на изображения или схеми за по-лесно илюстриране на казуса.</div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="form-group mb-4">
+                            <label asp-for="Content" class="form-label text-muted small fw-bold">Съдържание на темата / въпроса</label>
+                            <textarea asp-for="Content" class="form-control border-light-subtle rounded-3 bg-light" rows="7" placeholder="Опишете подробно проблема, симптомите на колата или опита, който искате да споделите..."></textarea>
+                            <span asp-validation-for="Content" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-light rounded-pill px-4">Отказ</a>
+                            <button type="submit" class="btn btn-warning text-white rounded-pill px-4 fw-bold">Запази промените</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

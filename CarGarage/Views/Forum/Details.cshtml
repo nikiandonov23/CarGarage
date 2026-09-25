@@ -1,0 +1,175 @@
+@model CarGarage.ViewModels.Forum.ForumPostViewModel
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = Model.Title;
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9">
+            <!-- Back button & navigation -->
+            <div class="mb-4">
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill d-inline-flex align-items-center px-3 py-1 bg-white shadow-sm text-decoration-none">
+                    <i class="bi bi-arrow-left me-2"></i>Назад към публикациите
+                </a>
+            </div>
+
+            <!-- MAIN POST CARD -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white overflow-hidden">
+                <div class="card-body p-4 p-md-5">
+                    <!-- Author, Metadata & Dropdown -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 52px; height: 52px;">
+                                <i class="bi bi-person-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark fs-5">
+                                    @Model.UserDisplayName
+                                </h6>
+                                @if (!string.IsNullOrEmpty(Model.GarageName))
+                                {
+                                    <span class="badge bg-primary bg-opacity-10 text-primary small rounded-pill mt-1">
+                                        <i class="bi bi-tools me-1"></i>@Model.GarageName
+                                    </span>
+                                }
+                                <small class="text-muted d-block mt-1">
+                                    <i class="bi bi-clock me-1"></i>@Model.CreatedAt.ToString("dd.MM.yyyy г. HH:mm ч.")
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Options Dropdown (Edit / Delete) -->
+                        @if (Model.UserId == currentUserId)
+                        {
+                            <div class="dropdown">
+                                <button class="btn btn-link text-muted p-1" type="button" id="optionsMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical fs-5"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3" aria-labelledby="optionsMenu">
+                                    <li>
+                                        <a class="dropdown-item py-2" asp-action="Edit" asp-route-id="@Model.Id">
+                                            <i class="bi bi-pencil me-2 text-warning"></i>Редактирай
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <form asp-action="Delete" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете тази публикация?');" class="d-inline">
+                                            <button type="submit" class="dropdown-item py-2 text-danger">
+                                                <i class="bi bi-trash me-2"></i>Изтрий
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Post Title and Image -->
+                    <h2 class="fw-bold mb-3 text-dark">@Model.Title</h2>
+
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <div class="mb-4 overflow-hidden rounded-4 border bg-light text-center" style="max-height: 480px;">
+                            <img src="@Model.ImageUrl" class="img-fluid style-img" style="object-fit: contain; max-height: 480px; width: auto;" alt="Снимка" onerror="this.style.display='none';" />
+                        </div>
+                    }
+
+                    <!-- Post Content -->
+                    <p class="card-text text-dark fs-5 mb-4" style="white-space: pre-wrap; line-height: 1.7;">@Model.Content</p>
+
+                    <hr class="opacity-10 my-4" />
+
+                    <!-- Like / Stats Bar -->
+                    <div class="d-flex align-items-center justify-content-between">
+                        <form asp-action="Like" asp-route-id="@Model.Id" method="post">
+                            <button type="submit" class="btn rounded-pill px-4 py-2 d-flex align-items-center gap-2 @(Model.IsLikedByCurrentUser ? "btn-primary shadow-sm" : "btn-outline-primary") transition-all">
+                                <i class="bi @(Model.IsLikedByCurrentUser ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up") fs-5"></i>
+                                <span class="fw-bold">@Model.LikesCount Харесвания</span>
+                            </button>
+                        </form>
+
+                        <div class="text-muted small fw-bold">
+                            <i class="bi bi-chat-dots-fill me-1"></i> @Model.CommentsCount коментара
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAT STYLE COMMENTS SECTION -->
+            <h5 class="fw-bold text-secondary mb-3">Коментари & Опит</h5>
+            <div id="commentsContainer" class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-light">
+                <div class="card-body px-3 py-4" style="max-height: 600px; overflow-y: auto;">
+                    @if (!Model.Comments.Any())
+                    {
+                        <div class="text-center text-muted py-5" id="noCommentsMessage">
+                            <i class="bi bi-chat-quote display-6 text-muted mb-2"></i>
+                            <p class="mb-0">Няма коментари за тази тема.</p>
+                            <small>Бъдете първият, който ще напише отговор!</small>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var comment in Model.Comments)
+                        {
+                            var isMine = comment.UserId == currentUserId;
+                            <div class="d-flex mb-3 @(isMine ? "justify-content-end" : "justify-content-start")">
+                                <div style="max-width: 80%;">
+                                    <!-- Sender Name, Garage & Time -->
+                                    <div class="small text-muted mb-1 d-flex flex-wrap gap-2 align-items-center @(isMine ? "justify-content-end" : "justify-content-start")" style="font-size: 11px;">
+                                        <span class="fw-bold text-dark">@comment.UserDisplayName</span>
+                                        @if (!string.IsNullOrEmpty(comment.GarageName))
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill" style="font-size: 9px;">
+                                                <i class="bi bi-tools me-1"></i>@comment.GarageName
+                                            </span>
+                                        }
+                                        <span>•</span>
+                                        <span>@comment.CreatedAt.ToString("dd.MM.yyyy г. HH:mm")</span>
+
+                                        @if (isMine)
+                                        {
+                                            <form asp-action="DeleteComment" asp-route-id="@comment.Id" asp-route-postId="@Model.Id" method="post" onsubmit="return confirm('Изтриване на коментара?');" class="d-inline ms-1">
+                                                <button type="submit" class="btn btn-link p-0 text-danger text-decoration-none" style="font-size: 11px;">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+
+                                    <!-- Bubble element -->
+                                    <div class="px-3 py-2 rounded-4 shadow-sm @(isMine ? "bg-primary text-white text-wrap" : "bg-white text-dark text-wrap")" style="font-size: 14.5px; white-space: pre-wrap; word-break: break-word;">@comment.Content</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- ADD COMMENT FORM (Visual style like Messenger text-input box) -->
+                <div class="card-footer border-0 bg-white p-3 border-top">
+                    <form asp-action="Comment" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="PostId" value="@Model.Id" />
+                        <div class="input-group">
+                            <textarea name="Content" class="form-control border-0 bg-light rounded-4 px-3 py-2" rows="1" placeholder="Напишете отговор или споделете мнение..." style="resize: none;" required></textarea>
+                            <button type="submit" class="btn btn-primary rounded-circle ms-2 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                                <i class="bi bi-send-fill text-white"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #commentsContainer .card-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    #commentsContainer .card-body::-webkit-scrollbar-thumb {
+        background-color: rgba(0,0,0,0.15);
+        border-radius: 4px;
+    }
+</style>

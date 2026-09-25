@@ -7,14 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 [Authorize]
 public class MyCarsController(IMyCarsService carsService) : BaseController
 {
-    public async Task<IActionResult> Index(int? carId)
+    public async Task<IActionResult> Index(string? searchTerm, string? customerName, int? makeId, int? modelId, int? carId)
     {
         var userId = GetUserId();
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
 
-        var model = await carsService.GetAllUserCarsAsync(userId);
+        var model = await carsService.GetAllUserCarsAsync(userId, searchTerm, customerName, makeId, modelId);
 
         if (carId.HasValue)
         {

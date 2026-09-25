@@ -31,12 +31,70 @@
         </div>
     </div>
 
+    @* ТЪРСАЧКА *@
+    @if (ViewBag.SingleCarView != true && Model != null)
+    {
+        <div class="card shadow-sm border-0 mb-5 bg-white rounded-4">
+            <div class="card-body p-4">
+                <form method="get" asp-controller="MyCars" asp-action="Index" class="row g-3">
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Рег. номер / VIN</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                            <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control bg-light border-0 shadow-none" placeholder="Въведи номер...">
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Име на клиент</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-person"></i></span>
+                            <input type="text" name="customerName" value="@Model.CustomerName" class="form-control bg-light border-0 shadow-none" placeholder="Име на клиент...">
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Марка</label>
+                        <select asp-for="MakeId" class="form-select bg-light border-0 shadow-none" id="makeSelect"
+                                asp-items="@(new SelectList(Model.Makes, "Id", "Name"))">
+                            <option value="">-- Всички марки --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Модел</label>
+                        <select asp-for="ModelId" class="form-select bg-light border-0 shadow-none" id="modelSelect"
+                                asp-items="@(new SelectList(Model.Models, "Id", "Name"))">
+                            <option value="">-- Всички модели --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100 shadow-sm py-2 fw-bold">
+                            Филтрирай
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
     @if (Model == null || !Model.Cars.Any())
     {
         <div class="text-center py-5 shadow-sm bg-light rounded border">
             <i class="bi bi-car-front display-1 text-muted"></i>
-            <h3 class="mt-3">Все още нямате добавени автомобили.</h3>
-            <p class="text-muted">Започнете, като добавите първата си кола.</p>
+            @if (Model != null && (!string.IsNullOrEmpty(Model.SearchTerm) || !string.IsNullOrEmpty(Model.CustomerName) || Model.MakeId > 0))
+            {
+                <h3 class="mt-3">Няма намерени автомобили по зададените филтри.</h3>
+                <p class="text-muted">Пробвайте да изчистите търсенето или да въведете други критерии.</p>
+                <a asp-action="Index" class="btn btn-outline-secondary mt-2">Изчисти филтрите</a>
+            }
+            else
+            {
+                <h3 class="mt-3">Все още нямате добавени автомобили.</h3>
+                <p class="text-muted">Започнете, като добавите първата си кола.</p>
+            }
         </div>
     }
     else
@@ -133,5 +191,26 @@
 </style>
 
 @section Scripts {
-    
+    <script>
+        $(document).ready(function () {
+
+            $('#makeSelect').on('change', function () {
+                var makeId = $(this).val();
+                var $modelSelect = $('#modelSelect');
+
+                $modelSelect.empty().append('<option value="">-- Всички модели --</option>');
+
+                if (makeId) {
+                    $.getJSON('/MyCars/GetModelsByMake?makeId=' + makeId, function (data) {
+                        $.each(data, function (index, item) {
+                            $modelSelect.append($('<option>', {
+                                value: item.id,
+                                text: item.name
+                            }));
+                        });
+                    });
+                }
+            });
+        });
+    </script>
 }

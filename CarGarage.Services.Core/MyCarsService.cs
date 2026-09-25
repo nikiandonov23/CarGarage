@@ -8,10 +8,60 @@ namespace CarGarage.Services.Core
 {
     public class MyCarsService(ApplicationDbContext context) : IMyCarsService
     {
-        public async Task<IndexMyCarsViewModel> GetAllUserCarsAsync(string userId)
+        public async Task<IndexMyCarsViewModel> GetAllUserCarsAsync(
+            string userId,
+            string? searchTerm = null,
+            string? customerName = null,
+            int? makeId = null,
+            int? modelId = null)
         {
-            var cars = await context.UserCars
+            var query = context.UserCars
                 .Where(uc => uc.UserId == userId && !uc.Car.IsDeleted)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+                query = query.Where(uc => (uc.Car.RegistrationNumber ?? string.Empty).ToLower().Contains(term) ||
+                                         (uc.Car.Vin ?? string.Empty).ToLower().Contains(term));
+            }
+
+            if (makeId.HasValue && makeId > 0)
+            {
+                var makeName = await context.Makes
+                    .Where(m => m.Id == makeId)
+                    .Select(m => m.Name)
+                    .FirstOrDefaultAsync();
+
+                if (makeName != null)
+                {
+                    query = query.Where(uc => uc.Car.Make == makeName);
+                }
+            }
+
+            if (modelId.HasValue && modelId > 0)
+            {
+                var modelName = await context.Models
+                    .Where(m => m.Id == modelId)
+                    .Select(m => m.Name)
+                    .FirstOrDefaultAsync();
+
+                if (modelName != null)
+                {
+                    query = query.Where(uc => uc.Car.Model == modelName);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(customerName))
+            {
+                var term = customerName.Trim().ToLower();
+                query = query.Where(uc => uc.Car.Customer != null && (
+                    (uc.Car.Customer is IndividualCustomer && ((((IndividualCustomer)uc.Car.Customer).FirstName ?? string.Empty).ToLower().Contains(term) || (((IndividualCustomer)uc.Car.Customer).LastName ?? string.Empty).ToLower().Contains(term))) ||
+                    (uc.Car.Customer is LegalEntityCustomer && (((LegalEntityCustomer)uc.Car.Customer).CompanyName ?? string.Empty).ToLower().Contains(term))
+                ));
+            }
+
+            var carsList = await query
                 .Select(uc => new CarViewModel
                 {
                     Id = uc.Car.Id,
@@ -26,7 +76,40 @@ namespace CarGarage.Services.Core
                 })
                 .ToListAsync();
 
-            return new IndexMyCarsViewModel { Cars = cars };
+            var makes = await context.Makes
+                .Select(m => new CreateCarMakeDropDownViewModel
+                {
+                    Id = m.Id,
+                    Name = m.Name
+                })
+                .OrderBy(m => m.Name)
+                .ToListAsync();
+
+            var models = new List<CreateCarModelDropDownViewModel>();
+            if (makeId.HasValue && makeId > 0)
+            {
+                models = await context.Models
+                    .Where(m => m.MakeId == makeId.Value)
+                    .Select(m => new CreateCarModelDropDownViewModel
+                    {
+                        Id = m.Id,
+                        Name = m.Name,
+                        MakeId = m.MakeId
+                    })
+                    .OrderBy(m => m.Name)
+                    .ToListAsync();
+            }
+
+            return new IndexMyCarsViewModel
+            {
+                Cars = carsList,
+                SearchTerm = searchTerm,
+                CustomerName = customerName,
+                MakeId = makeId,
+                ModelId = modelId,
+                Makes = makes,
+                Models = models
+            };
         }
 
         public async Task<CreateCarViewModel> GetCreateCarViewModelAsync(string userId)

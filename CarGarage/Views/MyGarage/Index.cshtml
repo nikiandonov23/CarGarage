@@ -87,13 +87,25 @@
             </div>
         </div>
 
+        @* КАРТА: НАМЕРИ СЕРВИЗ *@
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 transition-card">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-building-gear display-1 text-info mb-3"></i>
+                    <h5 class="card-title fw-bold">Намери сервиз</h5>
+                    <p class="card-text text-muted">Търси гаражи, сервизи и механици по град, услуги или рейтинг.</p>
+                    <a asp-controller="Garages" asp-action="Index" class="btn btn-outline-info stretched-link">Преглед на сервизи</a>
+                </div>
+            </div>
+        </div>
+
         @* КАРТА: ФАКТУРИ *@
         <div class="col-md-6 col-lg-4">
             <div class="card h-100 shadow-sm border-0 transition-card @(!hasGarage ? "opacity-75 bg-light" : "")">
                 <div class="card-body text-center py-4">
                     <i class="bi bi-receipt display-1 @(hasGarage ? "text-warning" : "text-muted") mb-3"></i>
-                    <h5 class="card-title fw-bold">Фактури & разходи</h5>
-                    <p class="card-text text-muted">Следи всички ремонти и плащания.</p>
+                    <h5 class="card-title fw-bold">Фактури и разходи</h5>
+                    <p class="card-text text-muted">Следи всички плащания.</p>
                     @if (hasGarage)
                     {
                         <a asp-controller="Invoices" asp-action="Index" class="btn btn-outline-warning stretched-link">Моите фактури</a>
@@ -131,7 +143,7 @@
                 <div class="card-body text-center py-4">
                     <i class="bi bi-shop-window display-1 @(hasGarage ? "text-danger" : "text-muted") mb-3"></i>
                     <h5 class="card-title fw-bold">Marketplace</h5>
-                    <p class="card-text text-muted">Търси и продавай части от твоя склад.</p>
+                    <p class="card-text text-muted">Търси и продавай части.</p>
                     @if (hasGarage)
                     {
                         <a asp-controller="Marketplace" asp-action="Index" class="btn btn-outline-danger stretched-link">Прегледай обяви</a>
@@ -144,14 +156,14 @@
             </div>
         </div>
 
-        @* КАРТА: КОМЕНТАРИ *@
+        @* КАРТА: ФОРУМ *@
         <div class="col-md-6 col-lg-4">
             <div class="card h-100 shadow-sm border-0 transition-card">
                 <div class="card-body text-center py-4">
-                    <i class="bi bi-chat-dots display-1 text-dark mb-3"></i>
-                    <h5 class="card-title fw-bold">Коментари & опит</h5>
-                    <p class="card-text text-muted">Чети ревюта и споделяй опит с другите.</p>
-                    <a asp-controller="Comments" asp-action="Index" class="btn btn-outline-dark stretched-link">Към коментарите</a>
+                    <i class="bi bi-chat-text display-1 text-dark mb-3"></i>
+                    <h5 class="card-title fw-bold">Форум и опит</h5>
+                    <p class="card-text text-muted">Задавай въпроси, пиши коментари и споделяй опит с колеги.</p>
+                    <a asp-controller="Forum" asp-action="Index" class="btn btn-outline-dark stretched-link">Към форума</a>
                 </div>
             </div>
         </div>
