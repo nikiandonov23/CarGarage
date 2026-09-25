@@ -69,6 +69,7 @@ namespace CarGarage.Services.Core
                     Model = uc.Car.Model,
                     ModelYear = uc.Car.ModelYear,
                     RegistrationNumber = uc.Car.RegistrationNumber,
+                    Vin = uc.Car.Vin,
                     Mileage = uc.Car.Mileage,
                     ImageUrl = uc.Car.ImageUrl,
                     Notes = uc.Car.Notes,
@@ -277,7 +278,8 @@ namespace CarGarage.Services.Core
                     Make = uc.Car.Make,
                     Model = uc.Car.Model,
                     ModelYear = uc.Car.ModelYear,
-                    RegistrationNumber = uc.Car.RegistrationNumber
+                    RegistrationNumber = uc.Car.RegistrationNumber,
+                    Vin = uc.Car.Vin
                 })
                 .FirstOrDefaultAsync();
         }

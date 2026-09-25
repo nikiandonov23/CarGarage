@@ -140,6 +140,7 @@ namespace CarGarage.Services.Core
                     Model = c.Model,
                     ModelYear = c.ModelYear,
                     RegistrationNumber = c.RegistrationNumber,
+                    Vin = c.Vin,
                     Mileage = c.Mileage,
                     ImageUrl = c.ImageUrl,
                     Notes = c.Notes,

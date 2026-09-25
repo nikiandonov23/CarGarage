@@ -104,6 +104,21 @@
             {
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 shadow-sm border-0 transition-card">
+                        @* БЪРЗИ ВРЪЗКИ ЗА ДЪРЖАВНИ РЕГИСТРИ *@
+                        <div class="mb-3 pt-2 border-top">
+                            <span class="d-block small text-muted mb-2 text-center fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">Проверки в държавни регистри</span>
+                            <div class="d-flex justify-content-between gap-1">
+                                <a href="https://www.guaranteefund.org/bg/%D0%B8%D0%BD%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%B5%D0%BD-%D1%86%D0%B5%D0%BD%D1%82%D1%8A%D1%80-%D0%B8-%D1%81%D0%BF%D1%80%D0%B0%D0%B2%D0%BA%D0%B8/%D1%83%D1%81%D0%BB%D1%83%D0%B3%D0%B8/%D0%BF%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%BA%D0%B0-%D0%B7%D0%B0-%D0%B2%D0%B0%D0%BB%D0%B8%D0%B4%D0%BD%D0%B0-%D0%B7%D0%B0%D1%81%D1%82%D1%80%D0%B0%D1%85%D0%BE%D0%B2%D0%BA%D0%B0-%D0%B3%D1%80%D0%B0%D0%BD%D0%B8%D1%87%D0%BD%D0%B0-%D0%B3%D1%80%D0%B0%D0%B6%D0%B4%D0%B0%D0%BD%D1%81%D0%BA%D0%B0-%D0%BE%D1%82%D0%B3%D0%BE%D0%B2%D0%BE%D1%80%D0%BD%D0%BE%D1%81%D1%82" target="_blank" class="btn btn-outline-info btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2 fw-semibold" title="Проверка на Гражданска отговорност (ГО)">
+                                    <i class="bi bi-shield-check"></i> ГО
+                                </a>
+                                <a href="https://rta.government.bg/services/check-inspection/index.html" target="_blank" class="btn btn-outline-dark btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2 fw-semibold" title="Проверка на Технически преглед (ГТП)">
+                                    <i class="bi bi-clipboard2-check"></i> ГТП
+                                </a>
+                                <a href="https://check.bgtoll.bg/" target="_blank" class="btn btn-outline-success btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2 fw-semibold" title="Проверка за активна Винетка">
+                                    <i class="bi bi-award"></i> Винетка
+                                </a>
+                            </div>
+                        </div>
                         @if (!string.IsNullOrEmpty(car.ImageUrl))
                         {
                             <img src="@car.ImageUrl" class="card-img-top" alt="Car Image" style="height: 200px; object-fit: cover;">
@@ -123,9 +138,30 @@
 
                             <hr class="text-muted opacity-25">
 
-                            <p class="card-text mb-1">
-                                <i class="bi bi-hash text-primary me-2"></i><strong>Рег. номер:</strong>
-                                <span class="text-uppercase text-secondary">@(car.RegistrationNumber ?? "Няма")</span>
+                            <p class="card-text mb-1 d-flex align-items-center justify-content-between">
+                                <span>
+                                    <i class="bi bi-hash text-primary me-2"></i><strong>Рег. номер:</strong>
+                                    <span class="text-uppercase text-secondary" id="reg-@car.Id">@(car.RegistrationNumber ?? "Няма")</span>
+                                </span>
+                                @if (!string.IsNullOrEmpty(car.RegistrationNumber))
+                                {
+                                    <button class="btn btn-link p-0 text-muted hover-primary ms-2 btn-copy" data-copy-target="reg-@car.Id" title="Копирай регистрационен номер">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                }
+                            </p>
+
+                            <p class="card-text mb-1 d-flex align-items-center justify-content-between">
+                                <span>
+                                    <i class="bi bi-key-fill text-primary me-2"></i><strong>VIN:</strong>
+                                    <span class="text-uppercase text-secondary" id="vin-@car.Id">@(string.IsNullOrEmpty(car.Vin) ? "Няма" : car.Vin)</span>
+                                </span>
+                                @if (!string.IsNullOrEmpty(car.Vin))
+                                {
+                                    <button class="btn btn-link p-0 text-muted hover-primary ms-2 btn-copy" data-copy-target="vin-@car.Id" title="Копирай VIN номер">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                }
                             </p>
 
                             <p class="card-text mb-1">
@@ -148,6 +184,7 @@
                         </div>
 
                         <div class="card-footer bg-transparent border-0 pb-3">
+                         
                            
                             <div class="mb-2">
                                 <a asp-controller="Parts" asp-action="Index" asp-route-carId="@car.Id" class="btn btn-primary w-100 shadow-sm">
@@ -162,6 +199,8 @@
                                 </a>
                             </div>
 
+                           
+
                             <div class="d-flex gap-2">
                                 <a asp-action="Edit" asp-route-id="@car.Id" class="btn btn-outline-secondary flex-grow-1">
                                     <i class="bi bi-pencil me-1"></i> Редакция на автомобила
@@ -171,6 +210,7 @@
                                     <i class="bi bi-trash me-1"></i> Изтрий
                                 </a>
                             </div>
+                         
                         </div>
                     </div>
                 </div>
@@ -193,6 +233,25 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+
+            $('.btn-copy').on('click', function (e) {
+                e.preventDefault();
+                var targetId = $(this).data('copy-target');
+                var textToCopy = $('#' + targetId).text().trim();
+                var $btn = $(this);
+                var $icon = $btn.find('i');
+
+                if (textToCopy && textToCopy !== "Няма") {
+                    navigator.clipboard.writeText(textToCopy).then(function() {
+                        $icon.removeClass('bi-clipboard').addClass('bi-clipboard-check text-success');
+                        setTimeout(function() {
+                            $icon.removeClass('bi-clipboard-check text-success').addClass('bi-clipboard');
+                        }, 2000);
+                    }).catch(function(err) {
+                        console.error('Неуспешно копиране: ', err);
+                    });
+                }
+            });
 
             $('#makeSelect').on('change', function () {
                 var makeId = $(this).val();

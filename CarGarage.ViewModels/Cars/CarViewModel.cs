@@ -15,6 +15,7 @@
  
 
         public string? RegistrationNumber { get; set; }
+        public string? Vin { get; set; }
         public int? Mileage { get; set; }
         public string? ImageUrl { get; set; }
 
