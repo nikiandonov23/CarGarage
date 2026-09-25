@@ -29,8 +29,13 @@
                         <input asp-for="ExpiresAt" class="form-control" type="datetime-local" />
                     </div>
 
-                    <div class="d-grid">
-                        <button class="btn btn-primary">Изпрати оферта</button>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                            <i class="bi bi-tag-fill me-1"></i> Изпрати оферта
+                        </button>
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary border shadow-sm">
+                            <i class="bi bi-arrow-left-circle me-1"></i> Назад
+                        </a>
                     </div>
                 </form>
             </div>

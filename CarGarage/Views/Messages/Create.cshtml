@@ -20,8 +20,13 @@
                         <span asp-validation-for="Content" class="text-danger small"></span>
                     </div>
 
-                    <div class="d-grid">
-                        <button class="btn btn-primary">Изпрати</button>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                            <i class="bi bi-send me-1"></i> Изпрати съобщение
+                        </button>
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary border shadow-sm">
+                            <i class="bi bi-arrow-left-circle me-1"></i> Назад
+                        </a>
                     </div>
                 </form>
             </div>

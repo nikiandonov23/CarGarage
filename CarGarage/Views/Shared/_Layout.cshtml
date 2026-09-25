@@ -61,29 +61,197 @@
             .gslide-description {
                 background: transparent !important; /* Маха фона на описанието */
             }
+
+            /* --- ГЛОБАЛНИ СТИЛОВЕ И МОДЕРЕН ДИЗАЙН --- */
+            body {
+                background-color: #f8fafc !important;
+                color: #334155;
+                font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+                margin-bottom: 0 !important;
+            }
+
+            main {
+                flex: 1;
+            }
+
+            /* Glassmorphism Navbar */
+            .navbar-glass {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.02) !important;
+                transition: all 0.3s ease;
+            }
+
+            .nav-link-custom {
+                color: #475569 !important;
+                font-weight: 600;
+                font-size: 0.95rem;
+                padding: 0.5rem 1.1rem !important;
+                border-radius: 9999px;
+                transition: all 0.25s ease-in-out;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .nav-link-custom:hover, .nav-link-custom.active {
+                color: #0d6efd !important;
+                background-color: rgba(13, 110, 253, 0.06);
+            }
+
+            .nav-link-custom i {
+                font-size: 1.1rem;
+                color: #94a3b8;
+                transition: color 0.25s ease;
+            }
+
+            .nav-link-custom:hover i, .nav-link-custom.active i {
+                color: #0d6efd;
+            }
+
+            /* Brand Styling */
+            .brand-bolt-container {
+                background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+                transition: all 0.3s ease;
+            }
+
+            .navbar-brand:hover .brand-bolt-container {
+                transform: scale(1.1) rotate(5deg);
+                box-shadow: 0 6px 16px rgba(13, 110, 253, 0.35);
+            }
+
+            .brand-text {
+                font-weight: 850 !important;
+                letter-spacing: -0.5px;
+                font-size: 1.35rem;
+                color: #0f172a;
+            }
+
+            .brand-text span {
+                color: #0d6efd;
+            }
+
+            /* Animations */
+            @@keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Dropdowns & Cards */
+            .dropdown-menu {
+                border: none !important;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.08) !important;
+                border-radius: 16px !important;
+            }
+
+            .navbar .nav-link.position-relative {
+                color: #475569 !important;
+                padding: 0.5rem !important;
+                margin: 0 0.25rem;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+
+            .navbar .nav-link.position-relative:hover {
+                background-color: rgba(13, 110, 253, 0.06);
+                color: #0d6efd !important;
+            }
+
+            /* Modern Custom Scrollbar */
+            ::-webkit-scrollbar {
+                width: 8px;
+            }
+            ::-webkit-scrollbar-track {
+                background: #f1f5f9;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 4px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+
+            .footer {
+                position: static !important;
+                background-color: #ffffff;
+                border-top: 1px solid #e2e8f0 !important;
+                padding: 1.5rem 0 !important;
+                margin-top: auto !important;
+                line-height: normal !important;
+            }
+
+            .hover-primary:hover {
+                color: #0d6efd !important;
+            }
     </style>
 
     @RenderSection("Styles", required: false)
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CarGarage</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+        <nav class="navbar navbar-expand-lg navbar-glass sticky-top py-3 mb-4">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" asp-area="" asp-controller="Home" asp-action="Index">
+                    <div class="brand-bolt-container">
+                        <i class="bi bi-speedometer2 text-white fs-4"></i>
+                    </div>
+                    <span class="brand-text">Car<span>Garage</span></span>
+                </a>
+                <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1 ms-lg-3">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link nav-link-custom" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door-fill"></i> Начало
+                            </a>
                         </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-custom" asp-area="" asp-controller="MyGarage" asp-action="Index">
+                                    <i class="bi bi-grid-1x2-fill"></i> Моят гараж
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-custom" asp-area="" asp-controller="MyCars" asp-action="Index">
+                                    <i class="bi bi-car-front-fill"></i> Моите автомобили
+                                </a>
+                            </li>
+                        }
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link nav-link-custom" asp-area="" asp-controller="Home" asp-action="Privacy">
+                                <i class="bi bi-shield-lock-fill"></i> Поверителност
+                            </a>
                         </li>
                     </ul>
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center gap-2">
                         @await Component.InvokeAsync("MessagesBadge")
                         @await Component.InvokeAsync("OffersBadge")
                         <partial name="_LoginPartial" />
@@ -99,9 +267,12 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - CarGarage - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="footer text-muted border-top">
+        <div class="container text-center text-md-start d-md-flex justify-content-between align-items-center py-3">
+            <span class="small">&copy; 2026 - <strong class="text-primary">CarGarage</strong>. Всички права запазени.</span>
+            <div class="d-flex justify-content-center gap-3 mt-2 mt-md-0">
+                <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-muted small hover-primary"><i class="bi bi-shield-lock-fill me-1"></i>Поверителност</a>
+            </div>
         </div>
     </footer>
 
