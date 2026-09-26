@@ -19,7 +19,7 @@
         public int? Mileage { get; set; }
         public string? ImageUrl { get; set; }
 
-
+        public List<CarImageViewModel> CarImages { get; set; } = new();
 
         public string? Notes { get; set; }
         public DateTime AddedDate { get; set; }

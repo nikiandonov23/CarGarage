@@ -119,9 +119,43 @@
                                 </a>
                             </div>
                         </div>
-                        @if (!string.IsNullOrEmpty(car.ImageUrl))
+                        @if (car.CarImages != null && car.CarImages.Any())
                         {
-                            <img src="@car.ImageUrl" class="card-img-top" alt="Car Image" style="height: 200px; object-fit: cover;">
+                            var carouselId = $"carouselCar{car.Id}";
+                            <div id="@carouselId" class="carousel slide border-bottom" data-bs-ride="false">
+                                <div class="carousel-indicators">
+                                    @for (int idx = 0; idx < car.CarImages.Count; idx++)
+                                    {
+                                        <button type="button" data-bs-target="#@carouselId" data-bs-slide-to="@idx" class="@(idx == 0 ? "active" : "")" aria-current="@(idx == 0 ? "true" : "false")" aria-label="Слайд @(idx + 1)"></button>
+                                    }
+                                </div>
+                                <div class="carousel-inner" style="height: 200px;">
+                                    @for (int idx = 0; idx < car.CarImages.Count; idx++)
+                                    {
+                                        var img = car.CarImages[idx];
+                                        <div class="carousel-item @(idx == 0 ? "active" : "")" style="height: 200px;">
+                                            <a href="@img.ImageUrl" target="_blank" title="Виж снимката в голям размер">
+                                                <img src="@img.ImageUrl" class="d-block w-100 h-100" style="object-fit: cover;" alt="Снимка на кола">
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                                @if (car.CarImages.Count > 1)
+                                {
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#@carouselId" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Предишна</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#@carouselId" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Следваща</span>
+                                    </button>
+                                }
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(car.ImageUrl))
+                        {
+                            <img src="@car.ImageUrl" class="card-img-top border-bottom" alt="Car Image" style="height: 200px; object-fit: cover;">
                         }
                         else
                         {

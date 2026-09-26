@@ -1,12 +1,13 @@
 ﻿using CarGarage.Data;
 using CarGarage.DataModels;
+using CarGarage.Services.Core.Contracts;
 using CarGarage.ViewModels.Cars;
 using CarGarage.ViewModels.Cars.Dropdowns;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarGarage.Services.Core
 {
-    public class MyCarsService(ApplicationDbContext context) : IMyCarsService
+    public class MyCarsService(ApplicationDbContext context, ICloudflareR2Service r2Service) : IMyCarsService
     {
         public async Task<IndexMyCarsViewModel> GetAllUserCarsAsync(
             string userId,
@@ -71,7 +72,12 @@ namespace CarGarage.Services.Core
                     RegistrationNumber = uc.Car.RegistrationNumber,
                     Vin = uc.Car.Vin,
                     Mileage = uc.Car.Mileage,
-                    ImageUrl = uc.Car.ImageUrl,
+                    ImageUrl = uc.Car.CarImages.OrderBy(img => img.Id).Select(img => img.ImageUrl).FirstOrDefault() ?? uc.Car.ImageUrl,
+                    CarImages = uc.Car.CarImages.OrderBy(img => img.Id).Select(img => new CarImageViewModel
+                    {
+                        Id = img.Id,
+                        ImageUrl = img.ImageUrl
+                    }).ToList(),
                     Notes = uc.Car.Notes,
                     AddedDate = uc.Car.AddedDate
                 })
@@ -251,6 +257,29 @@ namespace CarGarage.Services.Core
                 CustomerId = finalCustomerId
             };
 
+            // Handle file uploads on create (up to 5)
+            if (model.ImageFiles != null && model.ImageFiles.Any())
+            {
+                var filesToUpload = model.ImageFiles.Take(5);
+                foreach (var file in filesToUpload)
+                {
+                    if (file == null || file.Length == 0) continue;
+                    try
+                    {
+                        var (uploadedUrl, key) = await r2Service.UploadImageAsync(file);
+                        car.CarImages.Add(new CarImage
+                        {
+                            ImageUrl = uploadedUrl,
+                            StorageKey = key
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Грешка при запис във R2 (Добавяне): {ex.Message}. Вътрешна грешка: {ex.InnerException?.Message}", ex);
+                    }
+                }
+            }
+
             await context.Cars.AddAsync(car);
             await context.SaveChangesAsync();
 
@@ -279,7 +308,15 @@ namespace CarGarage.Services.Core
                     Model = uc.Car.Model,
                     ModelYear = uc.Car.ModelYear,
                     RegistrationNumber = uc.Car.RegistrationNumber,
-                    Vin = uc.Car.Vin
+                    Vin = uc.Car.Vin,
+                    ImageUrl = uc.Car.CarImages.OrderBy(img => img.Id).Select(img => img.ImageUrl).FirstOrDefault() ?? uc.Car.ImageUrl,
+                    CarImages = uc.Car.CarImages.OrderBy(img => img.Id).Select(img => new CarImageViewModel
+                    {
+                        Id = img.Id,
+                        ImageUrl = img.ImageUrl
+                    }).ToList(),
+                    Mileage = uc.Car.Mileage,
+                    Notes = uc.Car.Notes
                 })
                 .FirstOrDefaultAsync();
         }
@@ -297,6 +334,13 @@ namespace CarGarage.Services.Core
             var car = await context.Cars.FindAsync(carId);
             if (car != null)
             {
+                var carImages = await context.CarImages.Where(ci => ci.CarId == carId).ToListAsync();
+                foreach (var img in carImages)
+                {
+                    await r2Service.DeleteImageAsync(img.StorageKey);
+                }
+                context.CarImages.RemoveRange(carImages);
+
                 car.IsDeleted = true;
             }
 
@@ -356,6 +400,15 @@ namespace CarGarage.Services.Core
                 if (modelObj != null) viewModel.ModelId = modelObj.Id;
             }
 
+            viewModel.ExistingImages = await context.CarImages
+                .Where(ci => ci.CarId == car.Id)
+                .Select(ci => new CarImageViewModel
+                {
+                    Id = ci.Id,
+                    ImageUrl = ci.ImageUrl
+                })
+                .ToListAsync();
+
             return viewModel;
         }
 
@@ -375,13 +428,68 @@ namespace CarGarage.Services.Core
             car.Vin = model.Vin ?? "";
             car.ModelYear = model.ModelYear;
             car.Mileage = model.Mileage;
-            car.ImageUrl = model.ImageUrl;
+            if (!string.IsNullOrEmpty(model.ImageUrl))
+            {
+                car.ImageUrl = model.ImageUrl;
+            }
             car.Notes = model.Notes;
             car.Make = makeObj?.Name ?? "Unknown";
             car.Model = modelObj?.Name ?? "Unknown";
             car.CustomerId = model.CustomerId;
 
+            // Handle new image uploads on edit (maximum 5 total images)
+            if (model.ImageFiles != null && model.ImageFiles.Any())
+            {
+                var currentCount = await context.CarImages.CountAsync(ci => ci.CarId == car.Id);
+                var allowedSlots = 5 - currentCount;
+                if (allowedSlots > 0)
+                {
+                    var filesToUpload = model.ImageFiles.Take(allowedSlots);
+                    foreach (var file in filesToUpload)
+                    {
+                        if (file == null || file.Length == 0) continue;
+                        try
+                        {
+                            var (uploadedUrl, key) = await r2Service.UploadImageAsync(file);
+                            var newImg = new CarImage
+                            {
+                                CarId = car.Id,
+                                ImageUrl = uploadedUrl,
+                                StorageKey = key
+                            };
+                            await context.CarImages.AddAsync(newImg);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Грешка при запис във R2 (Редактиране): {ex.Message}. Вътрешна грешка: {ex.InnerException?.Message}", ex);
+                        }
+                    }
+                }
+            }
+
             await context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteCarImageAsync(int carId, int imageId, string userId)
+        {
+            var carExists = await context.UserCars
+                .AnyAsync(uc => uc.UserId == userId && uc.CarId == carId && !uc.Car.IsDeleted);
+
+            if (!carExists) return false;
+
+            var carImage = await context.CarImages
+                .FirstOrDefaultAsync(ci => ci.Id == imageId && ci.CarId == carId);
+
+            if (carImage == null) return false;
+
+            // Delete from Cloudflare R2
+            await r2Service.DeleteImageAsync(carImage.StorageKey);
+
+            // Delete from DB
+            context.CarImages.Remove(carImage);
+            await context.SaveChangesAsync();
+
             return true;
         }
     }

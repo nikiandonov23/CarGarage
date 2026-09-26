@@ -14,6 +14,7 @@ namespace CarGarage.Data
 
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<Car> Cars { get; set; } = null!;
+        public DbSet<CarImage> CarImages { get; set; } = null!;
         public DbSet<UserCars> UserCars { get; set; } = null!;
         public DbSet<Make> Makes { get; set; } = null!;
         public DbSet<Model> Models { get; set; } = null!;
@@ -43,6 +44,13 @@ namespace CarGarage.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // РЕЛАЦИЯ: Car -> CarImages (1 към много)
+            modelBuilder.Entity<CarImage>()
+                .HasOne(ci => ci.Car)
+                .WithMany(c => c.CarImages)
+                .HasForeignKey(ci => ci.CarId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // 2. РЕЛАЦИЯ: Car -> Parts (1 към много)
             modelBuilder.Entity<Part>()

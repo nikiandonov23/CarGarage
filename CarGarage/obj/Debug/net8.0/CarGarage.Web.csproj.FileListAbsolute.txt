@@ -543,4 +543,7 @@ C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\refint\CarGarage.Web.
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\CarGarage.Web.pdb
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\CarGarage.Web.genruntimeconfig.cache
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\ref\CarGarage.Web.dll
+C:\Users\nikia\source\CarGarage\CarGarage\bin\Debug\net8.0\AWSSDK.Core.dll
+C:\Users\nikia\source\CarGarage\CarGarage\bin\Debug\net8.0\AWSSDK.S3.dll
+C:\Users\nikia\source\CarGarage\CarGarage\bin\Debug\net8.0\SixLabors.ImageSharp.dll
 C:\Users\nikia\source\CarGarage\CarGarage\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

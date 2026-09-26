@@ -14,6 +14,7 @@ namespace CarGarage.Web
 
             // сървисите дето ше си добавям
             builder.Services.AddScoped<IMyCarsService, MyCarsService>();
+            builder.Services.AddScoped<ICloudflareR2Service, CloudflareR2Service>();
             builder.Services.AddScoped<ISearchService, SearchService>();
             builder.Services.AddScoped<IPartsService, PartsService>();
             builder.Services.AddScoped<IMarketplaceService, MarketplaceService>();

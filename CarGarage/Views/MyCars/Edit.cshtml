@@ -14,7 +14,7 @@
                     </h3>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Edit" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                    <form asp-action="Edit" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
 
                         <input type="hidden" asp-for="Id" />
@@ -82,12 +82,44 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label asp-for="ImageUrl" class="form-label fw-bold text-secondary"></label>
+                            <div class="col-md-11 mx-auto mt-3">
+                                <label class="form-label fw-bold text-secondary">Снимки на колата (макс 5 броя общо)</label>
+
+                                <!-- Текущи Снимки -->
+                                @if (Model.ExistingImages != null && Model.ExistingImages.Any())
+                                {
+                                    <div class="mb-3">
+                                        <p class="small text-secondary fw-bold mb-2">Текущи снимки (кликнете върху 'X' за изтриване):</p>
+                                        <div class="d-flex flex-wrap gap-3">
+                                            @foreach (var img in Model.ExistingImages)
+                                            {
+                                                <div class="position-relative card-image-container" id="existing-img-@img.Id" style="width: 120px; height: 120px; border: 1px solid #ddd; border-radius: 5px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                                    <img src="@img.ImageUrl" style="width: 100%; height: 100%; object-fit: cover;" alt="Снимка на кола" />
+                                                    <button type="button" class="btn btn-danger btn-sm p-0 position-absolute top-0 end-0 m-1 d-flex align-items-center justify-content-center" 
+                                                            style="width: 24px; height: 24px; border-radius: 50%; opacity: 0.9;"
+                                                            onclick="deleteExistingImage(@Model.Id, @img.Id);" title="Изтрий снимката">
+                                                        <i class="bi bi-x-lg" style="font-size: 12px;"></i>
+                                                    </button>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Качване на нови -->
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-image"></i></span>
-                                    <input asp-for="ImageUrl" class="form-control shadow-none" placeholder="https://..." />
+                                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('cameraInput').click();">
+                                        <i class="bi bi-camera-fill me-1"></i>Отвори Камера
+                                    </button>
+                                    <input type="file" id="cameraInput" name="ImageFiles" accept="image/*" capture="environment" multiple style="display:none;" onchange="previewImages(this);" />
+
+                                    <button type="button" class="btn btn-outline-secondary ms-2" onclick="document.getElementById('fileInput').click();">
+                                        <i class="bi bi-folder-plus me-1"></i>Добави файлове
+                                    </button>
+                                    <input type="file" id="fileInput" name="ImageFiles" accept="image/*" multiple style="display:none;" onchange="previewImages(this);" />
                                 </div>
+                                <small class="text-muted d-block mt-1">Останалите свободни слотове за нови снимки се запълват автоматично до 5 общо.</small>
+                                <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mt-3"></div>
                             </div>
 
                             <div class="col-12">
@@ -130,5 +162,77 @@
                 }
             });
         });
+
+        function deleteExistingImage(carId, imageId) {
+            if (!confirm("Сигурни ли сте, че искате да изтриете тази снимка?")) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("DeleteImage", "MyCars")',
+                type: 'POST',
+                data: {
+                    carId: carId,
+                    imageId: imageId,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (result) {
+                    if (result.success) {
+                        $('#existing-img-' + imageId).fadeOut(300, function() { 
+                            $(this).remove(); 
+                            if ($('.card-image-container').length === 0) {
+                                // If no images left, maybe show a placeholder or update message
+                            }
+                        });
+                    } else {
+                        alert(result.message || "Грешка при изтриване на снимката.");
+                    }
+                },
+                error: function() {
+                    alert("Грешка при връзка със сървъра.");
+                }
+            });
+        }
+
+        function previewImages(input) {
+            var container = document.getElementById('imagePreviewContainer');
+            if (input.files) {
+                var filesCount = input.files.length;
+                var existingCount = $('.card-image-container').length;
+                if (existingCount + filesCount > 5) {
+                    alert("Максималният брой снимки за един автомобил е 5.");
+                    input.value = "";
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                for (var i = 0; i < filesCount; i++) {
+                    (function(file) {
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            var imgWrapper = document.createElement('div');
+                            imgWrapper.className = 'position-relative';
+                            imgWrapper.style.width = '100px';
+                            imgWrapper.style.height = '100px';
+                            imgWrapper.style.border = '1px solid #ddd';
+                            imgWrapper.style.borderRadius = '5px';
+                            imgWrapper.style.overflow = 'hidden';
+                            imgWrapper.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+
+                            var img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+
+                            imgWrapper.appendChild(img);
+                            container.appendChild(imgWrapper);
+                        };
+                        reader.readAsDataURL(file);
+                    })(input.files[i]);
+                }
+            }
+        }
     </script>
 }

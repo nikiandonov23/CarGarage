@@ -23,6 +23,25 @@
           "CarGarage.Web.dll": {}
         }
       },
+      "AWSSDK.Core/3.7.304.1": {
+        "runtime": {
+          "lib/net8.0/AWSSDK.Core.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.7.304.1"
+          }
+        }
+      },
+      "AWSSDK.S3/3.7.308": {
+        "dependencies": {
+          "AWSSDK.Core": "3.7.304.1"
+        },
+        "runtime": {
+          "lib/net8.0/AWSSDK.S3.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.7.308.0"
+          }
+        }
+      },
       "Azure.Core/1.38.0": {
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "7.0.0",
@@ -1650,6 +1669,14 @@
           }
         }
       },
+      "SixLabors.ImageSharp/2.1.9": {
+        "runtime": {
+          "lib/netcoreapp3.1/SixLabors.ImageSharp.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.1.9.0"
+          }
+        }
+      },
       "System.ClientModel/1.0.0": {
         "dependencies": {
           "System.Memory.Data": "1.0.2"
@@ -1824,11 +1851,13 @@
       },
       "CarGarage.Services.Core/1.0.0": {
         "dependencies": {
+          "AWSSDK.S3": "3.7.308",
           "CarGarage.Data": "1.0.0",
           "CarGarage.DataModels": "1.0.0",
           "CarGarage.ViewModels": "1.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.23",
-          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.23"
+          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.23",
+          "SixLabors.ImageSharp": "2.1.9"
         },
         "runtime": {
           "CarGarage.Services.Core.dll": {
@@ -1857,6 +1886,20 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "AWSSDK.Core/3.7.304.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-O/gyE5ptF5zEc3QDk3JI3+AOgBfRfmg6eLH5z3x7hUPmV1Wxu0V4Fm86FSyT6czRviMmQGY0q0SVMbWRbP4vDA==",
+      "path": "awssdk.core/3.7.304.1",
+      "hashPath": "awssdk.core.3.7.304.1.nupkg.sha512"
+    },
+    "AWSSDK.S3/3.7.308": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-U4LWi1yTKVK6IFHWQc4anKPJKXj9dPN+dT1oXto4ndXXlr+DVzm9dULkquyXBjAHlr6jf339ojuYlE6t9Mk6pQ==",
+      "path": "awssdk.s3/3.7.308",
+      "hashPath": "awssdk.s3.3.7.308.nupkg.sha512"
     },
     "Azure.Core/1.38.0": {
       "type": "package",
@@ -2683,6 +2726,13 @@
       "sha512": "sha512-v/GGlIj2dd7svplFmASWEueu62veKW0MrMtBaZ7QG8aJTSGv2yE+pgUGhXRcQ4nxNOEq/wLBrz1vkth/1SND7A==",
       "path": "nuget.versioning/6.11.0",
       "hashPath": "nuget.versioning.6.11.0.nupkg.sha512"
+    },
+    "SixLabors.ImageSharp/2.1.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-VcjfKbOExie3RgZGrQL1jJMI4iZ3J9B6ifDo2QpDVJUYhTZKVcKnBhpNOHqbvNjHgadAks1jzhRjB7OZet1PJA==",
+      "path": "sixlabors.imagesharp/2.1.9",
+      "hashPath": "sixlabors.imagesharp.2.1.9.nupkg.sha512"
     },
     "System.ClientModel/1.0.0": {
       "type": "package",

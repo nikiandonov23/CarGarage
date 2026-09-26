@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarGarage.Services.Core
 {
-    public class CustomersService(ApplicationDbContext context) : ICustomersService
+    public class CustomersService(ApplicationDbContext context, ICloudflareR2Service r2Service) : ICustomersService
     {
         public async Task<CustomerIndexViewModel> GetAllCustomersAsync(string? searchTerm, string userId)
         {
@@ -202,6 +202,14 @@ namespace CarGarage.Services.Core
             customer.IsDeleted = true;
             foreach (var car in customer.Cars)
             {
+                // Retrieve all images of this car and delete from Cloudflare R2 and DB
+                var carImages = await context.CarImages.Where(ci => ci.CarId == car.Id).ToListAsync();
+                foreach (var img in carImages)
+                {
+                    await r2Service.DeleteImageAsync(img.StorageKey);
+                }
+                context.CarImages.RemoveRange(carImages);
+
                 car.IsDeleted = true;
             }
 

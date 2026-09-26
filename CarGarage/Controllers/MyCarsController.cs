@@ -1,11 +1,12 @@
-﻿using CarGarage.ViewModels.Cars;
+﻿using CarGarage.Services.Core.Contracts;
+using CarGarage.ViewModels.Cars;
 using CarGarage.ViewModels.Cars.Dropdowns;
 using CarGarage.Web.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [Authorize]
-public class MyCarsController(IMyCarsService carsService) : BaseController
+public class MyCarsController(IMyCarsService carsService, ICloudflareR2Service r2Service) : BaseController
 {
     public async Task<IActionResult> Index(string? searchTerm, string? customerName, int? makeId, int? modelId, int? carId)
     {
@@ -189,5 +190,33 @@ public class MyCarsController(IMyCarsService carsService) : BaseController
 
         if (!string.IsNullOrEmpty(returnUrl)) return Redirect(returnUrl);
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteImage(int carId, int imageId)
+    {
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var success = await carsService.DeleteCarImageAsync(carId, imageId, userId);
+        if (success)
+        {
+            return Json(new { success = true });
+        }
+        return Json(new { success = false, message = "Неуспешно изтриване на снимката от хранилището." });
+    }
+
+    [HttpGet("/MyCars/Image/{key}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetImage(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return NotFound();
+
+        var stream = await r2Service.GetImageStreamAsync(key);
+        if (stream == null) return NotFound();
+
+        return File(stream, "image/jpeg");
     }
 }

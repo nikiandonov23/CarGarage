@@ -11,4 +11,5 @@ public interface IMyCarsService
     Task<bool> DeleteCarForUserAsync(int carId, string userId);
     Task<CreateCarViewModel?> GetCarForEditAsync(int carId, string userId);
     Task<bool> UpdateCarAsync(CreateCarViewModel model, string userId);
+    Task<bool> DeleteCarImageAsync(int carId, int imageId, string userId);
 }

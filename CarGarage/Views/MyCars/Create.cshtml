@@ -14,7 +14,7 @@
                     </h3>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
 
                         <div class="row g-4">
@@ -178,12 +178,21 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label asp-for="ImageUrl" class="form-label fw-bold text-secondary"></label>
+                                <label class="form-label fw-bold text-secondary">Снимки на колата (макс 5 броя)</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-image"></i></span>
-                                    <input asp-for="ImageUrl" class="form-control shadow-none" placeholder="https://..." />
+                                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('cameraInput').click();">
+                                        <i class="bi bi-camera-fill me-1"></i>Отвори Камера
+                                    </button>
+                                    <input type="file" id="cameraInput" name="ImageFiles" accept="image/*" capture="environment" multiple style="display:none;" onchange="previewImages(this);" />
+
+                                    <button type="button" class="btn btn-outline-secondary ms-2" onclick="document.getElementById('fileInput').click();">
+                                        <i class="bi bi-folder-plus me-1"></i>Избери файлове
+                                    </button>
+                                    <input type="file" id="fileInput" name="ImageFiles" accept="image/*" multiple style="display:none;" onchange="previewImages(this);" />
                                 </div>
-                                <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                                <small class="text-muted d-block mt-1">Снимките се компресират автоматично за по-бързо зареждане.</small>
+
+                                <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mt-3"></div>
                             </div>
 
                             <div class="col-12">
@@ -255,5 +264,44 @@
                 }
             });
         });
+
+        function previewImages(input) {
+            var container = document.getElementById('imagePreviewContainer');
+            if (input.files) {
+                var filesCount = input.files.length;
+                if (filesCount > 5) {
+                    alert("Можете да изберете максимум 5 снимки.");
+                    input.value = "";
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                for (var i = 0; i < filesCount; i++) {
+                    (function(file) {
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            var imgWrapper = document.createElement('div');
+                            imgWrapper.className = 'position-relative';
+                            imgWrapper.style.width = '100px';
+                            imgWrapper.style.height = '100px';
+                            imgWrapper.style.border = '1px solid #ddd';
+                            imgWrapper.style.borderRadius = '5px';
+                            imgWrapper.style.overflow = 'hidden';
+
+                            var img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+
+                            imgWrapper.appendChild(img);
+                            container.appendChild(imgWrapper);
+                        };
+                        reader.readAsDataURL(file);
+                    })(input.files[i]);
+                }
+            }
+        }
     </script>
 }

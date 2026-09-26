@@ -65,6 +65,8 @@ namespace CarGarage.DataModels
         [ForeignKey(nameof(CustomerId))]
         public virtual Customer? Customer { get; set; } = null!;
 
+        public virtual ICollection<CarImage> CarImages { get; set; } = new List<CarImage>();
+
         public bool IsDeleted { get; set; } = false;
     }
 }

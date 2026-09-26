@@ -1,4 +1,5 @@
 ﻿using CarGarage.ViewModels.Cars.Dropdowns;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace CarGarage.ViewModels.Cars
@@ -6,6 +7,11 @@ namespace CarGarage.ViewModels.Cars
     public class CreateCarViewModel
     {
         public int Id { get; set; }
+
+        [Display(Name = "Качи нови снимки (макс 5 общо)")]
+        public List<IFormFile>? ImageFiles { get; set; }
+
+        public List<CarImageViewModel> ExistingImages { get; set; } = new();
 
         [Display(Name = "VIN номер")]
         [MaxLength(17, ErrorMessage = "VIN номерът не може да е по-дълъг от 17 символа")]

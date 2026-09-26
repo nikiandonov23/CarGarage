@@ -23,4 +23,8 @@
     <ProjectReference Include="..\CarGarage.DataModels\CarGarage.DataModels.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
 </Project>

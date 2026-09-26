@@ -28,3 +28,4 @@ C:\Users\nikia\source\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\refint\CarGar
 C:\Users\nikia\source\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarage.GCommon.pdb
 C:\Users\nikia\source\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarage.GCommon.genruntimeconfig.cache
 C:\Users\nikia\source\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\ref\CarGarage.GCommon.dll
+C:\Users\nikia\source\CarGarage\CarGarage.GCommon\obj\Debug\net8.0\CarGarag.1E1EC7A3.Up2Date
