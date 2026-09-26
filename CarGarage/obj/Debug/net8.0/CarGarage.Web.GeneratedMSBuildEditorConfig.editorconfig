@@ -147,6 +147,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTXlDYXJzXERlbGV0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/nikia/source/CarGarage/CarGarage/Views/MyCars/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTXlDYXJzXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/nikia/source/CarGarage/CarGarage/Views/MyCars/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTXlDYXJzXEVkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

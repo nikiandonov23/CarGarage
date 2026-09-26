@@ -32,6 +32,19 @@ public class MyCarsController(IMyCarsService carsService, ICloudflareR2Service r
     }
 
     [HttpGet]
+    public async Task<IActionResult> Details(int id)
+    {
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var car = await carsService.GetCarByIdAsync(id, userId);
+        if (car == null) return NotFound();
+
+        return View(car);
+    }
+
+    [HttpGet]
     public async Task<IActionResult> Create()
     {
         var userId = GetUserId(); 

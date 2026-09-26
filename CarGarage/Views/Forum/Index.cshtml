@@ -46,7 +46,7 @@
 
     <!-- Feed / Posts list -->
     <div class="row justify-content-center">
-        <div class="col-12">
+        <div class="col-lg-8 col-md-10 col-12">
             @if (!Model.Any())
             {
                 <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
@@ -123,18 +123,18 @@
                             @if (post.PostImages != null && post.PostImages.Any())
                             {
                                 var carouselId = $"carouselPost{post.Id}";
-                                <div id="@carouselId" class="carousel slide border rounded-4 shadow-sm mb-3" data-bs-ride="false" style="overflow: hidden; max-height: 380px; width: 100%;">
+                                <div id="@carouselId" class="carousel slide border rounded-4 shadow-sm mb-3" data-bs-ride="false" style="overflow: hidden; max-height: 220px; width: 100%;">
                                     <div class="carousel-indicators">
                                         @for (int idx = 0; idx < post.PostImages.Count; idx++)
                                         {
                                             <button type="button" data-bs-target="#@carouselId" data-bs-slide-to="@idx" class="@(idx == 0 ? "active" : "")" aria-current="@(idx == 0 ? "true" : "false")" aria-label="Слайд @(idx + 1)"></button>
                                         }
                                     </div>
-                                    <div class="carousel-inner" style="height: 380px; width: 100%;">
+                                    <div class="carousel-inner" style="height: 220px; width: 100%;">
                                         @for (int idx = 0; idx < post.PostImages.Count; idx++)
                                         {
                                             var img = post.PostImages[idx];
-                                            <div class="carousel-item @(idx == 0 ? "active" : "")" style="height: 380px; width: 100%;">
+                                            <div class="carousel-item @(idx == 0 ? "active" : "")" style="height: 220px; width: 100%;">
                                                 <a asp-action="Details" asp-route-id="@post.Id">
                                                     <img src="@img.ImageUrl" class="d-block w-100 h-100" style="object-fit: cover;" alt="@post.Title">
                                                 </a>
@@ -156,9 +156,9 @@
                             }
                             else if (!string.IsNullOrEmpty(post.ImageUrl))
                             {
-                                <div class="mb-3 overflow-hidden rounded-4 border bg-light" style="max-height: 380px;">
+                                <div class="mb-3 overflow-hidden rounded-4 border bg-light" style="max-height: 220px;">
                                     <a asp-action="Details" asp-route-id="@post.Id">
-                                        <img src="@post.ImageUrl" class="img-fluid w-100 h-100 style-img" style="object-fit: cover; max-height: 380px;" alt="Снимка към публикацията" onerror="this.style.display='none';" />
+                                        <img src="@post.ImageUrl" class="img-fluid w-100 h-100 style-img" style="object-fit: cover; max-height: 220px;" alt="Снимка към публикацията" onerror="this.style.display='none';" />
                                     </a>
                                 </div>
                             }

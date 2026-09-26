@@ -1,0 +1,176 @@
+@model CarGarage.ViewModels.Cars.CarViewModel
+
+@{
+    ViewData["Title"] = "Детайли на автомобил";
+}
+
+<div class="container mt-5">
+    <div class="row">
+
+        <!-- Снимки -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                @if (Model.CarImages != null && Model.CarImages.Any())
+                {
+                    var carouselId = $"carouselCar{Model.Id}";
+                    <div id="@carouselId" class="carousel slide border rounded" data-bs-ride="false" style="overflow: hidden; max-height: 500px;">
+                        <div class="carousel-indicators">
+                            @for (int idx = 0; idx < Model.CarImages.Count; idx++)
+                            {
+                                <button type="button" data-bs-target="#@carouselId" data-bs-slide-to="@idx" class="@(idx == 0 ? "active" : "")" aria-current="@(idx == 0 ? "true" : "false")" aria-label="Слайд @(idx + 1)"></button>
+                            }
+                        </div>
+                        <div class="carousel-inner" style="height: 500px;">
+                            @for (int idx = 0; idx < Model.CarImages.Count; idx++)
+                            {
+                                var img = Model.CarImages[idx];
+                                <div class="carousel-item @(idx == 0 ? "active" : "")" style="height: 500px;">
+                                    <a href="@img.ImageUrl" class="glightbox d-block h-100 w-100" data-gallery="car-images">
+                                        <img src="@img.ImageUrl" class="d-block w-100 h-100" style="object-fit: cover;" alt="@Model.Make @Model.Model">
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                        @if (Model.CarImages.Count > 1)
+                        {
+                            <button class="carousel-control-prev" type="button" data-bs-target="#@carouselId" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Предишна</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#@carouselId" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Следваща</span>
+                            </button>
+                        }
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <!-- Кликаема снимка с лупичка и lightbox ефект -->
+                    <a href="@Model.ImageUrl"
+                       class="image-zoom-container glightbox d-block"
+                       data-gallery="car-images"
+                       title="@Model.Make @Model.Model">
+
+                        <img src="@Model.ImageUrl"
+                             class="img-fluid w-100"
+                             style="max-height:500px; object-fit:cover;"
+                             alt="@Model.Make @Model.Model" />
+                    </a>
+                }
+                else
+                {
+                    <div class="bg-light text-center py-5 border rounded d-flex align-items-center justify-content-center" style="height: 400px;">
+                        <i class="bi bi-car-front-fill display-1 text-secondary"></i>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Данни на автомобила -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h2 class="fw-bold mb-0 text-dark">@Model.Make @Model.Model</h2>
+                    <span class="badge bg-primary fs-6 px-3 py-2 rounded-pill">@Model.ModelYear</span>
+                </div>
+
+                <p class="text-muted small mb-4">
+                    Добавена на: @Model.AddedDate.ToString("dd.MM.yyyy") г.
+                </p>
+
+                <hr class="text-muted opacity-25 mb-4">
+
+                <div class="mb-4">
+                    <p class="card-text mb-3 fs-5 d-flex align-items-center justify-content-between">
+                        <span>
+                            <i class="bi bi-hash text-primary me-2 fs-4"></i><strong>Рег. номер:</strong>
+                            <span class="text-uppercase text-secondary ms-2" id="reg-details">@(Model.RegistrationNumber ?? "Няма")</span>
+                        </span>
+                        @if (!string.IsNullOrEmpty(Model.RegistrationNumber))
+                        {
+                            <button class="btn btn-link p-0 text-muted hover-primary ms-2 btn-copy-details" data-copy-target="reg-details" title="Копирай регистрационен номер">
+                                <i class="bi bi-clipboard fs-5"></i>
+                            </button>
+                        }
+                    </p>
+
+                    <p class="card-text mb-3 fs-5 d-flex align-items-center justify-content-between">
+                        <span>
+                            <i class="bi bi-key-fill text-primary me-2 fs-4"></i><strong>VIN:</strong>
+                            <span class="text-uppercase text-secondary ms-2" id="vin-details">@(string.IsNullOrEmpty(Model.Vin) ? "Няма" : Model.Vin)</span>
+                        </span>
+                        @if (!string.IsNullOrEmpty(Model.Vin))
+                        {
+                            <button class="btn btn-link p-0 text-muted hover-primary ms-2 btn-copy-details" data-copy-target="vin-details" title="Копирай VIN номер">
+                                <i class="bi bi-clipboard fs-5"></i>
+                            </button>
+                        }
+                    </p>
+
+                    <p class="card-text mb-3 fs-5">
+                        <i class="bi bi-speedometer2 text-primary me-2 fs-4"></i><strong>Пробег:</strong>
+                        <span class="text-secondary ms-2">@(Model.Mileage?.ToString("N0") ?? "0") км</span>
+                    </p>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="mb-4 p-3 bg-light rounded-3 border-start border-primary border-4">
+                        <h6 class="fw-bold text-muted d-block text-uppercase small mb-2">Бележки:</h6>
+                        <p class="card-text text-dark mb-0" style="white-space: pre-wrap;">@Model.Notes</p>
+                    </div>
+                }
+
+                <hr class="text-muted opacity-25">
+
+                <!-- Actions / Бутони -->
+                <div class="d-flex flex-wrap gap-2 mb-3 mt-4">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary px-4 py-2 rounded-3 fw-bold">
+                        <i class="bi bi-pencil me-2"></i>Редактирай
+                    </a>
+
+                    <a asp-action="Index" class="btn btn-light px-4 py-2 rounded-3 border fw-semibold">
+                        <i class="bi bi-arrow-left me-2"></i>Назад
+                    </a>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-controller="Parts" asp-action="Index" asp-route-carId="@Model.Id" class="btn btn-primary px-4 py-2 rounded-3 fw-bold flex-grow-1 shadow-sm">
+                        <i class="bi bi-wrench-adjustable me-2"></i>Части и ремонти
+                    </a>
+
+                    <a asp-controller="Invoices" asp-action="Create" asp-route-carId="@Model.Id" class="btn btn-warning px-4 py-2 rounded-3 fw-bold flex-grow-1 shadow-sm">
+                        <i class="bi bi-receipt me-2"></i>Генерирай Фактура
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.btn-copy-details').on('click', function (e) {
+                e.preventDefault();
+                var targetId = $(this).data('copy-target');
+                var textToCopy = $('#' + targetId).text().trim();
+                var $btn = $(this);
+                var $icon = $btn.find('i');
+
+                if (textToCopy && textToCopy !== "Няма") {
+                    navigator.clipboard.writeText(textToCopy).then(function() {
+                        $icon.removeClass('bi-clipboard').addClass('bi-clipboard-check text-success');
+                        setTimeout(function() {
+                            $icon.removeClass('bi-clipboard-check text-success').addClass('bi-clipboard');
+                        }, 2000);
+                    }).catch(function(err) {
+                        console.error('Неуспешно копиране: ', err);
+                    });
+                }
+            });
+        });
+    </script>
+}

@@ -134,7 +134,7 @@
                                     {
                                         var img = car.CarImages[idx];
                                         <div class="carousel-item @(idx == 0 ? "active" : "")" style="height: 200px;">
-                                            <a asp-action="Index" asp-route-carId="@car.Id" title="Преглед на картон на автомобила">
+                                            <a asp-action="Details" asp-route-id="@car.Id" title="Преглед на картон на автомобила">
                                                 <img src="@img.ImageUrl" class="d-block w-100 h-100" style="object-fit: cover;" alt="Снимка на кола">
                                             </a>
                                         </div>
@@ -155,7 +155,7 @@
                         }
                         else if (!string.IsNullOrEmpty(car.ImageUrl))
                         {
-                            <a asp-action="Index" asp-route-carId="@car.Id" title="Преглед на картон на автомобила">
+                            <a asp-action="Details" asp-route-id="@car.Id" title="Преглед на картон на автомобила">
                                 <img src="@car.ImageUrl" class="card-img-top border-bottom" alt="Car Image" style="height: 200px; object-fit: cover;">
                             </a>
                         }
@@ -169,7 +169,7 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="card-title fw-bold mb-0">
-                                    <a asp-action="Index" asp-route-carId="@car.Id" class="text-dark text-decoration-none hover-primary">
+                                    <a asp-action="Details" asp-route-id="@car.Id" class="text-dark text-decoration-none hover-primary">
                                         @car.Make @car.Model
                                     </a>
                                 </h5>
