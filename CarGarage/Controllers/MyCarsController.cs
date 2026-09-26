@@ -4,9 +4,13 @@ using CarGarage.ViewModels.Cars.Dropdowns;
 using CarGarage.Web.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using CarGarage.Data;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 [Authorize]
-public class MyCarsController(IMyCarsService carsService, ICloudflareR2Service r2Service) : BaseController
+public class MyCarsController(IMyCarsService carsService, ICloudflareR2Service r2Service, ApplicationDbContext context) : BaseController
 {
     public async Task<IActionResult> Index(string? searchTerm, string? customerName, int? makeId, int? modelId, int? carId)
     {
@@ -93,11 +97,38 @@ public class MyCarsController(IMyCarsService carsService, ICloudflareR2Service r
             return View(carModel);
         }
 
-        bool success = await carsService.AddCarToUserAsync(carModel, userId);
-
-        if (!success)
+        try
         {
-            ModelState.AddModelError("RegistrationNumber", "Неуспешен запис. Възможно е колата вече да съществува или да липсват задължителни данни.");
+            bool success = await carsService.AddCarToUserAsync(carModel, userId);
+
+            if (!success)
+            {
+                ModelState.AddModelError("RegistrationNumber", "Неуспешен запис. Възможно е колата вече да съществува или да липсват задължителни данни.");
+                var freshModel = await carsService.GetCreateCarViewModelAsync(userId);
+                carModel.MakeList = freshModel.MakeList;
+                carModel.CustomerList = freshModel.CustomerList;
+                if (carModel.MakeId > 0)
+                {
+                    carModel.ModelList = await carsService.GetModelsByMakeAsync(carModel.MakeId);
+                }
+                return View(carModel);
+            }
+        }
+        catch (NotSupportedException ex)
+        {
+            ModelState.AddModelError("ImageFiles", ex.Message);
+            var freshModel = await carsService.GetCreateCarViewModelAsync(userId);
+            carModel.MakeList = freshModel.MakeList;
+            carModel.CustomerList = freshModel.CustomerList;
+            if (carModel.MakeId > 0)
+            {
+                carModel.ModelList = await carsService.GetModelsByMakeAsync(carModel.MakeId);
+            }
+            return View(carModel);
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, $"Възникна неочаквана грешка при запазване: {ex.Message}");
             var freshModel = await carsService.GetCreateCarViewModelAsync(userId);
             carModel.MakeList = freshModel.MakeList;
             carModel.CustomerList = freshModel.CustomerList;
@@ -184,9 +215,31 @@ public class MyCarsController(IMyCarsService carsService, ICloudflareR2Service r
             return View(carModel);
         }
 
-        bool success = await carsService.UpdateCarAsync(carModel, userId);
-
-        if (!success) return NotFound();
+        try
+        {
+            bool success = await carsService.UpdateCarAsync(carModel, userId);
+            if (!success) return NotFound();
+        }
+        catch (NotSupportedException ex)
+        {
+            ModelState.AddModelError("ImageFiles", ex.Message);
+            var fresh = await carsService.GetCreateCarViewModelAsync(userId);
+            carModel.MakeList = fresh.MakeList;
+            carModel.CustomerList = fresh.CustomerList;
+            carModel.ModelList = await carsService.GetModelsByMakeAsync(carModel.MakeId);
+            ViewData["ReturnUrl"] = returnUrl;
+            return View(carModel);
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, $"Възникна неочаквана грешка при запазване: {ex.Message}");
+            var fresh = await carsService.GetCreateCarViewModelAsync(userId);
+            carModel.MakeList = fresh.MakeList;
+            carModel.CustomerList = fresh.CustomerList;
+            carModel.ModelList = await carsService.GetModelsByMakeAsync(carModel.MakeId);
+            ViewData["ReturnUrl"] = returnUrl;
+            return View(carModel);
+        }
 
         if (!string.IsNullOrEmpty(returnUrl)) return Redirect(returnUrl);
         return RedirectToAction(nameof(Index));
@@ -218,5 +271,38 @@ public class MyCarsController(IMyCarsService carsService, ICloudflareR2Service r
         if (stream == null) return NotFound();
 
         return File(stream, "image/jpeg");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateImagePositions([FromBody] ImagePositionUpdateModel model)
+    {
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        if (model == null || model.ImageIds == null) return BadRequest();
+
+        // Verify car is owned by user
+        var carExists = await carsService.GetCarByIdAsync(model.ItemId, userId);
+        if (carExists == null) return Forbid();
+
+        for (int i = 0; i < model.ImageIds.Count; i++)
+        {
+            var imgId = model.ImageIds[i];
+            var img = await context.CarImages.FirstOrDefaultAsync(ci => ci.Id == imgId && ci.CarId == model.ItemId);
+            if (img != null)
+            {
+                img.SortOrder = i;
+            }
+        }
+
+        await context.SaveChangesAsync();
+        return Json(new { success = true });
+    }
+
+    public class ImagePositionUpdateModel
+    {
+        public int ItemId { get; set; }
+        public List<int> ImageIds { get; set; } = new();
     }
 }

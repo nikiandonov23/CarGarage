@@ -119,8 +119,42 @@
                                 </p>
                             </a>
 
-                            <!-- Optional Image -->
-                            @if (!string.IsNullOrEmpty(post.ImageUrl))
+                            <!-- Optional Image / Image Carousel -->
+                            @if (post.PostImages != null && post.PostImages.Any())
+                            {
+                                var carouselId = $"carouselPost{post.Id}";
+                                <div id="@carouselId" class="carousel slide border rounded-4 shadow-sm mb-3" data-bs-ride="false" style="overflow: hidden; max-height: 380px; width: 100%;">
+                                    <div class="carousel-indicators">
+                                        @for (int idx = 0; idx < post.PostImages.Count; idx++)
+                                        {
+                                            <button type="button" data-bs-target="#@carouselId" data-bs-slide-to="@idx" class="@(idx == 0 ? "active" : "")" aria-current="@(idx == 0 ? "true" : "false")" aria-label="Слайд @(idx + 1)"></button>
+                                        }
+                                    </div>
+                                    <div class="carousel-inner" style="height: 380px; width: 100%;">
+                                        @for (int idx = 0; idx < post.PostImages.Count; idx++)
+                                        {
+                                            var img = post.PostImages[idx];
+                                            <div class="carousel-item @(idx == 0 ? "active" : "")" style="height: 380px; width: 100%;">
+                                                <a asp-action="Details" asp-route-id="@post.Id">
+                                                    <img src="@img.ImageUrl" class="d-block w-100 h-100" style="object-fit: cover;" alt="@post.Title">
+                                                </a>
+                                            </div>
+                                        }
+                                    </div>
+                                    @if (post.PostImages.Count > 1)
+                                    {
+                                        <button class="carousel-control-prev" type="button" data-bs-target="#@carouselId" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(1) grayscale(100%);"></span>
+                                            <span class="visually-hidden">Предишна</span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button" data-bs-target="#@carouselId" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(1) grayscale(100%);"></span>
+                                            <span class="visually-hidden">Следваща</span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                            else if (!string.IsNullOrEmpty(post.ImageUrl))
                             {
                                 <div class="mb-3 overflow-hidden rounded-4 border bg-light" style="max-height: 380px;">
                                     <a asp-action="Details" asp-route-id="@post.Id">

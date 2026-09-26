@@ -46,5 +46,7 @@ namespace CarGarage.DataModels
         // Listing status: Available, Pending, Sold
         [MaxLength(50)]
         public string Status { get; set; } = "Available";
+
+        public virtual ICollection<PartForSaleImage> PartForSaleImages { get; set; } = new List<PartForSaleImage>();
     }
 }

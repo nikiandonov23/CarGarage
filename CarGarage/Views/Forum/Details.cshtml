@@ -69,7 +69,41 @@
                     <!-- Post Title and Image -->
                     <h2 class="fw-bold mb-3 text-dark">@Model.Title</h2>
 
-                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    @if (Model.PostImages != null && Model.PostImages.Any())
+                    {
+                        var carouselId = $"carouselPost{Model.Id}";
+                        <div id="@carouselId" class="carousel slide border rounded-4 shadow-sm mb-4" data-bs-ride="false" style="overflow: hidden; max-height: 480px; width: 100%;">
+                            <div class="carousel-indicators">
+                                @for (int idx = 0; idx < Model.PostImages.Count; idx++)
+                                {
+                                    <button type="button" data-bs-target="#@carouselId" data-bs-slide-to="@idx" class="@(idx == 0 ? "active" : "")" aria-current="@(idx == 0 ? "true" : "false")" aria-label="Слайд @(idx + 1)"></button>
+                                }
+                            </div>
+                            <div class="carousel-inner" style="height: 480px; width: 100%;">
+                                @for (int idx = 0; idx < Model.PostImages.Count; idx++)
+                                {
+                                    var img = Model.PostImages[idx];
+                                    <div class="carousel-item @(idx == 0 ? "active" : "")" style="height: 480px; width: 100%;">
+                                        <a href="@img.ImageUrl" class="glightbox d-block h-100 w-100" data-gallery="forum-post-images">
+                                            <img src="@img.ImageUrl" class="d-block w-100 h-100" style="object-fit: contain; background-color: #f8f9fa;" alt="@Model.Title">
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                            @if (Model.PostImages.Count > 1)
+                            {
+                                <button class="carousel-control-prev" type="button" data-bs-target="#@carouselId" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(1) grayscale(100%);"></span>
+                                    <span class="visually-hidden">Предишна</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#@carouselId" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(1) grayscale(100%);"></span>
+                                    <span class="visually-hidden">Следваща</span>
+                                </button>
+                            }
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(Model.ImageUrl))
                     {
                         <div class="mb-4 overflow-hidden rounded-4 border bg-light text-center" style="max-height: 480px;">
                             <img src="@Model.ImageUrl" class="img-fluid style-img" style="object-fit: contain; max-height: 480px; width: auto;" alt="Снимка" onerror="this.style.display='none';" />

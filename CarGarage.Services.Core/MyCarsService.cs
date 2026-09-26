@@ -72,11 +72,12 @@ namespace CarGarage.Services.Core
                     RegistrationNumber = uc.Car.RegistrationNumber,
                     Vin = uc.Car.Vin,
                     Mileage = uc.Car.Mileage,
-                    ImageUrl = uc.Car.CarImages.OrderBy(img => img.Id).Select(img => img.ImageUrl).FirstOrDefault() ?? uc.Car.ImageUrl,
-                    CarImages = uc.Car.CarImages.OrderBy(img => img.Id).Select(img => new CarImageViewModel
+                    ImageUrl = uc.Car.CarImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => img.ImageUrl).FirstOrDefault() ?? uc.Car.ImageUrl,
+                    CarImages = uc.Car.CarImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => new CarImageViewModel
                     {
                         Id = img.Id,
-                        ImageUrl = img.ImageUrl
+                        ImageUrl = img.ImageUrl,
+                        SortOrder = img.SortOrder
                     }).ToList(),
                     Notes = uc.Car.Notes,
                     AddedDate = uc.Car.AddedDate
@@ -261,6 +262,7 @@ namespace CarGarage.Services.Core
             if (model.ImageFiles != null && model.ImageFiles.Any())
             {
                 var filesToUpload = model.ImageFiles.Take(5);
+                int currentOrder = 0;
                 foreach (var file in filesToUpload)
                 {
                     if (file == null || file.Length == 0) continue;
@@ -270,7 +272,8 @@ namespace CarGarage.Services.Core
                         car.CarImages.Add(new CarImage
                         {
                             ImageUrl = uploadedUrl,
-                            StorageKey = key
+                            StorageKey = key,
+                            SortOrder = currentOrder++
                         });
                     }
                     catch (Exception ex)
@@ -309,11 +312,12 @@ namespace CarGarage.Services.Core
                     ModelYear = uc.Car.ModelYear,
                     RegistrationNumber = uc.Car.RegistrationNumber,
                     Vin = uc.Car.Vin,
-                    ImageUrl = uc.Car.CarImages.OrderBy(img => img.Id).Select(img => img.ImageUrl).FirstOrDefault() ?? uc.Car.ImageUrl,
-                    CarImages = uc.Car.CarImages.OrderBy(img => img.Id).Select(img => new CarImageViewModel
+                    ImageUrl = uc.Car.CarImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => img.ImageUrl).FirstOrDefault() ?? uc.Car.ImageUrl,
+                    CarImages = uc.Car.CarImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => new CarImageViewModel
                     {
                         Id = img.Id,
-                        ImageUrl = img.ImageUrl
+                        ImageUrl = img.ImageUrl,
+                        SortOrder = img.SortOrder
                     }).ToList(),
                     Mileage = uc.Car.Mileage,
                     Notes = uc.Car.Notes
@@ -402,10 +406,13 @@ namespace CarGarage.Services.Core
 
             viewModel.ExistingImages = await context.CarImages
                 .Where(ci => ci.CarId == car.Id)
+                .OrderBy(ci => ci.SortOrder)
+                .ThenBy(ci => ci.Id)
                 .Select(ci => new CarImageViewModel
                 {
                     Id = ci.Id,
-                    ImageUrl = ci.ImageUrl
+                    ImageUrl = ci.ImageUrl,
+                    SortOrder = ci.SortOrder
                 })
                 .ToListAsync();
 
@@ -441,10 +448,12 @@ namespace CarGarage.Services.Core
             if (model.ImageFiles != null && model.ImageFiles.Any())
             {
                 var currentCount = await context.CarImages.CountAsync(ci => ci.CarId == car.Id);
+                var maxOrder = await context.CarImages.Where(ci => ci.CarId == car.Id).Select(ci => (int?)ci.SortOrder).MaxAsync() ?? -1;
                 var allowedSlots = 5 - currentCount;
                 if (allowedSlots > 0)
                 {
                     var filesToUpload = model.ImageFiles.Take(allowedSlots);
+                    int currentOrder = maxOrder + 1;
                     foreach (var file in filesToUpload)
                     {
                         if (file == null || file.Length == 0) continue;
@@ -455,7 +464,8 @@ namespace CarGarage.Services.Core
                             {
                                 CarId = car.Id,
                                 ImageUrl = uploadedUrl,
-                                StorageKey = key
+                                StorageKey = key,
+                                SortOrder = currentOrder++
                             };
                             await context.CarImages.AddAsync(newImg);
                         }

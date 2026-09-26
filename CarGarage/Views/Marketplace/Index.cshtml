@@ -128,13 +128,28 @@
                         </div>
 
                         <!-- Image (Кликаема е) -->
-                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        @if (item.PartImages != null && item.PartImages.Any())
+                        {
+                            <a asp-action="Details" asp-route-id="@item.Id">
+                                <img src="@item.PartImages.First().ImageUrl"
+                                     class="card-img-top"
+                                     style="height:180px; object-fit:cover;"
+                                     alt="@item.Name" />
+                            </a>
+                        }
+                        else if (!string.IsNullOrEmpty(item.ImageUrl))
                         {
                             <a asp-action="Details" asp-route-id="@item.Id">
                                 <img src="@item.ImageUrl"
                                      class="card-img-top"
                                      style="height:180px; object-fit:cover;"
                                      alt="@item.Name" />
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="Details" asp-route-id="@item.Id" class="d-block bg-light text-center text-muted" style="height:180px; line-height:180px;">
+                                <i class="bi bi-image fs-1"></i>
                             </a>
                         }
 

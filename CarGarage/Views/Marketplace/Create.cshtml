@@ -12,8 +12,10 @@
                     <h4 class="mb-0 fw-bold"><i class="bi bi-bag-fill me-2"></i>Добави част за продажба</h4>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label fw-bold small text-muted text-uppercase">Име на част</label>
@@ -43,9 +45,22 @@
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="ImageUrl" class="form-label fw-bold small text-muted text-uppercase">Снимка (URL)</label>
-                            <input asp-for="ImageUrl" class="form-control" />
-                            <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                            <label class="form-label fw-bold small text-muted text-uppercase">Снимки на частта (макс 5 броя)</label>
+                            <div class="input-group">
+                                <button type="button" class="btn btn-outline-primary shadow-sm" onclick="document.getElementById('cameraInput').click();">
+                                    <i class="bi bi-camera-fill me-1"></i>Отвори Камера
+                                </button>
+                                <input type="file" id="cameraInput" name="ImageFiles" accept="image/*" capture="environment" multiple style="display:none;" onchange="previewImages(this);" />
+
+                                <button type="button" class="btn btn-outline-secondary ms-2 shadow-sm" onclick="document.getElementById('fileInput').click();">
+                                    <i class="bi bi-folder-plus me-1"></i>Избери файлове
+                                </button>
+                                <input type="file" id="fileInput" name="ImageFiles" accept="image/*" multiple style="display:none;" onchange="previewImages(this);" />
+                            </div>
+                            <span asp-validation-for="ImageFiles" class="text-danger small d-block"></span>
+                            <small class="text-muted d-block mt-1">Изображенията се преоразмеряват и компресират автоматично.</small>
+
+                            <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mt-3"></div>
                         </div>
 
                         <div class="mb-3">
@@ -69,4 +84,44 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewImages(input) {
+            var container = document.getElementById('imagePreviewContainer');
+            if (input.files) {
+                var filesCount = input.files.length;
+                if (filesCount > 5) {
+                    alert("Можете да изберете максимум 5 снимки.");
+                    input.value = "";
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                for (var i = 0; i < filesCount; i++) {
+                    (function(file) {
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            var imgWrapper = document.createElement('div');
+                            imgWrapper.className = 'position-relative';
+                            imgWrapper.style.width = '100px';
+                            imgWrapper.style.height = '100px';
+                            imgWrapper.style.border = '1px solid #ddd';
+                            imgWrapper.style.borderRadius = '5px';
+                            imgWrapper.style.overflow = 'hidden';
+
+                            var img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+
+                            imgWrapper.appendChild(img);
+                            container.appendChild(imgWrapper);
+                        };
+                        reader.readAsDataURL(file);
+                    })(input.files[i]);
+                }
+            }
+        }
+    </script>
 }

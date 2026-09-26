@@ -134,7 +134,7 @@
                                     {
                                         var img = car.CarImages[idx];
                                         <div class="carousel-item @(idx == 0 ? "active" : "")" style="height: 200px;">
-                                            <a href="@img.ImageUrl" target="_blank" title="Виж снимката в голям размер">
+                                            <a asp-action="Index" asp-route-carId="@car.Id" title="Преглед на картон на автомобила">
                                                 <img src="@img.ImageUrl" class="d-block w-100 h-100" style="object-fit: cover;" alt="Снимка на кола">
                                             </a>
                                         </div>
@@ -155,7 +155,9 @@
                         }
                         else if (!string.IsNullOrEmpty(car.ImageUrl))
                         {
-                            <img src="@car.ImageUrl" class="card-img-top border-bottom" alt="Car Image" style="height: 200px; object-fit: cover;">
+                            <a asp-action="Index" asp-route-carId="@car.Id" title="Преглед на картон на автомобила">
+                                <img src="@car.ImageUrl" class="card-img-top border-bottom" alt="Car Image" style="height: 200px; object-fit: cover;">
+                            </a>
                         }
                         else
                         {
@@ -166,7 +168,11 @@
 
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title fw-bold mb-0">@car.Make @car.Model</h5>
+                                <h5 class="card-title fw-bold mb-0">
+                                    <a asp-action="Index" asp-route-carId="@car.Id" class="text-dark text-decoration-none hover-primary">
+                                        @car.Make @car.Model
+                                    </a>
+                                </h5>
                                 <span class="badge bg-primary rounded-pill">@car.ModelYear</span>
                             </div>
 

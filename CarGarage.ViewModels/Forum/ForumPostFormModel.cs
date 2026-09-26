@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CarGarage.ViewModels.Forum
@@ -5,6 +7,10 @@ namespace CarGarage.ViewModels.Forum
     public class ForumPostFormModel
     {
         public int Id { get; set; }
+
+        public List<IFormFile>? ImageFiles { get; set; }
+
+        public List<ForumPostImageViewModel> ExistingImages { get; set; } = new();
 
         [Required(ErrorMessage = "Заглавието е задължително.")]
         [StringLength(200, MinimumLength = 3, ErrorMessage = "Заглавието трябва да бъде между 3 и 200 символа.")]

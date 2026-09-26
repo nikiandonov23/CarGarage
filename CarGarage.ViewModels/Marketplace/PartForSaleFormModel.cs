@@ -1,4 +1,5 @@
 using CarGarage.ViewModels.Parts;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace CarGarage.ViewModels.Marketplace
@@ -6,6 +7,10 @@ namespace CarGarage.ViewModels.Marketplace
     public class PartForSaleFormModel
     {
         public int Id { get; set; }
+
+        public List<IFormFile>? ImageFiles { get; set; }
+
+        public List<PartForSaleImageViewModel> ExistingImages { get; set; } = new();
 
         [Required]
         [MaxLength(250)]

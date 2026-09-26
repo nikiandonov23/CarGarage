@@ -17,5 +17,7 @@ namespace CarGarage.ViewModels.Marketplace
         public DateTime DateAdded { get; set; }
 
         public string Description { get; set; } = null!;
+
+        public List<PartForSaleImageViewModel> PartImages { get; set; } = new();
     }
 }

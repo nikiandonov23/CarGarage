@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using CarGarage.Data;
 using CarGarage.DataModels;
 using CarGarage.ViewModels.Forum;
 using CarGarage.Web.Controllers;
+using CarGarage.Services.Core.Contracts;
 
 namespace CarGarage.Controllers
 {
@@ -16,11 +18,13 @@ namespace CarGarage.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly ICloudflareR2Service _r2Service;
 
-        public ForumController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public ForumController(ApplicationDbContext context, UserManager<IdentityUser> userManager, ICloudflareR2Service r2Service)
         {
             _context = context;
             _userManager = userManager;
+            _r2Service = r2Service;
         }
 
         // GET: Forum
@@ -35,6 +39,7 @@ namespace CarGarage.Controllers
                 .Include(p => p.User)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
+                .Include(p => p.ForumPostImages)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))
@@ -62,7 +67,13 @@ namespace CarGarage.Controllers
                     Id = p.Id,
                     Title = p.Title,
                     Content = p.Content,
-                    ImageUrl = p.ImageUrl,
+                    ImageUrl = p.ForumPostImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => img.ImageUrl).FirstOrDefault() ?? p.ImageUrl,
+                    PostImages = p.ForumPostImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => new ForumPostImageViewModel
+                    {
+                        Id = img.Id,
+                        ImageUrl = img.ImageUrl,
+                        SortOrder = img.SortOrder
+                    }).ToList(),
                     UserId = p.UserId,
                     UserDisplayName = userDisplayName,
                     GarageName = garageName,
@@ -89,6 +100,7 @@ namespace CarGarage.Controllers
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
                     .ThenInclude(c => c.User)
+                .Include(p => p.ForumPostImages)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (post == null)
@@ -104,7 +116,13 @@ namespace CarGarage.Controllers
                 Id = post.Id,
                 Title = post.Title,
                 Content = post.Content,
-                ImageUrl = post.ImageUrl,
+                ImageUrl = post.ForumPostImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => img.ImageUrl).FirstOrDefault() ?? post.ImageUrl,
+                PostImages = post.ForumPostImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => new ForumPostImageViewModel
+                {
+                    Id = img.Id,
+                    ImageUrl = img.ImageUrl,
+                    SortOrder = img.SortOrder
+                }).ToList(),
                 UserId = post.UserId,
                 UserDisplayName = postUserDisplayName,
                 GarageName = postGarageName,
@@ -159,6 +177,37 @@ namespace CarGarage.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
+            // Handle file uploads on create
+            if (model.ImageFiles != null && model.ImageFiles.Any())
+            {
+                var filesToUpload = model.ImageFiles.Take(5);
+                int currentOrder = 0;
+                foreach (var file in filesToUpload)
+                {
+                    if (file == null || file.Length == 0) continue;
+                    try
+                    {
+                        var (uploadedUrl, key) = await _r2Service.UploadImageAsync(file, "forum-images");
+                        post.ForumPostImages.Add(new ForumPostImage
+                        {
+                            ImageUrl = uploadedUrl,
+                            StorageKey = key,
+                            SortOrder = currentOrder++
+                        });
+                    }
+                    catch (NotSupportedException ex)
+                    {
+                        ModelState.AddModelError("ImageFiles", ex.Message);
+                        return View(model);
+                    }
+                    catch (Exception ex)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Грешка при качване на снимка: {ex.Message}");
+                        return View(model);
+                    }
+                }
+            }
+
             _context.ForumPosts.Add(post);
             await _context.SaveChangesAsync();
 
@@ -173,7 +222,10 @@ namespace CarGarage.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var post = await _context.ForumPosts.FindAsync(id);
+            var post = await _context.ForumPosts
+                .Include(p => p.ForumPostImages)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (post == null)
                 return NotFound();
 
@@ -185,7 +237,16 @@ namespace CarGarage.Controllers
                 Id = post.Id,
                 Title = post.Title,
                 Content = post.Content,
-                ImageUrl = post.ImageUrl
+                ImageUrl = post.ImageUrl,
+                ExistingImages = post.ForumPostImages
+                    .OrderBy(img => img.SortOrder)
+                    .ThenBy(img => img.Id)
+                    .Select(img => new ForumPostImageViewModel
+                    {
+                        Id = img.Id,
+                        ImageUrl = img.ImageUrl,
+                        SortOrder = img.SortOrder
+                    }).ToList()
             };
 
             return View(model);
@@ -201,9 +262,23 @@ namespace CarGarage.Controllers
                 return Unauthorized();
 
             if (!ModelState.IsValid)
+            {
+                var originalPost = await _context.ForumPosts.Include(p => p.ForumPostImages).FirstOrDefaultAsync(p => p.Id == id);
+                if (originalPost != null)
+                {
+                    model.ExistingImages = originalPost.ForumPostImages
+                        .OrderBy(img => img.SortOrder)
+                        .ThenBy(img => img.Id)
+                        .Select(img => new ForumPostImageViewModel { Id = img.Id, ImageUrl = img.ImageUrl, SortOrder = img.SortOrder })
+                        .ToList();
+                }
                 return View(model);
+            }
 
-            var post = await _context.ForumPosts.FindAsync(id);
+            var post = await _context.ForumPosts
+                .Include(p => p.ForumPostImages)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (post == null)
                 return NotFound();
 
@@ -213,6 +288,55 @@ namespace CarGarage.Controllers
             post.Title = model.Title;
             post.Content = model.Content;
             post.ImageUrl = model.ImageUrl;
+
+            // Handle new image uploads on Edit
+            if (model.ImageFiles != null && model.ImageFiles.Any())
+            {
+                var currentCount = post.ForumPostImages.Count;
+                var maxOrder = post.ForumPostImages.Any() ? post.ForumPostImages.Max(img => img.SortOrder) : -1;
+                var allowedSlots = 5 - currentCount;
+                if (allowedSlots > 0)
+                {
+                    var filesToUpload = model.ImageFiles.Take(allowedSlots);
+                    int currentOrder = maxOrder + 1;
+                    foreach (var file in filesToUpload)
+                    {
+                        if (file == null || file.Length == 0) continue;
+                        try
+                        {
+                            var (uploadedUrl, key) = await _r2Service.UploadImageAsync(file, "forum-images");
+                            var newImg = new ForumPostImage
+                            {
+                                ForumPostId = post.Id,
+                                ImageUrl = uploadedUrl,
+                                StorageKey = key,
+                                SortOrder = currentOrder++
+                            };
+                            post.ForumPostImages.Add(newImg);
+                        }
+                        catch (NotSupportedException ex)
+                        {
+                            ModelState.AddModelError("ImageFiles", ex.Message);
+                            model.ExistingImages = post.ForumPostImages
+                                .OrderBy(img => img.SortOrder)
+                                .ThenBy(img => img.Id)
+                                .Select(img => new ForumPostImageViewModel { Id = img.Id, ImageUrl = img.ImageUrl, SortOrder = img.SortOrder })
+                                .ToList();
+                            return View(model);
+                        }
+                        catch (Exception ex)
+                        {
+                            ModelState.AddModelError(string.Empty, $"Грешка при качване на снимка: {ex.Message}");
+                            model.ExistingImages = post.ForumPostImages
+                                .OrderBy(img => img.SortOrder)
+                                .ThenBy(img => img.Id)
+                                .Select(img => new ForumPostImageViewModel { Id = img.Id, ImageUrl = img.ImageUrl, SortOrder = img.SortOrder })
+                                .ToList();
+                            return View(model);
+                        }
+                    }
+                }
+            }
 
             _context.ForumPosts.Update(post);
             await _context.SaveChangesAsync();
@@ -237,6 +361,14 @@ namespace CarGarage.Controllers
                 return Forbid();
 
             _context.ForumPosts.Remove(post);
+
+            // Clean up files in S3
+            var images = await _context.ForumPostImages.Where(img => img.ForumPostId == id).ToListAsync();
+            foreach (var img in images)
+            {
+                await _r2Service.DeleteImageAsync(img.StorageKey, "forum-images");
+            }
+
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
@@ -329,6 +461,71 @@ namespace CarGarage.Controllers
             await _context.SaveChangesAsync();
 
             return Redirect(Request.Headers["Referer"].ToString() ?? Url.Action(nameof(Index))!);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteImage(int postId, int imageId)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var postExists = await _context.ForumPosts.AnyAsync(p => p.Id == postId && p.UserId == userId);
+            if (!postExists) return Json(new { success = false, message = "Нямате достъп до тази публикация." });
+
+            var image = await _context.ForumPostImages.FirstOrDefaultAsync(img => img.Id == imageId && img.ForumPostId == postId);
+            if (image == null) return Json(new { success = false, message = "Снимката не е намерена." });
+
+            await _r2Service.DeleteImageAsync(image.StorageKey, "forum-images");
+            _context.ForumPostImages.Remove(image);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true });
+        }
+
+        [HttpGet("/Forum/Image/{key}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetImage(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return NotFound();
+
+            var stream = await _r2Service.GetImageStreamAsync(key, "forum-images");
+            if (stream == null) return NotFound();
+
+            return File(stream, "image/jpeg");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateImagePositions([FromBody] ImagePositionUpdateModel model)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            if (model == null || model.ImageIds == null) return BadRequest();
+
+            var post = await _context.ForumPosts.FirstOrDefaultAsync(p => p.Id == model.ItemId && p.UserId == userId);
+            if (post == null) return Forbid();
+
+            for (int i = 0; i < model.ImageIds.Count; i++)
+            {
+                var imgId = model.ImageIds[i];
+                var img = await _context.ForumPostImages.FirstOrDefaultAsync(fpi => fpi.Id == imgId && fpi.ForumPostId == model.ItemId);
+                if (img != null)
+                {
+                    img.SortOrder = i;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true });
+        }
+
+        public class ImagePositionUpdateModel
+        {
+            public int ItemId { get; set; }
+            public List<int> ImageIds { get; set; } = new();
         }
     }
 }

@@ -21,5 +21,7 @@ namespace CarGarage.DataModels
         [Required]
         [MaxLength(500)]
         public string StorageKey { get; set; } = string.Empty;
+
+        public int SortOrder { get; set; } = 0;
     }
 }

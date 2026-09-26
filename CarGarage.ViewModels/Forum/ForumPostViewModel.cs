@@ -16,6 +16,7 @@ namespace CarGarage.ViewModels.Forum
         public int LikesCount { get; set; }
         public bool IsLikedByCurrentUser { get; set; }
         public int CommentsCount { get; set; }
+        public List<ForumPostImageViewModel> PostImages { get; set; } = new List<ForumPostImageViewModel>();
         public List<ForumCommentViewModel> Comments { get; set; } = new List<ForumCommentViewModel>();
     }
 }

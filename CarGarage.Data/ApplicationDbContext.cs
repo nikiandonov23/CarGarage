@@ -24,6 +24,7 @@ namespace CarGarage.Data
         public DbSet<Part> Parts { get; set; } = null!;
         public DbSet<PartCategory> PartCategories { get; set; } = null!;
         public DbSet<PartForSale> PartsForSale { get; set; } = null!;
+        public DbSet<PartForSaleImage> PartForSaleImages { get; set; } = null!;
         public DbSet<Offer> Offers { get; set; } = null!;
         public DbSet<Message> Messages { get; set; } = null!;
 
@@ -38,6 +39,7 @@ namespace CarGarage.Data
         public DbSet<Garage> Garages { get; set; } = null!;
 
         public DbSet<ForumPost> ForumPosts { get; set; } = null!;
+        public DbSet<ForumPostImage> ForumPostImages { get; set; } = null!;
         public DbSet<ForumComment> ForumComments { get; set; } = null!;
         public DbSet<ForumPostLike> ForumPostLikes { get; set; } = null!;
 
@@ -50,6 +52,13 @@ namespace CarGarage.Data
                 .HasOne(ci => ci.Car)
                 .WithMany(c => c.CarImages)
                 .HasForeignKey(ci => ci.CarId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // РЕЛАЦИЯ: PartForSale -> PartForSaleImages (1 към много)
+            modelBuilder.Entity<PartForSaleImage>()
+                .HasOne(pfi => pfi.PartForSale)
+                .WithMany(pfs => pfs.PartForSaleImages)
+                .HasForeignKey(pfi => pfi.PartForSaleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // 2. РЕЛАЦИЯ: Car -> Parts (1 към много)
@@ -199,6 +208,13 @@ namespace CarGarage.Data
                 .WithMany()
                 .HasForeignKey(fp => fp.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // РЕЛАЦИЯ: ForumPost -> ForumPostImages (1 към много)
+            modelBuilder.Entity<ForumPostImage>()
+                .HasOne(fpi => fpi.ForumPost)
+                .WithMany(fp => fp.ForumPostImages)
+                .HasForeignKey(fpi => fpi.ForumPostId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -10,6 +10,7 @@ namespace CarGarage.Services.Core.Contracts
         Task AddAsync(PartForSaleFormModel model, string userId);
         Task UpdateAsync(int id, PartForSaleFormModel model, string userId);
         Task DeleteAsync(int id, string userId);
+        Task<bool> DeletePartImageAsync(int partId, int imageId, string userId);
         Task<IEnumerable<CarGarage.ViewModels.Parts.PartCategoryViewModel>> GetCategoriesAsync();
     }
 }

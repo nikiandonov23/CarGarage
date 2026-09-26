@@ -18,6 +18,10 @@
                         @Html.AntiForgeryToken()
 
                         <div class="row g-4">
+                            <div class="col-md-12">
+                                <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
+                            </div>
+
                             <div class="col-md-6">
                                 <label asp-for="RegistrationNumber" class="form-label fw-bold text-secondary"></label>
                                 <div class="input-group">
@@ -190,6 +194,7 @@
                                     </button>
                                     <input type="file" id="fileInput" name="ImageFiles" accept="image/*" multiple style="display:none;" onchange="previewImages(this);" />
                                 </div>
+                                <span asp-validation-for="ImageFiles" class="text-danger small d-block"></span>
                                 <small class="text-muted d-block mt-1">Снимките се компресират автоматично за по-бързо зареждане.</small>
 
                                 <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mt-3"></div>

@@ -3,12 +3,16 @@ using CarGarage.ViewModels.Marketplace;
 using CarGarage.Web.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CarGarage.Controllers
 {
     public class MarketplaceController(
         IMarketplaceService marketplaceService,
-        IGarageService garageService) : BaseController
+        IGarageService garageService,
+        ICloudflareR2Service r2Service) : BaseController
     {
         [AllowAnonymous]
         public async Task<IActionResult> Index(string? searchTerm, string? city, int? categoryId, string? ownerId)
@@ -61,7 +65,23 @@ namespace CarGarage.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            await marketplaceService.AddAsync(model, userId);
+            try
+            {
+                await marketplaceService.AddAsync(model, userId);
+            }
+            catch (NotSupportedException ex)
+            {
+                ModelState.AddModelError("ImageFiles", ex.Message);
+                model.Categories = await marketplaceService.GetCategoriesAsync();
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Възникна неочаквана грешка при запазване: {ex.Message}");
+                model.Categories = await marketplaceService.GetCategoriesAsync();
+                return View(model);
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -93,7 +113,23 @@ namespace CarGarage.Controllers
                 return View(model);
             }
 
-            await marketplaceService.UpdateAsync(id, model, userId);
+            try
+            {
+                await marketplaceService.UpdateAsync(id, model, userId);
+            }
+            catch (NotSupportedException ex)
+            {
+                ModelState.AddModelError("ImageFiles", ex.Message);
+                model.Categories = await marketplaceService.GetCategoriesAsync();
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Възникна неочаквана грешка при запазване: {ex.Message}");
+                model.Categories = await marketplaceService.GetCategoriesAsync();
+                return View(model);
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -129,6 +165,71 @@ namespace CarGarage.Controllers
 
             await marketplaceService.DeleteAsync(id, userId);
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteImage(int partId, int imageId)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var success = await marketplaceService.DeletePartImageAsync(partId, imageId, userId);
+            if (success)
+            {
+                return Json(new { success = true });
+            }
+            return Json(new { success = false, message = "Неуспешно изтриване на снимката от хранилището." });
+        }
+
+        [HttpGet("/Marketplace/Image/{key}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetImage(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return NotFound();
+
+            var stream = await r2Service.GetImageStreamAsync(key, "marketplace-images");
+            if (stream == null) return NotFound();
+
+            return File(stream, "image/jpeg");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateImagePositions([FromBody] ImagePositionUpdateModel model)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            if (model == null || model.ImageIds == null) return BadRequest();
+
+            var listing = await marketplaceService.GetByIdAsync(model.ItemId);
+            if (listing == null || listing.OwnerId != userId) return Forbid();
+
+            // Resolve context from DI container or service (Since Controller parameters have context, we can query it)
+            // But wait, the context is not directly in the controller constructor. 
+            // We can inject ApplicationDbContext to the constructor or use HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>()
+            var context = (CarGarage.Data.ApplicationDbContext)HttpContext.RequestServices.GetService(typeof(CarGarage.Data.ApplicationDbContext))!;
+
+            for (int i = 0; i < model.ImageIds.Count; i++)
+            {
+                var imgId = model.ImageIds[i];
+                var img = await context.PartForSaleImages.FirstOrDefaultAsync(pfi => pfi.Id == imgId && pfi.PartForSaleId == model.ItemId);
+                if (img != null)
+                {
+                    img.SortOrder = i;
+                }
+            }
+
+            await context.SaveChangesAsync();
+            return Json(new { success = true });
+        }
+
+        public class ImagePositionUpdateModel
+        {
+            public int ItemId { get; set; }
+            public List<int> ImageIds { get; set; } = new();
         }
     }
 }

@@ -29,6 +29,7 @@ namespace CarGarage.DataModels
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        public virtual ICollection<ForumPostImage> ForumPostImages { get; set; } = new HashSet<ForumPostImage>();
         public virtual ICollection<ForumComment> Comments { get; set; } = new HashSet<ForumComment>();
         public virtual ICollection<ForumPostLike> Likes { get; set; } = new HashSet<ForumPostLike>();
     }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarGarage.Services.Core
 {
-    public class MarketplaceService(ApplicationDbContext context) : IMarketplaceService
+    public class MarketplaceService(ApplicationDbContext context, ICloudflareR2Service r2Service) : IMarketplaceService
     {
         public async Task AddAsync(PartForSaleFormModel model, string userId)
         {
@@ -29,6 +29,31 @@ namespace CarGarage.Services.Core
                 OwnerId = userId
             };
 
+            // Handle file uploads on create (up to 5)
+            if (model.ImageFiles != null && model.ImageFiles.Any())
+            {
+                var filesToUpload = model.ImageFiles.Take(5);
+                int currentOrder = 0;
+                foreach (var file in filesToUpload)
+                {
+                    if (file == null || file.Length == 0) continue;
+                    try
+                    {
+                        var (uploadedUrl, key) = await r2Service.UploadImageAsync(file, "marketplace-images");
+                        entity.PartForSaleImages.Add(new PartForSaleImage
+                        {
+                            ImageUrl = uploadedUrl,
+                            StorageKey = key,
+                            SortOrder = currentOrder++
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Грешка при запис във R2 (Marketplace Добавяне): {ex.Message}. Вътрешна грешка: {ex.InnerException?.Message}", ex);
+                    }
+                }
+            }
+
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
         }
@@ -40,6 +65,13 @@ namespace CarGarage.Services.Core
 
             if (entity != null)
             {
+                var images = await context.PartForSaleImages.Where(img => img.PartForSaleId == id).ToListAsync();
+                foreach (var img in images)
+                {
+                    await r2Service.DeleteImageAsync(img.StorageKey, "marketplace-images");
+                }
+                context.PartForSaleImages.RemoveRange(images);
+
                 context.Remove(entity);
                 await context.SaveChangesAsync();
             }
@@ -81,7 +113,13 @@ namespace CarGarage.Services.Core
                 {
                     Id = p.Id,
                     Name = p.Name,
-                    ImageUrl = p.ImageUrl,
+                    ImageUrl = p.PartForSaleImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => img.ImageUrl).FirstOrDefault() ?? p.ImageUrl,
+                    PartImages = p.PartForSaleImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => new PartForSaleImageViewModel
+                    {
+                        Id = img.Id,
+                        ImageUrl = img.ImageUrl,
+                        SortOrder = img.SortOrder
+                    }).ToList(),
                     CategoryName = p.Category.Name,
                     Price = p.Price,
                     Phone = p.Phone,
@@ -89,7 +127,8 @@ namespace CarGarage.Services.Core
                     City = p.Garage != null ? p.Garage.City : null,
                     OwnerId = p.OwnerId,
                     Status = p.Status,
-                    DateAdded = p.DateAdded
+                    DateAdded = p.DateAdded,
+                    Description = p.Description ?? string.Empty
                 }).ToListAsync();
 
             var categories = await GetCategoriesAsync();
@@ -115,7 +154,13 @@ namespace CarGarage.Services.Core
                 {
                     Id = p.Id,
                     Name = p.Name,
-                    ImageUrl = p.ImageUrl,
+                    ImageUrl = p.PartForSaleImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => img.ImageUrl).FirstOrDefault() ?? p.ImageUrl,
+                    PartImages = p.PartForSaleImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => new PartForSaleImageViewModel
+                    {
+                        Id = img.Id,
+                        ImageUrl = img.ImageUrl,
+                        SortOrder = img.SortOrder
+                    }).ToList(),
                     CategoryName = p.Category.Name,
                     Price = p.Price,
                     Phone = p.Phone,
@@ -123,7 +168,8 @@ namespace CarGarage.Services.Core
                     City = p.Garage != null ? p.Garage.City : null,
                     OwnerId = p.OwnerId,
                     Status = p.Status,
-                    DateAdded = p.DateAdded
+                    DateAdded = p.DateAdded,
+                    Description = p.Description ?? string.Empty
                 }).FirstOrDefaultAsync();
         }
 
@@ -146,6 +192,18 @@ namespace CarGarage.Services.Core
                 Categories = await GetCategoriesAsync()
             };
 
+            model.ExistingImages = await context.PartForSaleImages
+                .Where(img => img.PartForSaleId == entity.Id)
+                .OrderBy(img => img.SortOrder)
+                .ThenBy(img => img.Id)
+                .Select(img => new PartForSaleImageViewModel
+                {
+                    Id = img.Id,
+                    ImageUrl = img.ImageUrl,
+                    SortOrder = img.SortOrder
+                })
+                .ToListAsync();
+
             return model;
         }
 
@@ -165,13 +223,71 @@ namespace CarGarage.Services.Core
             if (entity == null) return;
 
             entity.Name = model.Name;
-            entity.ImageUrl = model.ImageUrl;
+            if (!string.IsNullOrEmpty(model.ImageUrl))
+            {
+                entity.ImageUrl = model.ImageUrl;
+            }
             entity.CategoryId = model.CategoryId;
             entity.Price = model.Price;
             entity.Phone = model.Phone;
             entity.Description = model.Description;
 
+            // Handle new image uploads on edit (maximum 5 total images)
+            if (model.ImageFiles != null && model.ImageFiles.Any())
+            {
+                var currentCount = await context.PartForSaleImages.CountAsync(img => img.PartForSaleId == entity.Id);
+                var maxOrder = await context.PartForSaleImages.Where(img => img.PartForSaleId == entity.Id).Select(img => (int?)img.SortOrder).MaxAsync() ?? -1;
+                var allowedSlots = 5 - currentCount;
+                if (allowedSlots > 0)
+                {
+                    var filesToUpload = model.ImageFiles.Take(allowedSlots);
+                    int currentOrder = maxOrder + 1;
+                    foreach (var file in filesToUpload)
+                    {
+                        if (file == null || file.Length == 0) continue;
+                        try
+                        {
+                            var (uploadedUrl, key) = await r2Service.UploadImageAsync(file, "marketplace-images");
+                            var newImg = new PartForSaleImage
+                            {
+                                PartForSaleId = entity.Id,
+                                ImageUrl = uploadedUrl,
+                                StorageKey = key,
+                                SortOrder = currentOrder++
+                            };
+                            await context.PartForSaleImages.AddAsync(newImg);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Грешка при запис във R2 (Marketplace Редактиране): {ex.Message}. Вътрешна грешка: {ex.InnerException?.Message}", ex);
+                        }
+                    }
+                }
+            }
+
             await context.SaveChangesAsync();
+        }
+
+        public async Task<bool> DeletePartImageAsync(int partId, int imageId, string userId)
+        {
+            var partExists = await context.Set<PartForSale>()
+                .AnyAsync(p => p.Id == partId && p.OwnerId == userId);
+
+            if (!partExists) return false;
+
+            var image = await context.PartForSaleImages
+                .FirstOrDefaultAsync(img => img.Id == imageId && img.PartForSaleId == partId);
+
+            if (image == null) return false;
+
+            // Delete from Cloudflare R2
+            await r2Service.DeleteImageAsync(image.StorageKey, "marketplace-images");
+
+            // Delete from DB
+            context.PartForSaleImages.Remove(image);
+            await context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

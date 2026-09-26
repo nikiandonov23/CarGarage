@@ -98,6 +98,9 @@ namespace CarGarage.Data.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
                     b.Property<string>("StorageKey")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -175,6 +178,37 @@ namespace CarGarage.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ForumPosts");
+                });
+
+            modelBuilder.Entity("CarGarage.DataModels.ForumPostImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ForumPostId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ForumPostId");
+
+                    b.ToTable("ForumPostImages");
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.ForumPostLike", b =>
@@ -575,6 +609,37 @@ namespace CarGarage.Data.Migrations
                     b.HasIndex("GarageId");
 
                     b.ToTable("PartsForSale");
+                });
+
+            modelBuilder.Entity("CarGarage.DataModels.PartForSaleImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("PartForSaleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PartForSaleId");
+
+                    b.ToTable("PartForSaleImages");
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.UserCars", b =>
@@ -998,6 +1063,17 @@ namespace CarGarage.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("CarGarage.DataModels.ForumPostImage", b =>
+                {
+                    b.HasOne("CarGarage.DataModels.ForumPost", "ForumPost")
+                        .WithMany("ForumPostImages")
+                        .HasForeignKey("ForumPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ForumPost");
+                });
+
             modelBuilder.Entity("CarGarage.DataModels.ForumPostLike", b =>
                 {
                     b.HasOne("CarGarage.DataModels.ForumPost", "Post")
@@ -1108,6 +1184,17 @@ namespace CarGarage.Data.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("Garage");
+                });
+
+            modelBuilder.Entity("CarGarage.DataModels.PartForSaleImage", b =>
+                {
+                    b.HasOne("CarGarage.DataModels.PartForSale", "PartForSale")
+                        .WithMany("PartForSaleImages")
+                        .HasForeignKey("PartForSaleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PartForSale");
                 });
 
             modelBuilder.Entity("CarGarage.DataModels.UserCars", b =>
@@ -1235,6 +1322,8 @@ namespace CarGarage.Data.Migrations
                 {
                     b.Navigation("Comments");
 
+                    b.Navigation("ForumPostImages");
+
                     b.Navigation("Likes");
                 });
 
@@ -1251,6 +1340,11 @@ namespace CarGarage.Data.Migrations
             modelBuilder.Entity("CarGarage.DataModels.PartCategory", b =>
                 {
                     b.Navigation("ServiceParts");
+                });
+
+            modelBuilder.Entity("CarGarage.DataModels.PartForSale", b =>
+                {
+                    b.Navigation("PartForSaleImages");
                 });
 
             modelBuilder.Entity("Customer", b =>

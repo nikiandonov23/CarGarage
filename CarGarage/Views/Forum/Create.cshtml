@@ -25,7 +25,7 @@
                         <p class="text-muted">Формулирайте ясно въпроса си или опишете техническия казус, за да получите помощ.</p>
                     </div>
 
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
 
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -37,17 +37,24 @@
                             <span asp-validation-for="Title" class="text-danger small"></span>
                         </div>
 
-                        <!-- Image Url -->
-                        <div class="mb-3">
-                            <label asp-for="ImageUrl" class="form-label text-muted small fw-bold">URL Адрес на снимка (опционално)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-light-subtle rounded-start-3">
-                                    <i class="bi bi-link-45deg"></i>
-                                </span>
-                                <input asp-for="ImageUrl" class="form-control border-light-subtle rounded-end-3 bg-light" placeholder="https://image-storage.com/.../some-file.jpg" />
+                        <!-- Cloudflare S3 (R2) Multi-image upload controls -->
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold">Прикачи снимки (макс 5 броя)</label>
+                            <div class="input-group mb-2">
+                                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('cameraInput').click();">
+                                    <i class="bi bi-camera-fill me-1"></i>Отвори Камера
+                                </button>
+                                <input type="file" id="cameraInput" name="ImageFiles" accept="image/*" capture="environment" multiple style="display:none;" onchange="previewImages(this);" />
+
+                                <button type="button" class="btn btn-outline-secondary ms-2" onclick="document.getElementById('fileInput').click();">
+                                    <i class="bi bi-folder-plus me-1"></i>Избери файлове
+                                </button>
+                                <input type="file" id="fileInput" name="ImageFiles" accept="image/*" multiple style="display:none;" onchange="previewImages(this);" />
                             </div>
-                            <span asp-validation-for="ImageUrl" class="text-danger small"></span>
-                            <div class="form-text text-muted">Позволява прикачване на изображения или схеми за по-лесно илюстриране на казуса.</div>
+                            <span asp-validation-for="ImageFiles" class="text-danger small d-block mb-1"></span>
+                            <small class="text-muted d-block mb-3">Снимките се оразмеряват и компресират автоматично за форум-интеграция.</small>
+
+                            <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mt-2"></div>
                         </div>
 
                         <!-- Content -->
@@ -71,4 +78,45 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewImages(input) {
+            var container = document.getElementById('imagePreviewContainer');
+            if (input.files) {
+                var filesCount = input.files.length;
+                if (filesCount > 5) {
+                    alert("Можете да изберете максимум 5 снимки.");
+                    input.value = "";
+                    container.innerHTML = "";
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                for (var i = 0; i < filesCount; i++) {
+                    (function(file) {
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            var imgWrapper = document.createElement('div');
+                            imgWrapper.className = 'position-relative';
+                            imgWrapper.style.width = '100px';
+                            imgWrapper.style.height = '100px';
+                            imgWrapper.style.border = '1px solid #ddd';
+                            imgWrapper.style.borderRadius = '8px';
+                            imgWrapper.style.overflow = 'hidden';
+
+                            var img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+
+                            imgWrapper.appendChild(img);
+                            container.appendChild(imgWrapper);
+                        };
+                        reader.readAsDataURL(file);
+                    })(input.files[i]);
+                }
+            }
+        }
+    </script>
 }

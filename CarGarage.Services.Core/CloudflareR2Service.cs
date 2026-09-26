@@ -30,11 +30,17 @@ namespace CarGarage.Services.Core
             _s3Client = new AmazonS3Client(accessKeyId, secretAccessKey, config);
         }
 
-        public async Task<(string imageUrl, string storageKey)> UploadImageAsync(IFormFile file)
+        public async Task<(string imageUrl, string storageKey)> UploadImageAsync(IFormFile file, string bucketName = "cars-images")
         {
             if (file == null || file.Length == 0)
             {
                 throw new ArgumentException("Файлът е празен.", nameof(file));
+            }
+
+            // Допълнителна проверка за изключително малки или повредени файлове
+            if (file.Length < 100)
+            {
+                throw new ArgumentException("Файлът е прекалено малък или невалиден за изображение.", nameof(file));
             }
 
             var uniqueId = Guid.NewGuid().ToString("N");
@@ -44,41 +50,57 @@ namespace CarGarage.Services.Core
             using var inputStream = file.OpenReadStream();
             using var outputStream = new MemoryStream();
 
-            // Load and resize the image with SixLabors.ImageSharp
-            using (var image = await Image.LoadAsync(inputStream))
+            // Проверка за разширението на файла за неподдържани формати като .avif
+            var contentType = file.ContentType?.ToLowerInvariant();
+            var isAvif = originalExtension == ".avif" || contentType == "image/avif";
+
+            if (isAvif)
             {
-                var maxDimension = 1200;
-                var width = image.Width;
-                var height = image.Height;
+                throw new NotSupportedException("Форматът .avif не се поддържа от текущата версия на ImageSharp. Моля, използвайте JPG, PNG или WebP изображение.");
+            }
 
-                if (width > maxDimension || height > maxDimension)
+            // Load and resize the image with SixLabors.ImageSharp
+            try
+            {
+                using (var image = await Image.LoadAsync(inputStream))
                 {
-                    if (width > height)
+                    var maxDimension = 1200;
+                    var width = image.Width;
+                    var height = image.Height;
+
+                    if (width > maxDimension || height > maxDimension)
                     {
-                        height = (int)((double)height / width * maxDimension);
-                        width = maxDimension;
-                    }
-                    else
-                    {
-                        width = (int)((double)width / height * maxDimension);
-                        height = maxDimension;
+                        if (width > height)
+                        {
+                            height = (int)((double)height / width * maxDimension);
+                            width = maxDimension;
+                        }
+                        else
+                        {
+                            width = (int)((double)width / height * maxDimension);
+                            height = maxDimension;
+                        }
+
+                        image.Mutate(x => x.Resize(width, height));
                     }
 
-                    image.Mutate(x => x.Resize(width, height));
+                    // Save optimized JPEG to memory stream with 80% compression quality
+                    await image.SaveAsync(outputStream, new JpegEncoder
+                    {
+                        Quality = 80
+                    });
                 }
-
-                // Save optimized JPEG to memory stream with 80% compression quality
-                await image.SaveAsync(outputStream, new JpegEncoder
-                {
-                    Quality = 80
-                });
+            }
+            catch (UnknownImageFormatException)
+            {
+                throw new NotSupportedException("Неподдържан или повреден формат на изображението. Допустими формати са JPG, JPEG, PNG, GIF, BMP и WebP.");
             }
 
             outputStream.Position = 0;
 
             var putRequest = new PutObjectRequest
             {
-                BucketName = BucketName,
+                BucketName = bucketName,
                 Key = storageKey,
                 InputStream = outputStream,
                 ContentType = "image/jpeg",
@@ -87,20 +109,28 @@ namespace CarGarage.Services.Core
 
             await _s3Client.PutObjectAsync(putRequest);
 
-            // Construct the relative internal retrieval URL
-            // This maps directly to our Controller action which streams the file from Cloudflare R2 securely.
-            var imageUrl = $"/MyCars/Image/{storageKey}";
+            // Construct the relative internal retrieval URL dynamically based on the target bucket
+            string routePrefix = "/MyCars/Image";
+            if (bucketName == "marketplace-images")
+            {
+                routePrefix = "/Marketplace/Image";
+            }
+            else if (bucketName == "forum-images")
+            {
+                routePrefix = "/Forum/Image";
+            }
+            var imageUrl = $"{routePrefix}/{storageKey}";
 
             return (imageUrl, storageKey);
         }
 
-        public async Task<Stream?> GetImageStreamAsync(string storageKey)
+        public async Task<Stream?> GetImageStreamAsync(string storageKey, string bucketName = "cars-images")
         {
             if (string.IsNullOrWhiteSpace(storageKey)) return null;
 
             try
             {
-                var response = await _s3Client.GetObjectAsync(BucketName, storageKey);
+                var response = await _s3Client.GetObjectAsync(bucketName, storageKey);
                 return response.ResponseStream;
             }
             catch
@@ -109,7 +139,7 @@ namespace CarGarage.Services.Core
             }
         }
 
-        public async Task<bool> DeleteImageAsync(string storageKey)
+        public async Task<bool> DeleteImageAsync(string storageKey, string bucketName = "cars-images")
         {
             if (string.IsNullOrWhiteSpace(storageKey)) return false;
 
@@ -117,7 +147,7 @@ namespace CarGarage.Services.Core
             {
                 var deleteRequest = new DeleteObjectRequest
                 {
-                    BucketName = BucketName,
+                    BucketName = bucketName,
                     Key = storageKey
                 };
 
