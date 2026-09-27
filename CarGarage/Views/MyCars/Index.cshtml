@@ -173,7 +173,26 @@
                                         @car.Make @car.Model
                                     </a>
                                 </h5>
-                                <span class="badge bg-primary rounded-pill">@car.ModelYear</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-primary rounded-pill">@car.ModelYear</span>
+                                    <div class="dropdown">
+                                        <button class="btn btn-link text-muted p-0" type="button" id="dropdownMenuButton-@car.Id" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical fs-5"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3" aria-labelledby="dropdownMenuButton-@car.Id">
+                                            <li>
+                                                <a class="dropdown-item py-2" asp-action="Edit" asp-route-id="@car.Id">
+                                                    <i class="bi bi-pencil me-2 text-warning"></i>Редактирай
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item py-2 text-danger" asp-action="Delete" asp-route-id="@car.Id">
+                                                    <i class="bi bi-trash me-2"></i>Изтрий
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
 
                             <hr class="text-muted opacity-25">
@@ -233,25 +252,16 @@
                             </div>
 
 
-                            <div class="mb-2">
-                                <a asp-controller="Invoices" asp-action="Create" asp-route-carId="@car.Id" class="btn btn-warning w-100 shadow-sm fw-bold">
-                                    <i class="bi bi-receipt me-2"></i>Генерирай Фактура
-                                </a>
+                                <div class="mb-2">
+                                    <a asp-controller="Invoices" asp-action="Create" asp-route-carId="@car.Id" class="btn btn-warning w-100 shadow-sm fw-bold">
+                                        <i class="bi bi-receipt me-2"></i>Генерирай Фактура
+                                    </a>
+                                </div>
+
+
+
+
                             </div>
-
-                           
-
-                            <div class="d-flex gap-2">
-                                <a asp-action="Edit" asp-route-id="@car.Id" class="btn btn-outline-secondary flex-grow-1">
-                                    <i class="bi bi-pencil me-1"></i> Редакция на автомобила
-                                </a>
-
-                                <a asp-action="Delete" asp-route-id="@car.Id" class="btn btn-outline-danger flex-grow-1">
-                                    <i class="bi bi-trash me-1"></i> Изтрий
-                                </a>
-                            </div>
-                         
-                        </div>
                     </div>
                 </div>
             }

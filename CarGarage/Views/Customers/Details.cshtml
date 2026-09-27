@@ -41,11 +41,56 @@
                                 @foreach (var car in Model.Cars)
                                 {
                                     <div class="col">
-                                        <div class="card h-100 border">
-                                            <img src="@(string.IsNullOrEmpty(car.ImageUrl) ? "https://via.placeholder.com/300x180?text=No+Image" : car.ImageUrl)" class="card-img-top" style="height:150px; object-fit:cover;">
+                                        <div class="card h-100 border shadow-sm">
+                                            @if (car.CarImages != null && car.CarImages.Any())
+                                            {
+                                                var carouselId = $"carouselCar{car.Id}";
+                                                <div id="@carouselId" class="carousel slide border-bottom" data-bs-ride="false">
+                                                    <div class="carousel-indicators">
+                                                        @for (int idx = 0; idx < car.CarImages.Count; idx++)
+                                                        {
+                                                            <button type="button" data-bs-target="#@carouselId" data-bs-slide-to="@idx" class="@(idx == 0 ? "active" : "")" aria-current="@(idx == 0 ? "true" : "false")" aria-label="Слайд @(idx + 1)"></button>
+                                                        }
+                                                    </div>
+                                                    <div class="carousel-inner" style="height: 180px;">
+                                                        @for (int idx = 0; idx < car.CarImages.Count; idx++)
+                                                        {
+                                                            var img = car.CarImages[idx];
+                                                            <div class="carousel-item @(idx == 0 ? "active" : "")" style="height: 180px;">
+                                                                <a href="/MyCars?carId=@car.Id" title="Преглед на картон на автомобила">
+                                                                    <img src="@img.ImageUrl" class="d-block w-100 h-100" style="object-fit: cover;" alt="Снимка на кола">
+                                                                </a>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    @if (car.CarImages.Count > 1)
+                                                    {
+                                                        <button class="carousel-control-prev" type="button" data-bs-target="#@carouselId" data-bs-slide="prev">
+                                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                            <span class="visually-hidden">Предишна</span>
+                                                        </button>
+                                                        <button class="carousel-control-next" type="button" data-bs-target="#@carouselId" data-bs-slide="next">
+                                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                            <span class="visually-hidden">Следваща</span>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            }
+                                            else if (!string.IsNullOrEmpty(car.ImageUrl))
+                                            {
+                                                <a href="/MyCars?carId=@car.Id" title="Преглед на картон на автомобила">
+                                                    <img src="@car.ImageUrl" class="card-img-top border-bottom" alt="Car Image" style="height: 180px; object-fit: cover;">
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <div class="bg-light text-center py-5 border-bottom" style="height: 180px; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="bi bi-car-front-fill display-4 text-secondary"></i>
+                                                </div>
+                                            }
                                             <div class="card-body">
                                                 <h6 class="fw-bold">@car.Make @car.Model</h6>
-                                                <p class="text-danger small fw-bold">@car.RegistrationNumber</p>
+                                                <p class="text-danger small fw-bold mb-3">@car.RegistrationNumber</p>
                                                 <a href="/MyCars?carId=@car.Id" class="btn btn-sm btn-dark w-100">Картон на кола</a>
                                             </div>
                                         </div>

@@ -252,8 +252,11 @@
                         </li>
                     </ul>
                     <div class="d-flex align-items-center gap-2">
-                        @await Component.InvokeAsync("MessagesBadge")
-                        @await Component.InvokeAsync("OffersBadge")
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            @await Component.InvokeAsync("MessagesBadge")
+                            @await Component.InvokeAsync("OffersBadge")
+                        }
                         <partial name="_LoginPartial" />
                     </div>
                 </div>

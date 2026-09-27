@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CarGarage.ViewModels.Cars;
 
 namespace CarGarage.ViewModels.Customers
 {
@@ -14,5 +15,6 @@ namespace CarGarage.ViewModels.Customers
         public string RegistrationNumber { get; set; } = null!;
         public string? ImageUrl { get; set; }
         public int InvoicesCount { get; set; }
+        public List<CarImageViewModel> CarImages { get; set; } = new();
     }
 }

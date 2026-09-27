@@ -11,24 +11,9 @@
         </div>
 
         <div class="d-flex gap-2">
-            @* БУТОН ЗА РЕДАКЦИЯ: Показва се само ако има гараж *@
-            @if (hasGarage)
-            {
-                <a asp-action="Edit" class="btn btn-warning btn-lg shadow-sm fw-bold">
-                    <i class="bi bi-pencil-square me-2"></i>Настройки на сервиза
-                </a>
-            }
-
             <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-lg shadow-sm">
                 <i class="bi bi-house-door me-2"></i>Начало
             </a>
-
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <a asp-controller="MyCars" asp-action="Index" class="btn btn-primary btn-lg shadow-sm">
-                    <i class="bi bi-car-front-fill me-2"></i>Моите автомобили
-                </a>
-            }
         </div>
     </div>
 

@@ -2,6 +2,7 @@
 using CarGarage.DataModels;
 using CarGarage.Services.Core.Contracts;
 using CarGarage.ViewModels.Customers;
+using CarGarage.ViewModels.Cars;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarGarage.Services.Core
@@ -51,6 +52,8 @@ namespace CarGarage.Services.Core
                 .Include(c => c.Cars)
                     .ThenInclude(car => car.Invoices)
                         .ThenInclude(inv => inv.Parts)
+                .Include(c => c.Cars)
+                    .ThenInclude(car => car.CarImages)
                 .FirstOrDefaultAsync(c => c.Id == id && c.Garage != null && c.Garage.OwnerId == userId && !c.IsDeleted);
 
             if (customer == null) return null;
@@ -74,8 +77,13 @@ namespace CarGarage.Services.Core
                     Make = car.Make,
                     Model = car.Model,
                     RegistrationNumber = car.RegistrationNumber,
-                    ImageUrl = car.ImageUrl,
-                    InvoicesCount = car.Invoices.Count
+                    ImageUrl = car.CarImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => img.ImageUrl).FirstOrDefault() ?? car.ImageUrl,
+                    InvoicesCount = car.Invoices.Count,
+                    CarImages = car.CarImages.OrderBy(img => img.SortOrder).ThenBy(img => img.Id).Select(img => new CarImageViewModel
+                    {
+                        Id = img.Id,
+                        ImageUrl = img.ImageUrl
+                    }).ToList()
                 }).ToList(),
 
                 RepairHistory = customer.Cars.Where(car => !car.IsDeleted)

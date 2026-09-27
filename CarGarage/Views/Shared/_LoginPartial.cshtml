@@ -1,9 +1,11 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using CarGarage.Services.Core.Contracts
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
+@inject IGarageService GarageService
 
 <ul class="navbar-nav align-items-center gap-1">
-@if (SignInManager.IsSignedIn(User))
+@if (User.Identity?.IsAuthenticated == true)
 {
     <li class="nav-item dropdown ms-2">
         <a class="nav-link dropdown-toggle btn btn-light rounded-pill px-3 shadow-sm d-flex align-items-center gap-2 border text-decoration-none" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -23,6 +25,17 @@
                     <i class="bi bi-person-gear me-2 text-primary"></i>Настройки на профила
                 </a>
             </li>
+            @{
+                var userId = UserManager.GetUserId(User);
+                if (!string.IsNullOrEmpty(userId) && await GarageService.HasGarageAsync(userId))
+                {
+                    <li>
+                        <a class="dropdown-item rounded-3 py-2" asp-controller="MyGarage" asp-action="Edit">
+                            <i class="bi bi-pencil-square me-2 text-warning"></i>Настройки на сервиза
+                        </a>
+                    </li>
+                }
+            }
             <li>
                 <a class="dropdown-item rounded-3 py-2" asp-controller="MyGarage" asp-action="Index">
                     <i class="bi bi-grid-1x2-fill me-2 text-info"></i>Моят гараж
@@ -42,12 +55,12 @@
 else
 {
     <li class="nav-item me-1">
-        <a class="nav-link btn btn-link text-decoration-none text-secondary px-3 py-2 fw-semibold rounded-pill transition-all animate-btn" asp-area="Identity" asp-page="/Account/Login">
+        <a class="btn btn-link text-decoration-none text-secondary px-3 py-2 fw-semibold transition-all animate-btn" asp-area="Identity" asp-page="/Account/Login">
             <i class="bi bi-box-arrow-in-right me-1"></i> Вход
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link btn btn-primary text-white px-3 py-2 fw-bold shadow-sm rounded-pill transition-all bg-gradient text-decoration-none border-0" style="background: linear-gradient(135deg, #0d6efd, #0b5ed7);" asp-area="Identity" asp-page="/Account/Register">
+        <a class="btn btn-link text-decoration-none text-secondary px-3 py-2 fw-semibold transition-all animate-btn" asp-area="Identity" asp-page="/Account/Register">
             <i class="bi bi-person-plus-fill me-1"></i> Регистрация
         </a>
     </li>
