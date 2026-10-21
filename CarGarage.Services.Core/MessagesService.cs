@@ -264,5 +264,18 @@ namespace CarGarage.Services.Core
                 .OrderByDescending(m => m.SentAt)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Message>> GetConversationByIdAsync(
+            string conversationId,
+            string userId)
+        {
+            return await context.Messages
+                .Where(m =>
+                    m.ConversationId == conversationId &&
+                    (m.ReceiverId == userId || m.SenderId == userId) &&
+                    !m.IsDeleted)
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+        }
     }
 }

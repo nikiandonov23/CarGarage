@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarGarage.DataModels")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+51f7895471346187e37cb2f80e7dbc6c93493384")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0f9fd59736123454f43de7e3ba1a539e4d3dbe70")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarGarage.DataModels")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarGarage.DataModels")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

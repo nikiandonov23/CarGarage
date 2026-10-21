@@ -433,3 +433,43 @@
         background: #9ca3af;
     }
 </style>
+
+<script>
+    // Store the FloatingChatWidget instance globally for later reference
+    let floatingChatWidget = null;
+
+    // Wait for FloatingChatWidget class to be loaded
+    function initializeFloatingChat() {
+        // Check if FloatingChatWidget is defined
+        if (typeof FloatingChatWidget === 'undefined') {
+            console.warn('FloatingChatWidget not loaded yet, retrying...');
+            setTimeout(initializeFloatingChat, 100);
+            return;
+        }
+
+        // Get current user ID
+        fetch('/api/messages/current-user')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Not authenticated');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Create the widget instance
+                floatingChatWidget = new FloatingChatWidget();
+                floatingChatWidget.currentUserId = data.userId;
+
+                console.log('Floating Chat Widget initialized with user:', data.userId);
+            })
+            .catch(error => console.error('Error initializing floating chat:', error));
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeFloatingChat);
+    } else {
+        // DOM is already loaded
+        initializeFloatingChat();
+    }
+</script>

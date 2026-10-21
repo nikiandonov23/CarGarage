@@ -14,6 +14,7 @@ class FloatingChatWidget {
         this.openChats = new Map(); // Map of senderId -> window element
         this.conversations = new Map(); // Map of conversationId -> messages
         this.signalRConnection = null;
+        this.currentUserId = null; // Current logged-in user ID
 
         this.init();
     }
@@ -25,6 +26,17 @@ class FloatingChatWidget {
         if (!this.container) {
             console.warn('Floating chat container not found');
             return;
+        }
+
+        // Wait for currentUserId to be set (max 5 seconds)
+        let attempts = 0;
+        while (!this.currentUserId && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+
+        if (!this.currentUserId) {
+            console.warn('Current user ID not set, chat widget will not function properly');
         }
 
         // Load unread conversations
@@ -159,7 +171,8 @@ class FloatingChatWidget {
         // Render existing messages
         if (conversation.messages && conversation.messages.length > 0) {
             conversation.messages.forEach(msg => {
-                this.renderMessage(messagesList, msg);
+                const isCurrentUser = msg.senderId === this.currentUserId;
+                this.renderMessage(messagesList, msg, isCurrentUser);
             });
         } else {
             messagesList.innerHTML = '<div class="chat-empty-state"><div class="chat-empty-state-icon"><i class="bi bi-chat-left"></i></div>Никакви съобщения</div>';
@@ -199,9 +212,7 @@ class FloatingChatWidget {
         this.openChats.set(senderId, chatWindow);
 
         // Auto-scroll to bottom
-        setTimeout(() => {
-            messagesList.scrollTop = messagesList.scrollHeight;
-        }, 0);
+        this.scrollToBottom(messagesList);
 
         // Mark as read
         this.markConversationAsRead(convId);
@@ -250,6 +261,17 @@ class FloatingChatWidget {
 
         // Auto-scroll to bottom
         container.scrollTop = container.scrollHeight;
+    }
+
+    /**
+     * Scroll messages container to bottom
+     */
+    scrollToBottom(container) {
+        if (!container) return;
+
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 0);
     }
 
     /**

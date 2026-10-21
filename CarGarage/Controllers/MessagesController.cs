@@ -403,7 +403,22 @@ namespace CarGarage.Controllers
         }
 
         /// <summary>
-        /// API endpoint for floating chat widget - returns unread conversations grouped by sender
+        /// API endpoint to get current user ID
+        /// </summary>
+        [HttpGet]
+        [Route("api/messages/current-user")]
+        public IActionResult GetCurrentUser()
+        {
+            var userId = GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            return Ok(new { userId });
+        }
+
+        /// <summary>
+        /// API endpoint for floating chat widget - returns unread conversations grouped by sender with full conversation history
         /// </summary>
         [HttpGet]
         [Route("api/messages/unread-conversations")]
@@ -417,6 +432,7 @@ namespace CarGarage.Controllers
             var unreadMessages = await _messagesService
                 .GetUnreadConversationsAsync(userId);
 
+            // Group unread messages to identify conversations
             var conversationGroups = unreadMessages
                 .GroupBy(m => new { m.SenderId, m.ConversationId })
                 .Select(g => new
@@ -425,19 +441,12 @@ namespace CarGarage.Controllers
                     conversationId = g.Key.ConversationId ?? $"{g.Key.SenderId}_{userId}",
                     latestMessage = g.OrderByDescending(x => x.SentAt).FirstOrDefault()?.Content,
                     latestMessageTime = g.OrderByDescending(x => x.SentAt).FirstOrDefault()?.SentAt,
-                    unreadCount = g.Count(),
-                    messages = g.OrderBy(x => x.SentAt).Select(m => new
-                    {
-                        id = m.Id,
-                        content = m.Content,
-                        sentAt = m.SentAt,
-                        isRead = m.IsRead
-                    }).ToList()
+                    unreadCount = g.Count()
                 })
                 .OrderByDescending(x => x.latestMessageTime)
                 .ToList();
 
-            // Get sender info (garage name or username)
+            // Get sender info and full conversation history for each conversation
             var result = new List<dynamic>();
             foreach (var conv in conversationGroups)
             {
@@ -448,6 +457,21 @@ namespace CarGarage.Controllers
                     (await _userManager.FindByIdAsync(conv.senderId))?.UserName ?? 
                     conv.senderId;
 
+                // Load full conversation history (not just unread messages)
+                var fullConversation = await _messagesService
+                    .GetConversationByIdAsync(conv.conversationId, userId);
+
+                var messages = fullConversation
+                    .OrderBy(x => x.SentAt)
+                    .Select(m => new
+                    {
+                        id = m.Id,
+                        content = m.Content,
+                        sentAt = m.SentAt,
+                        isRead = m.IsRead,
+                        senderId = m.SenderId
+                    }).ToList();
+
                 result.Add(new
                 {
                     conv.senderId,
@@ -456,7 +480,7 @@ namespace CarGarage.Controllers
                     conv.latestMessage,
                     conv.latestMessageTime,
                     conv.unreadCount,
-                    conv.messages
+                    messages
                 });
             }
 
