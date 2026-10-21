@@ -31,139 +31,72 @@
         ?? "Сервиз";
 }
 
-<div class="container mt-3 mb-3">
+<!-- Header -->
+<div class="messages-page-header border-bottom">
+    <div class="container">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-action="Index"
+               class="messages-page-back-btn"
+               title="Назад">
+                <i class="bi bi-chevron-left"></i>
+            </a>
 
-    <div class="row justify-content-center">
-
-        <div class="col-lg-7 col-xl-6">
-
-            <!-- HEADER -->
-            <div class="d-flex align-items-center mb-2">
-
-                <a asp-action="Index"
-                   class="btn btn-light rounded-circle me-2"
-                   style="width:38px;height:38px;"
-                   title="Back">
-
-                    <i class="bi bi-arrow-left"></i>
-
-                </a>
-
-                <div>
-
-                    <h5 class="fw-bold mb-0">
-                        @otherGarageName
-                    </h5>
-
-                    <small class="text-muted">
-                        Chat
-                    </small>
-
-                </div>
-
+            <div>
+                <h1 class="messages-conversation-title">@otherGarageName</h1>
+                <p class="messages-conversation-subtitle">Чат разговор</p>
             </div>
+        </div>
+    </div>
+</div>
 
+<!-- Chat Container -->
+<div class="container mt-4 mb-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
 
-            <!-- CHAT -->
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <!-- Chat Card -->
+            <div class="messages-chat-card" style="height: calc(100vh - 280px); min-height: 400px;">
 
-                <!-- MESSAGES -->
-                <div id="messagesContainer"
-                     class="card-body px-3 py-3"
-                     style="
-                    height:calc(100vh - 220px);
-                    min-height:350px;
-                    overflow-y:auto;
-                    scroll-behavior:smooth;
-                    ">
-
+                <!-- Messages Container -->
+                <div id="messagesContainer" class="messages-container">
                     @if (!messages.Any())
                     {
-                        <div id="emptyMessage"
-                             class="text-center text-muted py-4">
-
-                            <i class="bi bi-chat-dots fs-3"></i>
-
-                            <p class="mt-2 mb-0 small">
-                                Няма съобщения.
-                            </p>
-
+                        <div class="messages-container-empty">
+                            <i class="bi bi-chat-left-text messages-container-empty-icon"></i>
+                            <p class="messages-container-empty-text">Няма съобщения</p>
+                            <p class="messages-container-empty-text small">Започни разговора!</p>
                         </div>
                     }
                     else
                     {
                         @foreach (var msg in messages)
                         {
-                            var isMine =
-                                msg.SenderId ==
-                                currentUserId;
+                            var isMine = msg.SenderId == currentUserId;
 
-                            var senderName =
-                                isMine
-                                    ? "You"
-                                    : otherGarageName;
-
-                            <div class="d-flex mb-2
-                                @(isMine
-                                    ? "justify-content-end"
-                                    : "justify-content-start")">
-
-                                <div style="max-width:65%;">
-
-                                    <!-- SENDER NAME -->
-                                    <div class="small text-muted mb-1
-                                        @(isMine
-                                            ? "text-end"
-                                            : "")"
-                                         style="font-size:11px;">
-
-                                        @senderName
-
+                            <div class="message-bubble @(isMine ? "sent" : "received")">
+                                <div class="message-bubble-content">
+                                    <div class="message-bubble-sender">
+                                        @(isMine ? "Ти" : otherGarageName)
                                     </div>
-
-
-                                    <!-- MESSAGE -->
-                                    <div class="px-3 py-2 rounded-4
-                                        @(isMine
-                                            ? "bg-primary text-white"
-                                            : "bg-light text-dark")"
-                                         style="font-size:14px;">
-
-                                        <div style="white-space:pre-wrap;">
-                                            @msg.Content
-                                        </div>
-
+                                    <div class="message-bubble-text">
+                                        @msg.Content
                                     </div>
-
-
-                                    <!-- DATE -->
-                                    <div class="text-muted mt-1
-                                        @(isMine
-                                            ? "text-end"
-                                            : "")"
-                                         style="font-size:10px;">
-
-                                        @msg.SentAt.ToString("g")
-
+                                    <div class="message-bubble-time">
+                                        @msg.SentAt.ToString("HH:mm")
                                     </div>
-
                                 </div>
-
                             </div>
                         }
                     }
-
                 </div>
 
-
-                <!-- INPUT -->
+                <!-- Input Section -->
                 @if (!string.IsNullOrEmpty(other))
                 {
-                    <div class="border-top bg-white p-2">
-
+                    <div class="messages-input-section">
                         <form asp-action="Create"
                               method="post"
-                              class="d-flex align-items-center gap-2">
+                              class="messages-input-form">
 
                             @Html.AntiForgeryToken()
 
@@ -181,32 +114,25 @@
 
                             <input type="text"
                                    name="Content"
-                                   class="form-control rounded-pill"
+                                   class="messages-input-field"
                                    placeholder="Напиши съобщение..."
                                    autocomplete="off"
                                    maxlength="2000"
                                    required />
 
                             <button type="submit"
-                                    class="btn btn-primary rounded-circle flex-shrink-0"
-                                    style="width:40px;height:40px;"
+                                    class="messages-send-btn"
                                     title="Изпрати">
-
                                 <i class="bi bi-send-fill"></i>
-
                             </button>
-
                         </form>
-
                     </div>
                 }
 
             </div>
 
         </div>
-
     </div>
-
 </div>
 
 

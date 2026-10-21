@@ -226,5 +226,43 @@ namespace CarGarage.Services.Core
                 .Take(pageSize)
                 .ToListAsync();
         }
+
+        public async Task MarkConversationAsReadAsync(
+            string conversationId,
+            string userId)
+        {
+            if (string.IsNullOrEmpty(conversationId))
+                return;
+
+            var messages = await context.Messages
+                .Where(m =>
+                    m.ConversationId == conversationId &&
+                    m.ReceiverId == userId &&
+                    !m.IsRead &&
+                    !m.IsDeleted)
+                .ToListAsync();
+
+            foreach (var message in messages)
+            {
+                message.IsRead = true;
+            }
+
+            if (messages.Count > 0)
+            {
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<IEnumerable<Message>> GetUnreadConversationsAsync(
+            string userId)
+        {
+            return await context.Messages
+                .Where(m =>
+                    m.ReceiverId == userId &&
+                    !m.IsRead &&
+                    !m.IsDeleted)
+                .OrderByDescending(m => m.SentAt)
+                .ToListAsync();
+        }
     }
 }

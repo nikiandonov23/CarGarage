@@ -44,5 +44,12 @@ namespace CarGarage.Services.Core.Contracts
         Task<IEnumerable<Message>> GetConversationAsync(
             int messageId,
             string userId);
+
+        Task MarkConversationAsReadAsync(
+            string conversationId,
+            string userId);
+
+        Task<IEnumerable<Message>> GetUnreadConversationsAsync(
+            string userId);
     }
 }

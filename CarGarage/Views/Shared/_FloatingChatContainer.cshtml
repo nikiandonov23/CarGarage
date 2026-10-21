@@ -1,0 +1,435 @@
+@* Floating Chat Container Partial View *@
+@* This partial view provides the HTML structure for the floating chat widget *@
+
+<div id="floating-chat-container" class="floating-chat-container">
+    <!-- Chat avatars/bubbles will be dynamically inserted here -->
+    <div id="chat-bubbles" class="chat-bubbles"></div>
+
+    <!-- Chat windows will be dynamically inserted here -->
+    <div id="chat-windows" class="chat-windows"></div>
+</div>
+
+@* Template for chat bubble (avatar button) *@
+<template id="chat-bubble-template">
+    <div class="chat-bubble" data-sender-id="">
+        <button class="chat-bubble-btn" type="button" title="">
+            <span class="bubble-avatar">
+                <i class="bi bi-person-circle"></i>
+            </span>
+            <span class="bubble-unread-badge" style="display: none;">0</span>
+        </button>
+    </div>
+</template>
+
+@* Template for chat window *@
+<template id="chat-window-template">
+    <div class="chat-window" data-sender-id="" data-conversation-id="">
+        <!-- Header -->
+        <div class="chat-window-header">
+            <div class="chat-window-info">
+                <span class="chat-window-title"></span>
+            </div>
+            <button class="chat-window-close-btn" type="button" title="Затвори чат">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <!-- Messages container -->
+        <div class="chat-window-messages">
+            <div class="chat-messages-list"></div>
+        </div>
+
+        <!-- Input footer -->
+        <div class="chat-window-footer">
+            <div class="chat-input-wrapper">
+                <input type="text" 
+                       class="chat-message-input" 
+                       placeholder="Напишете съобщение..." 
+                       maxlength="2000" />
+            </div>
+            <button class="chat-send-btn" type="button" title="Изпрати">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </div>
+    </div>
+</template>
+
+@* Template for message bubble *@
+<template id="message-template">
+    <div class="message" data-message-id="">
+        <div class="message-content"></div>
+        <div class="message-time"></div>
+    </div>
+</template>
+
+<style>
+    @* Floating Chat Container Styles *@
+    .floating-chat-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    @* Chat bubbles container *@
+    .chat-bubbles {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-end;
+    }
+
+    @* Individual chat bubble *@
+    .chat-bubble {
+        position: relative;
+        margin-bottom: 10px;
+    }
+
+    .chat-bubble-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .chat-bubble-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .chat-bubble-btn:active {
+        transform: scale(0.95);
+    }
+
+    .bubble-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    @* Unread badge on bubble *@
+    .bubble-unread-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: #ef4444;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: bold;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    @* Chat windows container *@
+    .chat-windows {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-end;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        pointer-events: none;
+    }
+
+    .chat-windows .chat-window {
+        pointer-events: auto;
+    }
+
+    @* Chat window styling *@
+    .chat-window {
+        width: 350px;
+        height: 450px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @* Chat window header *@
+    .chat-window-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+    }
+
+    .chat-window-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+    }
+
+    .chat-window-title {
+        font-weight: 600;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chat-window-close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 4px 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+        margin-left: 8px;
+    }
+
+    .chat-window-close-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+    }
+
+    @* Messages container *@
+    .chat-window-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        background: #f5f5f5;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-messages-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: auto;
+    }
+
+    @* Individual message styling *@
+    .message {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        max-width: 85%;
+    }
+
+    .message.sent {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+
+    .message.received {
+        align-self: flex-start;
+        align-items: flex-start;
+    }
+
+    .message-content {
+        padding: 10px 12px;
+        border-radius: 12px;
+        word-wrap: break-word;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .message.sent .message-content {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    .message.received .message-content {
+        background: #e5e7eb;
+        color: #1f2937;
+        border-bottom-left-radius: 4px;
+    }
+
+    .message-time {
+        font-size: 11px;
+        color: #9ca3af;
+        padding: 0 4px;
+    }
+
+    @* Chat window footer *@
+    .chat-window-footer {
+        background: white;
+        padding: 12px;
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+        border-top: 1px solid #e5e7eb;
+        flex-shrink: 0;
+    }
+
+    .chat-input-wrapper {
+        flex: 1;
+        display: flex;
+    }
+
+    .chat-message-input {
+        flex: 1;
+        border: 1px solid #d1d5db;
+        border-radius: 20px;
+        padding: 8px 12px;
+        font-size: 13px;
+        outline: none;
+        transition: all 0.2s ease;
+        resize: none;
+    }
+
+    .chat-message-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .chat-send-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .chat-send-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .chat-send-btn:active {
+        transform: scale(0.95);
+    }
+
+    .chat-send-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    @* Responsive styles for smaller screens *@
+    @@media (max-width: 576px) {
+        .floating-chat-container {
+            bottom: 10px;
+            right: 10px;
+        }
+
+        .chat-window {
+            width: calc(100vw - 20px);
+            height: calc(100vh - 100px);
+            max-width: 350px;
+        }
+
+        .chat-bubble-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+        }
+
+        .message {
+            max-width: 80%;
+        }
+    }
+
+    @* Empty state styles *@
+    .chat-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #9ca3af;
+        gap: 8px;
+        font-size: 13px;
+    }
+
+    .chat-empty-state-icon {
+        font-size: 32px;
+        opacity: 0.5;
+    }
+
+    @* Loading state styles *@
+    .chat-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        gap: 8px;
+        color: #667eea;
+        font-size: 13px;
+    }
+
+    .loading-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #667eea;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @* Scrollbar styling *@
+    .chat-messages-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-messages-list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .chat-messages-list::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
+    }
+
+    .chat-messages-list::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
+</style>

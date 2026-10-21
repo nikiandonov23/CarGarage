@@ -401,5 +401,191 @@ namespace CarGarage.Controllers
             return RedirectToAction(
                 nameof(Index));
         }
+
+        /// <summary>
+        /// API endpoint for floating chat widget - returns unread conversations grouped by sender
+        /// </summary>
+        [HttpGet]
+        [Route("api/messages/unread-conversations")]
+        public async Task<IActionResult> GetUnreadConversations()
+        {
+            var userId = GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var unreadMessages = await _messagesService
+                .GetUnreadConversationsAsync(userId);
+
+            var conversationGroups = unreadMessages
+                .GroupBy(m => new { m.SenderId, m.ConversationId })
+                .Select(g => new
+                {
+                    senderId = g.Key.SenderId,
+                    conversationId = g.Key.ConversationId ?? $"{g.Key.SenderId}_{userId}",
+                    latestMessage = g.OrderByDescending(x => x.SentAt).FirstOrDefault()?.Content,
+                    latestMessageTime = g.OrderByDescending(x => x.SentAt).FirstOrDefault()?.SentAt,
+                    unreadCount = g.Count(),
+                    messages = g.OrderBy(x => x.SentAt).Select(m => new
+                    {
+                        id = m.Id,
+                        content = m.Content,
+                        sentAt = m.SentAt,
+                        isRead = m.IsRead
+                    }).ToList()
+                })
+                .OrderByDescending(x => x.latestMessageTime)
+                .ToList();
+
+            // Get sender info (garage name or username)
+            var result = new List<dynamic>();
+            foreach (var conv in conversationGroups)
+            {
+                var garage = await _garageService
+                    .GetGarageDetailsAsync(conv.senderId);
+
+                var senderName = garage?.Name ?? 
+                    (await _userManager.FindByIdAsync(conv.senderId))?.UserName ?? 
+                    conv.senderId;
+
+                result.Add(new
+                {
+                    conv.senderId,
+                    conv.conversationId,
+                    senderName,
+                    conv.latestMessage,
+                    conv.latestMessageTime,
+                    conv.unreadCount,
+                    conv.messages
+                });
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// API endpoint to mark all messages in a conversation as read
+        /// </summary>
+        [HttpPost]
+        [Route("api/messages/mark-conversation-read")]
+        public async Task<IActionResult> MarkConversationAsRead(
+            [FromBody] MarkConversationReadRequest request)
+        {
+            var userId = GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            if (string.IsNullOrEmpty(request?.ConversationId))
+                return BadRequest("ConversationId is required");
+
+            await _messagesService
+                .MarkConversationAsReadAsync(
+                    request.ConversationId,
+                    userId);
+
+            // Update unread count and notify via SignalR
+            var unreadCount = await _messagesService
+                .GetUnreadCountAsync(userId);
+
+            try
+            {
+                await _hubContext.Clients
+                    .User(userId)
+                    .SendAsync("UnreadCountUpdated", unreadCount);
+            }
+            catch
+            {
+                // SignalR error suppression
+            }
+
+            return Ok(new { unreadCount });
+        }
+
+        /// <summary>
+        /// API endpoint to send a message from floating chat widget
+        /// </summary>
+        [HttpPost]
+        [Route("api/messages/send-from-widget")]
+        public async Task<IActionResult> SendMessageFromWidget(
+            [FromBody] SendMessageWidgetRequest request)
+        {
+            var senderId = GetUserId();
+
+            if (string.IsNullOrEmpty(senderId))
+                return Unauthorized();
+
+            if (string.IsNullOrEmpty(request?.ReceiverId) || 
+                string.IsNullOrEmpty(request?.Content))
+                return BadRequest("ReceiverId and Content are required");
+
+            var sentMessage = await _messagesService
+                .AddMessageAsync(
+                    senderId,
+                    request.ReceiverId,
+                    request.Content,
+                    request.ConversationId);
+
+            var senderGarage = await _garageService
+                .GetGarageDetailsAsync(senderId);
+
+            var senderName = senderGarage?.Name ?? 
+                (await _userManager.FindByIdAsync(senderId))?.UserName ?? 
+                senderId;
+
+            try
+            {
+                // Notify receiver about new message
+                await _hubContext.Clients
+                    .User(request.ReceiverId)
+                    .SendAsync("NewMessage", new
+                    {
+                        id = sentMessage.Id,
+                        senderId = sentMessage.SenderId,
+                        receiverId = sentMessage.ReceiverId,
+                        content = sentMessage.Content,
+                        sentAt = sentMessage.SentAt,
+                        conversationId = sentMessage.ConversationId,
+                        senderName
+                    });
+
+                // Update receiver's unread count
+                var receiverUnreadCount = await _messagesService
+                    .GetUnreadCountAsync(request.ReceiverId);
+
+                await _hubContext.Clients
+                    .User(request.ReceiverId)
+                    .SendAsync("UnreadCountUpdated", receiverUnreadCount);
+            }
+            catch
+            {
+                // SignalR error suppression
+            }
+
+            return Ok(new 
+            { 
+                id = sentMessage.Id,
+                conversationId = sentMessage.ConversationId,
+                sentAt = sentMessage.SentAt
+            });
+        }
+    }
+
+    /// <summary>
+    /// Request model for marking conversation as read
+    /// </summary>
+    public class MarkConversationReadRequest
+    {
+        public string? ConversationId { get; set; }
+    }
+
+    /// <summary>
+    /// Request model for sending message from widget
+    /// </summary>
+    public class SendMessageWidgetRequest
+    {
+        public string? ReceiverId { get; set; }
+        public string? Content { get; set; }
+        public string? ConversationId { get; set; }
     }
 }

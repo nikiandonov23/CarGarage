@@ -4,6 +4,9 @@
         .withAutomaticReconnect()
         .build();
 
+    // Store connection globally for FloatingChatWidget to access
+    window.signalRConnection = connection;
+
     connection.on('UnreadCountUpdated', (count) => {
         const badge = document.querySelector('.messages-unread-badge');
 
@@ -17,6 +20,11 @@
             count > 0
                 ? 'inline-block'
                 : 'none';
+    });
+
+    connection.on('NewMessage', (message) => {
+        console.log('SignalR: New message received', message);
+        // FloatingChatWidget will handle this through the registered listener
     });
 
     connection.onreconnecting(() => {

@@ -4,18 +4,47 @@
     ViewData["Title"] = "Outbox";
 }
 
-<div class="container mt-5">
-    <h3>Outbox</h3>
-    <div class="list-group mt-3">
-        @foreach (var msg in Model)
+<div class="container mt-5 mb-5">
+
+    <!-- Header -->
+    <div class="outbox-page-header">
+        <h1 class="outbox-page-title">Изпратени</h1>
+        <p class="outbox-page-subtitle">Твоите изпратени съобщения</p>
+    </div>
+
+    <!-- Outbox Container -->
+    <div class="outbox-container">
+        @if (!Model.Any())
         {
-            <a asp-action="Details" asp-route-id="@msg.Id" class="list-group-item list-group-item-action">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">To: @msg.ReceiverId</h5>
-                    <small>@msg.SentAt.ToString("g")</small>
+            <div class="outbox-list-empty">
+                <div class="outbox-list-empty-icon">
+                    <i class="bi bi-send"></i>
                 </div>
-                <p class="mb-1 text-truncate">@msg.Content</p>
-            </a>
+                <h5 class="outbox-list-empty-title">Никакви изпратени съобщения</h5>
+                <p class="outbox-list-empty-text">Твоите изпратени съобщения ще се появят тук</p>
+            </div>
+        }
+        else
+        {
+            <div class="list-group list-group-flush">
+                @foreach (var msg in Model)
+                {
+                    <a asp-action="Details" asp-route-id="@msg.Id" class="outbox-message-item">
+                        <div class="outbox-message-header">
+                            <h6 class="outbox-message-recipient">
+                                За: @msg.ReceiverId
+                            </h6>
+                            <small class="outbox-message-date">
+                                @msg.SentAt.ToString("HH:mm")
+                            </small>
+                        </div>
+                        <p class="outbox-message-preview">
+                            @msg.Content
+                        </p>
+                    </a>
+                }
+            </div>
         }
     </div>
+
 </div>

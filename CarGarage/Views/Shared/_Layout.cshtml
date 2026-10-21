@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/messages-unified-theme.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CarGarage.styles.css" asp-append-version="true" />
 
     <!-- CSS стилове за лупичката и скриване на заглавието в GLightbox -->
@@ -279,12 +280,22 @@
         </div>
     </footer>
 
+    <!-- Floating Chat Widget -->
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <partial name="_FloatingChatContainer" />
+    }
+
     <!-- Скриптове -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.11/signalr.min.js"></script>
     <script src="~/js/notifications.js" asp-append-version="true"></script>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script src="~/js/floatingchat.js" asp-append-version="true"></script>
+    }
 
     <!-- GLightbox JS за отваряне на снимката на цял екран -->
     <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>

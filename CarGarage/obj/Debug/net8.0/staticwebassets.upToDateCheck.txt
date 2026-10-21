@@ -1,5 +1,7 @@
+wwwroot\css\messages-unified-theme.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
+wwwroot\js\floatingchat.js
 wwwroot\js\notifications.js
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\LICENSE

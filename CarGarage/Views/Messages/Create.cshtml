@@ -4,32 +4,54 @@
     ViewData["Title"] = "Свържи се със продавача";
 }
 
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0 p-3">
-                <form asp-action="Create" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="PartId" />
-                    <input type="hidden" asp-for="ReceiverId" />
-                    <input type="hidden" asp-for="ConversationId" />
+        <div class="col-lg-8 col-xl-7">
 
-                    <div class="mb-3">
-                        <label asp-for="Content" class="form-label">Съобщение</label>
-                        <textarea asp-for="Content" class="form-control" rows="6"></textarea>
-                        <span asp-validation-for="Content" class="text-danger small"></span>
-                    </div>
+            <!-- Create Message Card -->
+            <div class="create-message-card">
 
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg shadow-sm">
-                            <i class="bi bi-send me-1"></i> Изпрати съобщение
-                        </button>
-                        <a href="javascript:history.back()" class="btn btn-outline-secondary border shadow-sm">
-                            <i class="bi bi-arrow-left-circle me-1"></i> Назад
-                        </a>
-                    </div>
-                </form>
+                <!-- Header -->
+                <div class="create-message-header">
+                    <i class="bi bi-pencil-square create-message-header-icon"></i>
+                    <h1 class="create-message-header-title">Ново съобщение</h1>
+                </div>
+
+                <!-- Form -->
+                <div class="create-message-form">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" asp-for="PartId" />
+                        <input type="hidden" asp-for="ReceiverId" />
+                        <input type="hidden" asp-for="ConversationId" />
+
+                        <!-- Content Field -->
+                        <div class="create-message-form-group">
+                            <label asp-for="Content" class="create-message-label">
+                                Съобщение
+                            </label>
+                            <textarea asp-for="Content" 
+                                      class="create-message-textarea" 
+                                      placeholder="Напиши детайлното съобщение..."></textarea>
+                            <span asp-validation-for="Content" class="text-danger small d-block mt-2"></span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="create-message-actions">
+                            <button type="submit" class="create-message-submit-btn">
+                                <i class="bi bi-send me-2"></i>Изпрати съобщение
+                            </button>
+                            <a href="javascript:history.back()" class="create-message-cancel-btn">
+                                <i class="bi bi-arrow-left me-2"></i>Назад
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+
             </div>
+
         </div>
     </div>
 </div>
